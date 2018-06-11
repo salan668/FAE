@@ -2,8 +2,6 @@ import numpy as np
 from scipy.stats import sem
 from sklearn.metrics import roc_auc_score, roc_curve, confusion_matrix
 
-
-
 def AUC_Confidence_Interval(y_true, y_pred, CI_index=0.95):
     # AUC = roc_auc_score(y_true, y_pred)
 
