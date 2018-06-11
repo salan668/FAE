@@ -27,7 +27,7 @@ Just clone it by typing in:
 ```
 git clone https://github.com/salan668/FAP.git
 ```
-If you would like to use FAP in any project, please add the path in your system envirement. A trick method to add a pth file in the site-packages folder (<Your own python folder>\Lib\site-packages) and add a path that point to the root folder of the FAP.
+If you would like to use FAP in any project, please add the path in your system envirement. A trick method to create a .pth file in the site-packages folder (<Your own python folder>\Lib\site-packages) and add a path that point to the root folder of the FAP.
 
 ### Running the example. 
 ```
@@ -35,15 +35,19 @@ cd FAP
 python Example\example_diff_method.py
 ```
 
+### Documents
+TODO
+
 
 ## Authors
-- **Yang Song**, songyangmri@gmail.com.
+- [**Yang Song**](https://github.com/salan668)
+- [**Guang Yang**](https://github.com/yg88)
 
 ## License 
 This project is licensed under the GPL 3.0 License - see the [LICENSE.md](https://github.com/salan668/FAP/blob/master/LICENSE) file for details
 
 ## Acknowledge
-- Suggestion for the designment of this project.
-    - Guang YANG.
-- Fix bugs:
+- Bugs fix:
     - Jing ZHANG. 
+- Demo data support. 
+    - Yu-dong Zhang, Xu Yan. 
