@@ -2,6 +2,20 @@
 
 Feature Analysis Pipeline (FAP) can help researchers develop a classification model with comparision among diffferent methods. This project was inspired on the [Radiomics](http://www.radiomics.io/), and provides some functions to help extract features with batch process. 
 
+A demo of features and the corresponding result are shown below
+
+Demo of Features:
+
+![DemoFeatures](https://github.com/salan668/FAP/blob/master/Example/DemoFeatures.png)
+
+Result processed by FAP
+
+![Result](https://github.com/salan668/FAP/blob/master/Example/Result.png)
+
+If you publish any work which uses this package, I will appreciate that you could cite the following publication: [Song Y, Zhang YD, Yan X, Liu H, Zhou M, Hu B, Yang G, Computer-aided diagnosis of prostate cancer using a deep convolutional neural network from multiparametric MRI. J Magn Reson Imaging. 2018 Apr 16. doi: 10.1002/jmri.26047.](https://www.ncbi.nlm.nih.gov/pubmed/29659067) 
+
+Welcome any issues and PR. 
+
 ![Python](https://img.shields.io/badge/python-v3.6-blue.svg)
 ![Contributions welcome](https://img.shields.io/badge/contributions-welcome-orange.svg)
 [![License](https://img.shields.io/badge/license-GPL3.0-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.en.html)
@@ -27,7 +41,7 @@ Just clone it by typing in:
 ```
 git clone https://github.com/salan668/FAP.git
 ```
-If you would like to use FAP in any project, please add the path in your system envirement. A trick method to create a .pth file in the site-packages folder (<Your own python folder>\Lib\site-packages) and add a path that point to the root folder of the FAP.
+If you would like to use FAP in any project, please add the path in your system envirement. A trick method is to create a .pth file in the site-packages folder (<Your own python folder>\Lib\site-packages) and add a path that point to the root folder of the FAP.
 
 ### Running the example. 
 ```
@@ -35,19 +49,38 @@ cd FAP
 python Example\example_diff_method.py
 ```
 
-### Documents
+### Architecutre of Project 
+- **DataContainer**
+    - **Data Container**. The structure to contain the data, which also includes methods like saving/loading and data normaliztion processing. 
+    - **DataSeperate**. Including functions to seperate data into training part and testing part. 
+- **Feature Analysis**
+    - **Classifier**. The classifier to develop the model, including SVM, AE, Random Forests, LDA. 
+    - **CrossValidation**. The CV model to estimate the model. Return the metrics
+    - **FeturePipeline**. The class to estimate the model with different feature selected method and classifier. 
+    - **FeatureSelector**. The class to select features, which including 1) remove non-number features, e.g. the version of the pyradiomics; 2) remove non-useful features, e.g. the VolumnNum; 3) different method to select features, like ANOVA, PCA, RFE, Relief. 
+- **Image2Feature**
+    - **RadiomicsFeatureExtractor**. This class help extract features from image and ROI with batch process. This class should be more "smart" in the future. 
+- **Visulization**. 
+    - **DrawDoubleLine**. This function helps draw doulbe-y plot. e.g. plot accuracy and error against the number of iterations.
+    - **DrawROCList**. This function helps draw different ROC curves. AUC will be calculated automaticly and labeled on the legend. 
+    - **FeatureRelationship**. This function helps draw the distribution of the values of different features. I can only show at most 3 features in one figure. 
+    - **FeatureSort**. This function helps draw the features and the weights of them on the classifiction model. 
+    - **PlotMetricVsFeatureNumber**. This function helps draw the AUC / Accuracy / other metrics against the number of chosen features. This can help find the adaptive number of the features. 
+
+## Document
 TODO
 
-
-## Authors
+## Author
 - [**Yang Song**](https://github.com/salan668)
-- [**Guang Yang**](https://github.com/yg88)
 
 ## License 
 This project is licensed under the GPL 3.0 License - see the [LICENSE.md](https://github.com/salan668/FAP/blob/master/LICENSE) file for details
 
 ## Acknowledge
+- Contributor:
+    - [**Guang Yang**](https://github.com/yg88)
+    - Yi-lai Pei
 - Bugs fix:
-    - Jing ZHANG. 
+    - Jing Zhang. 
 - Demo data support. 
     - Yu-dong Zhang, Xu Yan. 
