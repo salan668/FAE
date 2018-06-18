@@ -525,17 +525,21 @@ class FeatureSelectPipeline(FeatureSelector):
 ################################################################
 
 if __name__ == '__main__':
+    import os
+    print(os.getcwd())
     from FAP.DataContainer.DataContainer import DataContainer
     data_container = DataContainer()
-    data_container.Load(r'..\Result\NumericFeature.csv')
+    print(os.path.abspath(r'..\..\Example\numeric_feature.csv'))
+    data_container.Load(r'..\..\Example\numeric_feature.csv')
     # data_container.UsualNormalize()
 
     print(data_container.GetArray().shape)
+    print(data_container.GetFeatureName())
 
-    fs = FeatureSelectByKeyName([['T1C', 'T2'], ['invoved', 'age'], [], []])
+    fs = FeatureSelectByKeyName([[], [], ['shape', 'firstorder', 'glrlm'], []], method='or')
 
     output = fs.Run(data_container)
-    print(output.GetFrame().head(5))
+    print(output.GetFeatureName())
 
     # fs1 = RemoveNonNumericFeature()
     # fs1.SetDataContainer(data_container)

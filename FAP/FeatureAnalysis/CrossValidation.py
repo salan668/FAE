@@ -14,6 +14,11 @@ from FAP.Visualization.PlotMetricVsFeatureNumber import DrawCurve
 from FAP.Func.Visualization import LoadWaitBar
 
 class CrossValidation:
+    '''
+    CrossValidation is the base class to explore the hpyer-parameters. Now it supported Leave-one-lout (LOO), 10-folder,
+    and 5-folders. A classifider nust be set before run CV. A training metric and validation metric will be returned.
+    If a testing data container was also set, the test metric will be return.
+    '''
     def __init__(self, cv_method):
         self.__classifier = Classifier()
 
@@ -127,6 +132,10 @@ class CrossValidation:
         return train_metric, val_metric, test_metric
 
 class CrossValidationOnFeatureNumber(CrossValidation):
+    '''
+    This helps explore the effect of the number of features.
+    TODO: This exploration needs to be applied in the feature selector class. In may opinion, the
+    '''
     def __init__(self, cv_method, max_feature_number=1):
         super(CrossValidationOnFeatureNumber, self).__init__(cv_method)
         self.__max_feature_number = max_feature_number

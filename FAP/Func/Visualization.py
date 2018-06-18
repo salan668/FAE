@@ -8,10 +8,10 @@ def DrawBoundaryOfBinaryMask(image, ROI):
 
 def LoadWaitBar(total, progress):
     '''
-    runs = 300
-    for run_num in range(runs):
-        time.sleep(.1)
-        updt(runs, run_num + 1)
+    Show the wait bar
+    :param total: the number of the total steps
+    :param progress: the number of the current step
+    :return:
     '''
     barLength, status = 20, ""
     raw_progress = progress

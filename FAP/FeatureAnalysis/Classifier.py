@@ -9,6 +9,9 @@ from sklearn.neural_network import MLPClassifier
 from abc import ABCMeta,abstractmethod
 
 class Classifier:
+    '''
+    This is the base class of the classifer. All the specific classifier need to be artributed from this base class.
+    '''
     def __init__(self):
         self.__model = None
         self._x = np.array([])

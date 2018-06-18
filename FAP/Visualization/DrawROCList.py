@@ -9,11 +9,10 @@ color_list = sns.color_palette('deep') + sns.color_palette('bright')
 def DrawROCList(pred_list, label_list, name_list='', store_path=''):
     '''
     To Draw the ROC curve.
-
     :param pred_list: The list of the prediction.
     :param label_list: The list of the label.
     :param name_list: The list of the legend name.
-    :param store_path: The store path. Support jpeg and tif.
+    :param store_path: The store path. Support jpg and eps.
     :return: None
 
     Apr-28-18, Yang SONG [yang.song.91@foxmail.com]

@@ -3,6 +3,17 @@ import seaborn as sns
 color_list = sns.color_palette('deep') + sns.color_palette('bright')
 
 def DrawDoubleYLines(x, y1, y2, xlabel='', ylabel=['', ''], legend=['', ''], store_path=''):
+    '''
+    Draw the doulbe y-axis lines.
+    :param x: The vector of the x axis.
+    :param y1: The vector of the y1 axis.
+    :param y2: The vector of the y2 axis.
+    :param xlabel: The label of the x. Default is ''
+    :param ylabel: The list of the y label. Default is ['', '']
+    :param legend: The list of the legend. Default is ['', '']
+    :param store_path: The store path of the figure. support 'jpg' and 'eps' format.
+    :return:
+    '''
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
     ax1.plot(x, y1, color=color_list[0])

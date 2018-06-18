@@ -10,7 +10,6 @@ color_list = sns.color_palette('deep') + sns.color_palette('bright')
 def DrawValueRelationship(vector_list, vector_name_list, label, label_name_list, store_path=''):
     '''
     Draw value relationship
-
     :param vector_list: the list store different values. The length must be shorter than 4 (<=3)
     :param vector_name_list: the name of axis. The length must be equal to the length of the value_list
     :param label: The corresponding label.
@@ -52,15 +51,18 @@ def DrawValueRelationship(vector_list, vector_name_list, label, label_name_list,
         label_value_0  =show_info[0][0]
         label_value_1 = show_info[1][0]
         plt.style.use('ggplot')
-        plt.hist(label_value_0,label = label_name_list[0], color ='steelblue', alpha = 0.7,rwidth=0.5)
-        plt.hist(label_value_1,label=label_name_list[1], color ='palevioletred',alpha=0.7,rwidth=0.5)
+        plt.hist(label_value_0, label=label_name_list[0], color=color_list[0], alpha=0.7, rwidth=0.5)
+        plt.hist(label_value_1, label=label_name_list[1], color=color_list[1], alpha=0.7, rwidth=0.5)
         plt.tick_params(top='off', right='off')
         plt.title(vector_name_list[0])
         plt.xlabel('feature value')
         plt.ylabel('case number')
         plt.legend()
         if store_path:
-            plt.savefig(os.path.join(store_path,vector_name_list[0]+'.jpg'))
+            if store_path[-3:] == 'jpg':
+                plt.savefig(store_path, dpi=300, format='jpeg')
+            elif store_path[-3:] == 'eps':
+                plt.savefig(store_path, dpi=1200, format='eps')
         plt.show()
     else:
         fig = plt.figure()
@@ -86,37 +88,31 @@ def DrawValueRelationship(vector_list, vector_name_list, label, label_name_list,
 
         plt.show()
 
-
-def DrawFeatureRelationshipAccordingToCsvFile(file_path, feature_list,label_name_list,store_path=''):
+def DrawFeatureRelationshipAccordingToCsvFile(file_path, selected_feature_name_list, label_name_list, store_path=''):
+    '''
+    Help draw the feature relationship among different features according to the path of the data container.
+    :param file_path: the file path of the csv file
+    :param selected_feature_name_list: the features that would be drawn
+    :param label_name_list: the name of the label. e.g. ['non-cnacer', 'cancer']
+    :param store_path: The store path, supporting jpg and eps format.
+    :return:
+    '''
     data_container = DataContainer()
     data_container.Load(file_path)
     data_container.UsualNormalize()
     data, label, feature_name, case_name = data_container.GetData()
-    all_data = []
-    sub_data = data[:,feature_name.index(feature_list[0])]
-    all_data.append(sub_data)
-    if len(feature_list)>1:
-        sub_data = data[:, feature_name.index(feature_list[1])]
-        all_data.append(sub_data)
-        if len(feature_list) > 2:
-            sub_data = data[:, feature_name.index(feature_list[2])]
-            all_data.append(sub_data)
-    DrawValueRelationship(all_data,feature_list,label,label_name_list,store_path)
 
+    if len(selected_feature_name_list) > 3 or len(selected_feature_name_list) < 1:
+        print("Please check the length of the feature list. It can only show the relationship of the 1, 2, or 3 features")
+
+    try:
+        index = [feature_name.index(t) for t in selected_feature_name_list]
+    except:
+        print('The selected feature is not in the data container.')
+        return
+
+    DrawValueRelationship(data[:, index], selected_feature_name_list, label[index], label_name_list, store_path)
 
 
 if __name__ == '__main__':
-    # import numpy as np
-    # feature1 = np.load(r'C:\Users\SY\Desktop\temp\GLCM_DE.npy')
-    # feature2 = np.load(r'C:\Users\SY\Desktop\temp\GLSZM_SAE.npy')
-    # feature3 = np.load(r'C:\Users\SY\Desktop\temp\GLSZM_SZNUN.npy')
-    # label = np.load(r'C:\Users\SY\Desktop\temp\label.npy')
-    # label[20:30] = 2
-    # label[30:40] = 3
-    # DrawValueRelationship([feature1], ['DE'], label)
-    # DrawValueRelationship([feature1, feature2], ['DE', 'SAE'], label)
-    # DrawValueRelationship([feature1, feature2, feature3], ['DE', 'SAE', 'SZNUN'], label)
-    feature_list = ['T2_original_glcm_Imc1', 'T2_original_glszm_SizeZoneNonUniformityNormalized']
-    # feature_list = ['Quality_invoved','Quality_gender']
-    csv_path = r'D:\RadiomicsProject\EENT\EENT_hospital_5_21\NumericFeature.csv'
-    DrawFeatureRelationshipAccordingToCsvFile(csv_path, feature_list,['Ly','MM'],store_path='')
+    pass

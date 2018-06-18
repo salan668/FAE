@@ -1,3 +1,8 @@
+'''.
+Jun 17, 2018.
+Yang SONG, songyangmri@gmail.com
+'''
+
 from FAP.DataContainer.DataContainer import DataContainer
 from FAP.FeatureAnalysis.CrossValidation import CrossValidation, CrossValidationOnFeatureNumber
 from FAP.FeatureAnalysis.FeatureSelector import *
@@ -6,6 +11,10 @@ from FAP.FeatureAnalysis.Classifier import *
 import pandas as pd
 
 class FeatureAnalysisExplore:
+    '''
+    This is the input of the FAP project. It accepts the candidate feature selector list and the candidate classifier
+    list. Then the result of the metrics were stored with the combination of different feature selector and classifier.
+    '''
     def __init__(self, feature_selector_list=[], classifier_list=[],
                  cv=CrossValidationOnFeatureNumber('5-folder'), max_feature_number=1):
         self.__feature_selector_list = feature_selector_list
@@ -13,16 +22,26 @@ class FeatureAnalysisExplore:
         self.__cv = cv
         self.__max_feature_number = max_feature_number
 
-    def RunOneModel(self, data_container, feature_selector, classifier, cv, store_folder=''):
+    def RunOneModel(self, data_container, feature_selector, classifier, cv, test_data_container=DataContainer(), store_folder=''):
+        '''
+
+        :param data_container: The implement of the DataContainer.
+        :param feature_selector: The implement of the FeatureSelector.
+        :param classifier: The implement of the Classifier
+        :param cv: The implement of the CrossValidation
+        :param store_folder: The path of the store folder..
+        :return: The metric of the validation data.
+        '''
         feature_selector.SetDataContainer(data_container)
         selected_data_container = feature_selector.Run(store_folder)
 
         cv.SetClassifier(classifier)
         cv.SetDataContainer(selected_data_container)
 
-        train_metric, val_metric = cv.Run()
+        train_metric, val_metric, test_metric = cv.Run(data_container, test_data_container=test_data_container,
+                                                       store_folder=store_folder)
 
-        return val_metric
+        return val_metric, test_metric
 
     def Run(self, data_container, test_data_container=DataContainer(), store_folder=''):
 
@@ -74,11 +93,6 @@ if __name__ == '__main__':
     data_container = DataContainer()
     data_container.Load(r'..\tempResult\NumericFeature.csv')
     data_container.UsualNormalize()
-
-    column_list = ['sample_number', 'positive_number', 'negative_number',
-                   'auc', 'auc 95% CIs', 'accuracy', 'feature_number',
-                   'Yorden Index', 'sensitivity', 'specificity',
-                   'positive predictive value', 'negative predictive value']
 
     df = pd.DataFrame(columns=column_list)
 

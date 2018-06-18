@@ -1,3 +1,8 @@
+'''.
+Jun 17, 2018.
+Yang SONG, songyangmri@gmail.com
+'''
+
 import numpy as np
 import os
 import pandas as pd
@@ -6,6 +11,10 @@ import copy
 
 
 class DataContainer:
+    '''
+    DataContainer is the key class of the FAP project. It is the node to connect different models. Almost all procesors
+    accept DataContainer and return a new DataContainer.
+    '''
     def __init__(self, array=np.array([]), label=np.array([]), feature_name=[], case_name=[]):
         self.__feature_name = feature_name
         self.__case_name = case_name
@@ -121,6 +130,12 @@ class DataContainer:
             df.to_csv(store_path)
 
     def ArtefactNormalize(self, normalization_file):
+        '''
+        This function can use the existing file with the infoamtion of the normalization. It is usually used on the fact
+        that a learnt model is used to process the testing data set.
+        :param normalization_file: the stored file with the information of the normalization.
+        :return:
+        '''
         df = pd.read_csv(normalization_file, header=0, index_col=0)
         mean_value = df.loc['mean'].values
         std_value = df.loc['std'].values
