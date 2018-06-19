@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 import seaborn as sns
-from FAP.DataContainer.DataContainer import DataContainer
+from FAE.DataContainer.DataContainer import DataContainer
 import os
 color_list = sns.color_palette('deep') + sns.color_palette('bright')
 

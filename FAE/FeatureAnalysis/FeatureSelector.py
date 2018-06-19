@@ -11,7 +11,7 @@ from sklearn.feature_selection import SelectKBest, f_classif, RFE
 from sklearn.decomposition import PCA
 from sklearn.svm import SVC
 
-from FAP.DataContainer.DataContainer import DataContainer
+from FAE.DataContainer.DataContainer import DataContainer
 
 
 def SaveSelectInfo(data_container, store_path, is_merge=False):
@@ -527,7 +527,7 @@ class FeatureSelectPipeline(FeatureSelector):
 if __name__ == '__main__':
     import os
     print(os.getcwd())
-    from FAP.DataContainer.DataContainer import DataContainer
+    from FAE.DataContainer.DataContainer import DataContainer
     data_container = DataContainer()
     print(os.path.abspath(r'..\..\Example\numeric_feature.csv'))
     data_container.Load(r'..\..\Example\numeric_feature.csv')

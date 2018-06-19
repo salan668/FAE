@@ -6,7 +6,7 @@ import copy
 import logging
 import pandas as pd
 
-from FAP.Func.Visualization import LoadWaitBar
+from FAE.Func.Visualization import LoadWaitBar
 
 class RadiomicsFeatureExtractor:
     def __init__(self, radiomics_parameter_file, config_file, modality_name_list):

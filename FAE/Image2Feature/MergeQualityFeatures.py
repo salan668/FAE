@@ -1,5 +1,5 @@
 # This class should be applied after Radiomics features extracted.
-from FAP.Image2Feature.RadiomicsFeatureExtractor import RadiomicsFeatureExtractor
+from FAE.Image2Feature.RadiomicsFeatureExtractor import RadiomicsFeatureExtractor
 
 class MergeQualityFeature():
     def __init__(self, extractor):

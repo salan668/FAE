@@ -6,12 +6,12 @@ import csv
 
 from sklearn.model_selection import KFold, StratifiedKFold, LeaveOneOut
 
-from FAP.DataContainer.DataContainer import DataContainer
-from FAP.FeatureAnalysis.Classifier import Classifier
-from FAP.FeatureAnalysis.FeatureSelector import FeatureSelectPipeline, FeatureSelectByAnalysis, FeatureSelector
-from FAP.Func.Metric import EstimateMetirc
-from FAP.Visualization.PlotMetricVsFeatureNumber import DrawCurve
-from FAP.Func.Visualization import LoadWaitBar
+from FAE.DataContainer.DataContainer import DataContainer
+from FAE.FeatureAnalysis.Classifier import Classifier
+from FAE.FeatureAnalysis.FeatureSelector import FeatureSelectPipeline, FeatureSelectByAnalysis, FeatureSelector
+from FAE.Func.Metric import EstimateMetirc
+from FAE.Visualization.PlotMetricVsFeatureNumber import DrawCurve
+from FAE.Func.Visualization import LoadWaitBar
 
 class CrossValidation:
     '''

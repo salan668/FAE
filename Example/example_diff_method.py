@@ -1,12 +1,12 @@
 import pandas as pd
 import os
 
-from FAP.DataContainer.DataContainer import DataContainer
-from FAP.FeatureAnalysis.FeatureSelector import RemoveSameFeatures, RemoveCosSimilarityFeatures, FeatureSelectPipeline
-from FAP.FeatureAnalysis.FeatureSelector import FeatureSelectByANOVA, FeatureSelectByRFE, FeatureSelectByPCA, FeatureSelectByRelief
-from FAP.FeatureAnalysis.Classifier import SVM, RandomForest, AE, LDA
-from FAP.FeatureAnalysis.CrossValidation import CrossValidationOnFeatureNumber
-from FAP.FeatureAnalysis.FeaturePipeline import FeatureAnalysisExplore
+from FAE.DataContainer.DataContainer import DataContainer
+from FAE.FeatureAnalysis.FeatureSelector import RemoveSameFeatures, RemoveCosSimilarityFeatures, FeatureSelectPipeline
+from FAE.FeatureAnalysis.FeatureSelector import FeatureSelectByANOVA, FeatureSelectByRFE, FeatureSelectByPCA, FeatureSelectByRelief
+from FAE.FeatureAnalysis.Classifier import SVM, RandomForest, AE, LDA
+from FAE.FeatureAnalysis.CrossValidation import CrossValidationOnFeatureNumber
+from FAE.FeatureAnalysis.FeaturePipeline import FeatureAnalysisExplore
 
 if __name__ == '__main__':
 

@@ -3,16 +3,16 @@ Jun 17, 2018.
 Yang SONG, songyangmri@gmail.com
 '''
 
-from FAP.DataContainer.DataContainer import DataContainer
-from FAP.FeatureAnalysis.CrossValidation import CrossValidation, CrossValidationOnFeatureNumber
-from FAP.FeatureAnalysis.FeatureSelector import *
-from FAP.FeatureAnalysis.Classifier import *
+from FAE.DataContainer.DataContainer import DataContainer
+from FAE.FeatureAnalysis.CrossValidation import CrossValidation, CrossValidationOnFeatureNumber
+from FAE.FeatureAnalysis.FeatureSelector import *
+from FAE.FeatureAnalysis.Classifier import *
 
 import pandas as pd
 
 class FeatureAnalysisExplore:
     '''
-    This is the input of the FAP project. It accepts the candidate feature selector list and the candidate classifier
+    This is the input of the FAE project. It accepts the candidate feature selector list and the candidate classifier
     list. Then the result of the metrics were stored with the combination of different feature selector and classifier.
     '''
     def __init__(self, feature_selector_list=[], classifier_list=[],

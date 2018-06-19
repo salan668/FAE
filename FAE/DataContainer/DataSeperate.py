@@ -8,7 +8,7 @@ from random import shuffle
 import os
 import pandas as pd
 
-from FAP.DataContainer.DataContainer import DataContainer
+from FAE.DataContainer.DataContainer import DataContainer
 
 def SeperateDataToTrainingAndTesting(data, testing_percentage=0.2, label=np.array(()), training_index_list = [], store_folder=''):
     is_label = True

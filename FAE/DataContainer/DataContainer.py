@@ -12,7 +12,7 @@ import copy
 
 class DataContainer:
     '''
-    DataContainer is the key class of the FAP project. It is the node to connect different models. Almost all procesors
+    DataContainer is the key class of the FAE project. It is the node to connect different models. Almost all procesors
     accept DataContainer and return a new DataContainer.
     '''
     def __init__(self, array=np.array([]), label=np.array([]), feature_name=[], case_name=[]):

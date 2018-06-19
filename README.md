@@ -1,16 +1,16 @@
-# FAP
+# FAE
 
-Feature Analysis Pipeline (FAP) can help researchers develop a classification model with comparision among diffferent methods. This project was inspired on the [Radiomics](http://www.radiomics.io/), and provides some functions to help extract features with batch process. 
+Feature Analysis Pipeline (FAE) can help researchers develop a classification model with comparision among diffferent methods. This project was inspired on the [Radiomics](http://www.radiomics.io/), and provides some functions to help extract features with batch process. 
 
 A demo of features and the corresponding result are shown below
 
 Demo of Features:
 
-![DemoFeatures](https://github.com/salan668/FAP/blob/master/Example/DemoFeatures.png)
+![DemoFeatures](https://github.com/salan668/FAE/blob/master/Example/DemoFeatures.png)
 
-Result processed by FAP
+Result processed by FAE
 
-![Result](https://github.com/salan668/FAP/blob/master/Example/Result.png)
+![Result](https://github.com/salan668/FAE/blob/master/Example/Result.png)
 
 If you publish any work which uses this package, I will appreciate that you could cite the following publication: [Song Y, Zhang YD, Yan X, Liu H, Zhou M, Hu B, Yang G, Computer-aided diagnosis of prostate cancer using a deep convolutional neural network from multiparametric MRI. J Magn Reson Imaging. 2018 Apr 16. doi: 10.1002/jmri.26047.](https://www.ncbi.nlm.nih.gov/pubmed/29659067) 
 
@@ -24,7 +24,7 @@ Welcome any issues and PR.
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
 
 ### Prerequisties
-The below modules must be installed first to make the FAP work. 
+The below modules must be installed first to make the FAE work. 
 
 ```
 - pyradiomics
@@ -39,13 +39,13 @@ The below modules must be installed first to make the FAP work.
 Just clone it by typing in:
 
 ```
-git clone https://github.com/salan668/FAP.git
+git clone https://github.com/salan668/FAE.git
 ```
-If you would like to use FAP in any project, please add the path in your system envirement. A trick method is to create a .pth file in the site-packages folder (<Your own python folder>\Lib\site-packages) and add a path that point to the root folder of the FAP.
+If you would like to use FAE in any project, please add the path in your system envirement. A trick method is to create a .pth file in the site-packages folder (<Your own python folder>\Lib\site-packages) and add a path that point to the root folder of the FAE.
 
 ### Running the example. 
 ```
-cd FAP
+cd FAE
 python Example\example_diff_method.py
 ```
 
@@ -74,7 +74,7 @@ TODO
 - [**Yang Song**](https://github.com/salan668)
 
 ## License 
-This project is licensed under the GPL 3.0 License - see the [LICENSE.md](https://github.com/salan668/FAP/blob/master/LICENSE) file for details
+This project is licensed under the GPL 3.0 License - see the [LICENSE.md](https://github.com/salan668/FAE/blob/master/LICENSE) file for details
 
 ## Acknowledge
 - Contributor:
