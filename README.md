@@ -1,6 +1,6 @@
 # FAE
 
-Feature Analysis Pipeline (FAE) can help researchers develop a classification model with comparision among diffferent methods. This project was inspired on the [Radiomics](http://www.radiomics.io/), and provides some functions to help extract features with batch process. 
+Feature Analysis Explorer (FAE) can help researchers develop a classification model with comparision among diffferent methods. This project was inspired on the [Radiomics](http://www.radiomics.io/), and provides some functions to help extract features with batch process.
 
 A demo of features and the corresponding result are shown below
 
