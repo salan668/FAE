@@ -83,6 +83,8 @@ def GenerateTrainingAndTestingData(csv_file_path, training_index=[], testing_per
 
     if is_store_index:
         store_folder = os.path.split(csv_file_path)[0]
+        if store_folder == '':
+            store_folder = os.path.abspath('')
     else:
         store_folder = ''
 
@@ -90,11 +92,11 @@ def GenerateTrainingAndTestingData(csv_file_path, training_index=[], testing_per
 
     training_data_contrainer = DataContainer(output['training_data'], output['training_label'], feature_name,
                                              [case_name[temp] for temp in output['training_index']])
-    training_data_contrainer.Save(os.path.join(training_folder, 'numeric_feature.csv'))
+    training_data_contrainer.Save(os.path.join(training_folder, 'feature.csv'))
 
     testing_data_contrainer = DataContainer(output['testing_data'], output['testing_label'], feature_name,
                                              [case_name[temp] for temp in output['testing_index']])
-    testing_data_contrainer.Save(os.path.join(testing_folder, 'numeric_feature.csv'))
+    testing_data_contrainer.Save(os.path.join(testing_folder, 'feature.csv'))
 
 
 if __name__ == '__main__':

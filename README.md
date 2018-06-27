@@ -80,6 +80,7 @@ This project is licensed under the GPL 3.0 License - see the [LICENSE.md](https:
 - Contributor:
     - [**Guang Yang**](https://github.com/yg88)
     - Yi-lai Pei
+    - [**jmtaysom**](https://github.com/jmtaysom)
 - Bugs fix:
     - Jing Zhang. 
 - Demo data support. 
