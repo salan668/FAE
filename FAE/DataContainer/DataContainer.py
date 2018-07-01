@@ -38,6 +38,20 @@ class DataContainer:
         except:
             print('Check the CSV file path. ')
 
+    def ShowInformation(self):
+        print('The number of cases is ', str(len(self.__case_name)))
+        print('The number of features is ', str(len(self.__feature_name)))
+        print('The cases are: ', self.__case_name)
+        print('The features are: ', self.__feature_name)
+
+        if len(np.unique(self.__label)) == 2:
+            positive_number = len(np.where(self.__label == np.max(self.__label))[0])
+            negative_number = len(self.__label) - positive_number
+            assert(positive_number + negative_number == len(self.__label))
+            print('The number of positive samples is ', str(positive_number))
+            print('The number of negative samples is ', str(negative_number))
+
+
     def UpdateDataByFrame(self):
         self.__case_name = list(self.__df.index)
         self.__feature_name = list(self.__df.columns)
@@ -161,9 +175,10 @@ def main():
 
     # Test Normalization
     data = DataContainer()
-    data.Load(r'..\Result\NumericFeature.csv')
-    data.UsualNormalize(r'..\Result\normalization.csv')
-    data.ArtefactNormalize(r'..\Result\normalization.csv')
+    data.Load(r'..\..\Example\numeric_feature.csv')
+    data.ShowInformation()
+    data.UsualNormalize(r'..\Example\normalization.csv')
+    data.ArtefactNormalize(r'..\Example\normalization.csv')
 
 
 
