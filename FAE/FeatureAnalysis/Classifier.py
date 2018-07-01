@@ -1,12 +1,14 @@
 import numpy as np
 import pickle
 import os
+import pandas as pd
 from sklearn.svm import SVC
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.neural_network import MLPClassifier
 
 from abc import ABCMeta,abstractmethod
+from FAE.DataContainer.DataContainer import DataContainer
 
 class Classifier:
     '''
@@ -16,13 +18,30 @@ class Classifier:
         self.__model = None
         self._x = np.array([])
         self._y = np.array([])
+        self._data_container = DataContainer()
 
-    def SetData(self, x, y):
+    def SetDataContainer(self, data_container):
+        data = data_container.GetArray()
+        label = data_container.GetLabel()
         try:
-            assert(x.shape[0] == y.shape[0])
-            if x.ndim == 1: x = x[..., np.newaxis]
-            self._x = x
-            self._y = y
+            assert(data.shape[0] == label.shape[0])
+            if data.ndim == 1:
+                data = data[..., np.newaxis]
+
+            self._data_container = data_container
+            self._x = data
+            self._y = label
+        except:
+            print('Check the case number of X and y')
+
+    def SetData(self, data, label):
+        try:
+            assert(data.shape[0] == label.shape[0])
+            if data.ndim == 1:
+                data = data[..., np.newaxis]
+
+            self._x = data
+            self._y = label
         except:
             print('Check the case number of X and y')
 
@@ -81,6 +100,18 @@ class SVM(Classifier):
         else:
             return super(SVM, self).Predict(x)
 
+    def Save(self, store_path):
+        if not os.path.isdir(store_path):
+            print('The store function of SVM must be a folder path')
+            return
+
+        # Save the coefficients
+        coef_path = os.path.join(store_path, 'svm_coef.csv')
+        df = pd.DataFrame(data=self.GetModel().coef_, index=self._data_container.GetFeatureName(), columns=['Coef'])
+        df.to_csv(coef_path)
+        # TODO: Accept the data_container.
+        super(SVM, self).Save(store_path)
+
 
 class LDA(Classifier):
     def __init__(self, **kwargs):
@@ -95,6 +126,18 @@ class LDA(Classifier):
             return super(LDA, self).GetModel().predict_proba(x)[:, 1]
         else:
             return super(LDA, self).Predict(x)
+
+    def Save(self, store_path):
+        if not os.path.isdir(store_path):
+            print('The store function of SVM must be a folder path')
+            return
+
+        # Save the coefficients
+        coef_path = os.path.join(store_path, 'lda_coef.csv')
+        df = pd.DataFrame(data=self.GetModel().coef_, index=self._data_container.GetFeatureName(), columns=['Coef'])
+        df.to_csv(coef_path)
+        # TODO: Accept the data_container.
+        super(LDA, self).Save(store_path)
 
 class RandomForest(Classifier):
     def __init__(self, **kwargs):
