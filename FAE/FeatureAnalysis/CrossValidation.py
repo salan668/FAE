@@ -95,7 +95,7 @@ class CrossValidation:
         total_pred = np.asarray(val_pred_list, dtype=np.float32)
         val_metric = EstimateMetirc(total_pred, total_label, 'val')
 
-        self.__classifier.SetData(data, label)
+        self.__classifier.SetDataContainer(data_container)
         self.__classifier.Fit()
 
         test_metric = {}
