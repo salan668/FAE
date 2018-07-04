@@ -106,10 +106,13 @@ class SVM(Classifier):
             return
 
         # Save the coefficients
-        coef_path = os.path.join(store_path, 'svm_coef.csv')
-        df = pd.DataFrame(data=self.GetModel().coef_, index=self._data_container.GetFeatureName(), columns=['Coef'])
-        df.to_csv(coef_path)
-        # TODO: Accept the data_container.
+        try:
+            coef_path = os.path.join(store_path, 'svm_coef.csv')
+            df = pd.DataFrame(data=np.transpose(self.GetModel().coef_), index=self._data_container.GetFeatureName(), columns=['Coef'])
+            df.to_csv(coef_path)
+        except:
+            print("Not support Coef.")
+
         super(SVM, self).Save(store_path)
 
 
@@ -133,10 +136,13 @@ class LDA(Classifier):
             return
 
         # Save the coefficients
-        coef_path = os.path.join(store_path, 'lda_coef.csv')
-        df = pd.DataFrame(data=self.GetModel().coef_, index=self._data_container.GetFeatureName(), columns=['Coef'])
-        df.to_csv(coef_path)
-        # TODO: Accept the data_container.
+        try:
+            coef_path = os.path.join(store_path, 'lda_coef.csv')
+            df = pd.DataFrame(data=np.transpose(self.GetModel().coef_), index=self._data_container.GetFeatureName(), columns=['Coef'])
+            df.to_csv(coef_path)
+        except:
+            print("Not support Coef.")
+
         super(LDA, self).Save(store_path)
 
 class RandomForest(Classifier):

@@ -51,7 +51,6 @@ class DataContainer:
             print('The number of positive samples is ', str(positive_number))
             print('The number of negative samples is ', str(negative_number))
 
-
     def UpdateDataByFrame(self):
         self.__case_name = list(self.__df.index)
         self.__feature_name = list(self.__df.columns)
@@ -67,6 +66,23 @@ class DataContainer:
         index = self.__case_name
 
         self.__df = pd.DataFrame(data=data, index=index, columns=header)
+
+    def RemoveUneffectiveFeatures(self):
+        removed_index = []
+        for index in range(len(self.__feature_name)):
+            vector = self._array[:, index]
+            if np.where(np.isnan(vector))[0].size > 0:
+                removed_index.append(index)
+
+        # Remove the feature name
+        removed_feature_name = [self.__feature_name[index] for index in removed_index]
+        for feature_name in removed_feature_name:
+            self.__feature_name.remove(feature_name)
+
+        new_array = np.delete(self._array, removed_index, axis=1)
+        self._array = new_array
+
+        self.UpdateFrameByData()
 
     def LoadAndGetData(self, file_path):
         self.Load(file_path)
