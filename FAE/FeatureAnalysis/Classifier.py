@@ -83,13 +83,12 @@ class Classifier:
 
 class SVM(Classifier):
     def __init__(self, **kwargs):
+        super(SVM, self).__init__()
         if not 'kernel' in kwargs.keys():
             kwargs['kernel'] = 'linear'
-
-        super(SVM, self).__init__()
         if not 'probability' in kwargs.keys():
             kwargs['probability'] = True
-        super(SVM, self).SetModel(SVC(**kwargs))
+        super(SVM, self).SetModel(SVC(random_state=42, **kwargs))
 
     def GetName(self):
         return 'SVM'
@@ -148,7 +147,7 @@ class LDA(Classifier):
 class RandomForest(Classifier):
     def __init__(self, **kwargs):
         super(RandomForest, self).__init__()
-        super(RandomForest, self).SetModel(RandomForestClassifier(**kwargs))
+        super(RandomForest, self).SetModel(RandomForestClassifier(random_state=42, **kwargs))
 
     def GetName(self):
         return 'RF'
@@ -162,7 +161,7 @@ class RandomForest(Classifier):
 class AE(Classifier):
     def __init__(self, **kwargs):
         super(AE, self).__init__()
-        super(AE, self).SetModel(MLPClassifier(**kwargs))
+        super(AE, self).SetModel(MLPClassifier(random_state=42, **kwargs))
 
     def GetName(self):
         return 'AE'

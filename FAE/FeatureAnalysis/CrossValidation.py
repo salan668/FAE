@@ -57,12 +57,15 @@ class CrossValidation:
                 temp_list.extend(info[key])
             write_info.append(temp_list)
 
+        write_info.sort()
+
         # write_info = [[key].extend(info[key]) for key in info.keys()]
         if os.path.isdir(store_path):
             store_path = os.path.join(store_path, 'cv_info.csv')
 
         with open(store_path, 'w', newline='') as csvfile:
             writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+            write_info.sort()
             writer.writerows(write_info)
 
     def Run(self, data_container, test_data_container=DataContainer(), store_folder=''):
@@ -184,10 +187,10 @@ class CrossValidationOnFeatureNumber(CrossValidation):
         for metric in metric_name_list:
             metric_ditc = {'train': [], 'val': [], 'test': [], 'name': metric}
             for feature_number in range(self.__max_feature_number):
-                metric_ditc['train'].append(train_metric_list[feature_number]['train_' + metric])
-                metric_ditc['val'].append(val_metric_list[feature_number]['val_' + metric])
+                metric_ditc['train'].append(float(train_metric_list[feature_number]['train_' + metric]))
+                metric_ditc['val'].append(float(val_metric_list[feature_number]['val_' + metric]))
                 if test_metric_list[0] != {}:
-                    metric_ditc['test'].append(test_metric_list[feature_number]['test_' + metric])
+                    metric_ditc['test'].append(float(test_metric_list[feature_number]['test_' + metric]))
             metric_list.append(metric_ditc)
 
         # Save the Relationship v.s. number of features
