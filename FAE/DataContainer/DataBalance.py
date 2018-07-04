@@ -96,13 +96,13 @@ class UpSampling(DataBalance):
         return new_data_container
 
 class SmoteSampling(DataBalance):
-    def __init__(self, data_container = DataContainer()):
+    def __init__(self, data_container = DataContainer(), **kwargs):
         super(SmoteSampling, self).__init__(data_container)
+        self.__model = SMOTE(**kwargs, random_state=0)
 
     def Run(self, store_path):
         data, label, feature_name, label_name = self.GetDataContainer().GetData()
-        rus = SMOTE(random_state=0)
-        data_resampled, label_resampled = rus.fit_sample(data, label)
+        data_resampled, label_resampled = self.__model.fit_sample(data, label)
 
         new_case_name = ['Generate' + str(index) for index in range(data_resampled.shape[0])]
         new_data_container = DataContainer(data_resampled, label_resampled, self.GetDataContainer().GetFeatureName(),

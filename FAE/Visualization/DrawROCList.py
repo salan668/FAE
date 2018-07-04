@@ -6,7 +6,7 @@ import seaborn as sns
 
 color_list = sns.color_palette('deep') + sns.color_palette('bright')
 
-def DrawROCList(pred_list, label_list, name_list='', store_path=''):
+def DrawROCList(pred_list, label_list, name_list='', store_path='', is_show=True):
     '''
     To Draw the ROC curve.
     :param pred_list: The list of the prediction.
@@ -46,4 +46,6 @@ def DrawROCList(pred_list, label_list, name_list='', store_path=''):
         elif store_path[-3:] == 'eps':
             fig.savefig(store_path, dpi=1200, format='eps')
 
-    plt.show()
+    if is_show:
+        plt.show()
+    plt.close()

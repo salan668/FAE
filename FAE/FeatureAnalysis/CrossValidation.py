@@ -11,6 +11,7 @@ from FAE.FeatureAnalysis.Classifier import Classifier
 from FAE.FeatureAnalysis.FeatureSelector import FeatureSelectPipeline, FeatureSelectByAnalysis, FeatureSelector
 from FAE.Func.Metric import EstimateMetirc
 from FAE.Visualization.PlotMetricVsFeatureNumber import DrawCurve
+from FAE.Visualization.DrawROCList import DrawROCList
 from FAE.Func.Visualization import LoadWaitBar
 
 class CrossValidation:
@@ -120,10 +121,15 @@ class CrossValidation:
             np.save(os.path.join(store_folder, 'train_label.npy'), total_train_label)
             np.save(os.path.join(store_folder, 'val_label.npy'), total_label)
 
+            DrawROCList(total_train_pred, total_train_label, store_path=os.path.join(store_folder, 'train_ROC.jpg'), is_show=False)
+            DrawROCList(total_pred, total_label, store_path=os.path.join(store_folder, 'val_ROC.jpg'), is_show=False)
+
             if test_data_container.GetArray().size > 0:
                 info.update(test_metric)
                 np.save(os.path.join(store_folder, 'test_predict.npy'), test_pred)
                 np.save(os.path.join(store_folder, 'test_label.npy'), test_label)
+                DrawROCList(test_pred, test_label, store_path=os.path.join(store_folder, 'test_ROC.jpg'),
+                            is_show=False)
 
             self.__classifier.Save(store_folder)
 
