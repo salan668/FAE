@@ -56,8 +56,8 @@ class DataContainer:
         self.__feature_name = list(self.__df.columns)
         index = self.__feature_name.index('label')
         self.__feature_name.pop(index)
-        self.__label = self.__df['label'].as_matrix()
-        self._array = self.__df[self.__feature_name].as_matrix()
+        self.__label = self.__df['label'].values
+        self._array = self.__df[self.__feature_name].values
 
     def UpdateFrameByData(self):
         data = np.concatenate((self.__label[..., np.newaxis], self._array), axis=1)
