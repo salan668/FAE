@@ -59,7 +59,7 @@ class FeatureSelector:
         return new_data_container
 
     def SelectFeatureByName(self, data_container, selected_feature_name, is_replace=False, store_path=''):
-        new_data = data_container.GetFrame()[selected_feature_name].as_matrix()
+        new_data = data_container.GetFrame()[selected_feature_name].values
 
         if is_replace:
             data_container.SetArray(new_data)
