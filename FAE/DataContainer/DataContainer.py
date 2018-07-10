@@ -30,6 +30,14 @@ class DataContainer:
         self.UpdateFrameByData()
         self.__df.to_csv(store_path)
 
+    def LoadWithoutCase(self, file_path):
+        self.__init__()
+        try:
+            self.__df = pd.read_csv(file_path, header=0)
+            self.UpdateDataByFrame()
+        except:
+            print('Check the CSV file path. ')
+
     def Load(self, file_path):
         self.__init__()
         try:
@@ -54,9 +62,17 @@ class DataContainer:
     def UpdateDataByFrame(self):
         self.__case_name = list(self.__df.index)
         self.__feature_name = list(self.__df.columns)
-        index = self.__feature_name.index('label')
+        if 'label' in self.__feature_name:
+            label_name = 'label'
+            index = self.__feature_name.index('label')
+        elif 'Label' in self.__feature_name:
+            label_name = 'Label'
+            index = self.__feature_name.index('Label')
+        else:
+            print('No "label" in the index')
+            index = np.nan
         self.__feature_name.pop(index)
-        self.__label = self.__df['label'].values
+        self.__label = self.__df[label_name].values
         self._array = self.__df[self.__feature_name].values
 
     def UpdateFrameByData(self):
@@ -83,6 +99,23 @@ class DataContainer:
         self._array = new_array
 
         self.UpdateFrameByData()
+
+    def RemoveUneffectiveCases(self):
+        removed_index = []
+        for index in range(len(self.__case_name)):
+            vector = self._array[index, :]
+            if np.where(np.isnan(vector))[0].size > 0:
+                removed_index.append(index)
+
+        # Remove the case name
+        removed_case_name = [self.__case_name[index] for index in removed_index]
+        for case_name in removed_case_name:
+            self.__case_name.remove(case_name)
+
+        new_array = np.delete(self._array, removed_index, axis=0)
+        self._array = new_array
+        new_label = np.delete(self.__label, removed_index, axis=0)
+        self.__label = new_label
 
     def LoadAndGetData(self, file_path):
         self.Load(file_path)
@@ -112,6 +145,7 @@ class DataContainer:
 
         self.UpdateDataByFrame()
 
+    ## Normalizaion
     def UsualNormalize(self, store_path='', axis=0):
         mean_value = np.average(self._array, axis=axis)
         std_value = np.std(self._array, axis=axis)

@@ -50,6 +50,7 @@ class FeatureAnalysisExplore:
                        'Yorden Index', 'sensitivity', 'specificity',
                        'positive predictive value', 'negative predictive value']
         df = pd.DataFrame(columns=column_list)
+        test_on_val_df = pd.DataFrame(columns=column_list)
         test_df = pd.DataFrame(columns=column_list)
 
         for feature_selector in self.__feature_selector_list:
@@ -64,7 +65,7 @@ class FeatureAnalysisExplore:
                 model_store_folder = os.path.join(store_folder, feature_selector.GetName() + '-' + classifier.GetName())
                 if not os.path.exists(model_store_folder):
                     os.mkdir(model_store_folder)
-                val_return_list, test_return_list = self.__cv.Run(data_container, test_data_container=test_data_container,
+                val_return_list, test_return_on_val_list, test_return_on_test_list = self.__cv.Run(data_container, test_data_container=test_data_container,
                                             store_folder=model_store_folder, metric_name_list=('auc', 'accuracy'))
 
                 if store_folder and os.path.isdir(store_folder):
@@ -75,14 +76,18 @@ class FeatureAnalysisExplore:
                     df.to_csv(store_path)
 
                     if test_data_container.GetArray().size > 0:
+                        test_on_val_auc_info = test_return_on_val_list[0]
+                        test_on_val_store_path = os.path.join(store_folder, 'test_result_on_val.csv')
+                        test_on_val_save_info = [test_on_val_auc_info[index] for index in column_list]
+                        test_on_val_df.loc[feature_selector.GetName() + '-' + classifier.GetName()] = test_on_val_save_info
+                        test_on_val_df.to_csv(test_on_val_store_path)
 
-                        test_auc_info = test_return_list[0]
-                        test_store_path = os.path.join(store_folder, 'test_result.csv')
+                        test_auc_info = test_return_on_test_list[0]
+                        test_store_path = os.path.join(store_folder, 'test_result_on_test.csv')
                         test_save_info = [test_auc_info[index] for index in column_list]
                         test_df.loc[feature_selector.GetName() + '-' + classifier.GetName()] = test_save_info
                         test_df.to_csv(test_store_path)
 
-                # return val_return_list, test_return_list
 
 
 if __name__ == '__main__':
