@@ -207,25 +207,36 @@ class CrossValidationOnFeatureNumber(CrossValidation):
                               name_list=['train', 'validation'], is_show=False,
                               store_path=os.path.join(store_folder, metric_dict['name'] + '_FeatureNum.jpg'))
 
-        return_list = []
-        test_return_list = []
+        val_return_list = []
+        test_return_max_val_list = []
+        test_return_max_test_list = []
+
         for metric_dict in metric_list:
             metric_info = {}
             new_info = val_metric_list[np.argmax(metric_dict['val'])]
             metric_info['feature_number'] = np.argmax(metric_dict['val']) + 1
             for key in new_info.keys():
                 metric_info[key[4:]] = new_info[key]
-            return_list.append(dict(sorted(metric_info.items(), key=lambda item:item[0])))
+            val_return_list.append(dict(sorted(metric_info.items(), key=lambda item:item[0])))
 
             if test_metric_list[0] != {}:
+                # Max the validation
+                test_metric_info = {}
+                test_new_info = test_metric_list[np.argmax(metric_dict['val'])]
+                test_metric_info['feature_number'] = np.argmax(metric_dict['val']) + 1
+                for key in test_new_info.keys():
+                    test_metric_info[key[5:]] = test_new_info[key]
+                test_return_max_val_list.append(dict(sorted(test_metric_info.items(), key=lambda item: item[0])))
+
+                # Max the testing data
                 test_metric_info = {}
                 test_new_info = test_metric_list[np.argmax(metric_dict['test'])]
                 test_metric_info['feature_number'] = np.argmax(metric_dict['test']) + 1
                 for key in test_new_info.keys():
                     test_metric_info[key[5:]] = test_new_info[key]
-                test_return_list.append(dict(sorted(test_metric_info.items(), key=lambda item:item[0])))
+                test_return_max_test_list.append(dict(sorted(test_metric_info.items(), key=lambda item:item[0])))
 
-        return return_list, test_return_list
+        return val_return_list, test_return_max_val_list, test_return_max_test_list
 
 
 

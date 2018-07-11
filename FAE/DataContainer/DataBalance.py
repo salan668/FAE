@@ -16,6 +16,9 @@ from FAE.DataContainer.DataContainer import DataContainer
 
 
 class DataBalance:
+    '''
+    To deal with the data imbalance.
+    '''
     def __init__(self, data_container = DataContainer()):
         self.__data_container = data_container
 
