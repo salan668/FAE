@@ -51,13 +51,15 @@ python Example\example_diff_method.py
 
 ### Architecutre of Project 
 - **DataContainer**
-    - **Data Container**. The structure to contain the data, which also includes methods like saving/loading and data normaliztion processing. 
-    - **DataSeperate**. Including functions to seperate data into training part and testing part. 
+    - **DataContainer**. The structure to contain the data, which also includes methods like saving/loading and data normaliztion processing.
+    - **DataSeperate**. Including functions to seperate data into training part and testing part.
+    - **DataBalance**, The class to deal with data imbalance. Now we provided Under-sampling, Over-sampling, and SMOTE method.
 - **Feature Analysis**
     - **Classifier**. The classifier to develop the model, including SVM, AE, Random Forests, LDA. 
     - **CrossValidation**. The CV model to estimate the model. Return the metrics
     - **FeturePipeline**. The class to estimate the model with different feature selected method and classifier. 
-    - **FeatureSelector**. The class to select features, which including 1) remove non-number features, e.g. the version of the pyradiomics; 2) remove non-useful features, e.g. the VolumnNum; 3) different method to select features, like ANOVA, PCA, RFE, Relief. 
+    - **FeatureSelector**. The class to select features, which including 1) remove non-number features, e.g. the version of the pyradiomics; 2) remove non-useful features, e.g. the VolumnNum; 3) different method to select features, like ANOVA, RFE, Relief.
+    - **DimensionReduction**, The class provided the feature decomposition, like PCA.
 - **Image2Feature**
     - **RadiomicsFeatureExtractor**. This class help extract features from image and ROI with batch process. This class should be more "smart" in the future. 
 - **Visulization**. 

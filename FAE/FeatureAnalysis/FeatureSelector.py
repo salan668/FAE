@@ -384,43 +384,6 @@ class FeatureSelectByRFE(FeatureSelectByAnalysis):
 
         return new_data_container
 
-class FeatureSelectByPCA(FeatureSelectByAnalysis):
-    def __init__(self, selected_feature_number=1):
-        super(FeatureSelectByPCA, self).__init__()
-        self.__selected_feature_number = selected_feature_number
-
-    def SetSelectedFeatureNumber(self, selected_feature_number):
-        self.__selected_feature_number = selected_feature_number
-
-    def GetName(self):
-        return 'PCA'
-
-    def Run(self, data_container, store_folder=''):
-        data = data_container.GetArray()
-        data /= np.linalg.norm(data, ord=2, axis=0)
-
-        if data.shape[1] < self.__selected_feature_number:
-            print('The number of features in data container is smaller than the required number')
-            self.__selected_feature_number = data.shape[1]
-
-        fs = PCA(n_components=self.__selected_feature_number)
-        fs.fit(data)
-        sub_data = fs.transform(data)
-        sub_feature_name = ['PCA_feature_'+str(index) for index in range(1, self.__selected_feature_number + 1 )]
-
-        new_data_container = deepcopy(data_container)
-        new_data_container.SetArray(sub_data)
-        new_data_container.SetFeatureName(sub_feature_name)
-        new_data_container.UpdateFrameByData()
-        if store_folder and os.path.isdir(store_folder):
-            feature_store_path = os.path.join(store_folder, 'selected_feature.csv')
-            featureinfo_store_path = os.path.join(store_folder, 'feature_select_info.csv')
-
-            new_data_container.Save(feature_store_path)
-            SaveSelectInfo(new_data_container, featureinfo_store_path, is_merge=True)
-
-        return new_data_container
-
 ################################################################
 
 class FeatureSelectPipeline(FeatureSelector):
