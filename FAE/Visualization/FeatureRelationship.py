@@ -110,8 +110,10 @@ def DrawFeatureRelationshipAccordingToCsvFile(file_path, selected_feature_name_l
     except:
         print('The selected feature is not in the data container.')
         return
-
-    DrawValueRelationship(data[:, index], selected_feature_name_list, label[index], label_name_list, store_path)
+    result_data = []
+    for sub_index in index:
+        result_data.append(data[:, sub_index])
+    DrawValueRelationship(result_data, selected_feature_name_list, label, label_name_list, store_path)
 
 
 if __name__ == '__main__':
