@@ -265,7 +265,7 @@ class FeatureSelectByRelief(FeatureSelectByAnalysis):
             print('The number of features in data container is smaller than the required number')
             self.SetSelectedFeatureNumber(data.shape[1])
 
-        relief = ReliefF(n_features_to_keep=self.GetSelectedFeatureNumber())
+        relief = ReliefF(n_neighbors=data.shape[0]-1, n_features_to_keep=self.GetSelectedFeatureNumber())
         relief.fit(data, label)
         selected_feature_index = relief.get_support()
         score = relief.get_score()
