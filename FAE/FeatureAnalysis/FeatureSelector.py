@@ -161,87 +161,34 @@ class RemoveCosSimilarityFeatures(FeatureSelector):
 
         return new_data_container
 
-class FeatureSelectByKeyName(FeatureSelector):
-    def __init__(self, selected_list, method='or'):
-        super(FeatureSelectByKeyName, self).__init__()
-        self.__selected_list = selected_list
-        self.__method = method
+class FeatureSelectBySubName(FeatureSelector):
+    def __init__(self, sub_name_list):
+        super(FeatureSelectBySubName, self).__init__()
+        if isinstance(sub_name_list, str):
+            sub_name_list = [sub_name_list]
 
-    def __SelectFeatureName(self, data_container):
-        temp_df = pd.DataFrame(data=data_container.GetArray(),
-                               columns=data_container.GetFeatureName(),
-                               index=data_container.GetCaseName())
-        sub_names = temp_df.columns.str.split('_', expand=True)
+        self.__sub_name_list = sub_name_list
 
-        feature_level = sub_names.levels
-        feature_label = sub_names.labels
+    def GetSelectFeaturedNameBySubName(self, data_container):
+        all_feature_name = data_container.GetFeatureName()
+        selected_feature_name_list = []
+        for selected_sub_name in self.__sub_name_list:
+            for feature_name in all_feature_name:
+                if selected_sub_name in feature_name:
+                    selected_feature_name_list.append(feature_name)
 
-        feature_table = []
-        for i in range(len(feature_level)):
-            fea_list = feature_level[i]
-            fea_name_no = pd.Series([i for i in range(len(fea_list))], index=fea_list)
-            feature_table.append(fea_name_no)
-
-        return temp_df.columns, feature_level, feature_label, feature_table
-
-    # coding the selection like [False, False, True], [False, True, True], [True, False, True]
-    # depend on SelectFeatures.
-    # need fean_label and feacorres_table produced by SplitFeatureName
-    def __CodeSelection(self, sele_list, fean_label, fea_corres_table):
-        seles = []
-        for i in range(len(sele_list)):
-            if sele_list:
-                for fean in sele_list[i]:
-                    sele = (fean_label[i] == fea_corres_table[i][fean])
-                    seles.append(sele)
-        if not seles:
-            print('No paired selection.')
-            return -1
-        return seles
-
-    # according to the codedesele like
-    # [[False, False, True], [False, True, True], [True, False, True]]
-    # need codedsele produced by CodeSelection.
-    def __MergeSelection(self, codedsele):
-        sele_sum = codedsele[0]
-
-        if self.__method == 'and':
-            for sele in codedsele:
-                sele_sum = (sele & sele_sum)
-                # print("sele_sum:",sele_sum)
-        if self.__method == 'or':
-            for sele in codedsele:
-                sele_sum = (sele | sele_sum)
-                # print("sele_sum:",sele_sum)
-
-        # if all boolean in sele_sum are False print no matching
-        sele_sum_list = sele_sum.tolist()
-        # print ('True in sele_sum:',sele_sum_list.count(True))
-        if sele_sum_list.count(True) == 0:
-            # print('No matching column\'s name.')
-            return -1
-
-        return sele_sum
-
-    #### Feature Split was coded by Lao Wang
-    # May-09-18.
-    # depend on CodeSelection and MergeSelection
-    def GetSelectFeaturedNameByKeyName(self, data_container):
-        columns, feature_level, feature_label, feature_table = self.__SelectFeatureName(data_container)
-        codedsele = self.__CodeSelection(self.__selected_list, feature_label, feature_table)
-        selection = self.__MergeSelection(codedsele)
-        selection_columns = columns[selection]
-        return list(selection_columns)
+        selected_feature_name_list = list(sorted(set(selected_feature_name_list)))
+        return selected_feature_name_list
 
     def Run(self, data_container, store_folder=''):
-        new_data_container = self.SelectFeatureByName(data_container, self.GetSelectFeaturedNameByKeyName(data_container), is_replace=False)
+        new_data_container = self.SelectFeatureByName(data_container, self.GetSelectFeaturedNameBySubName(data_container), is_replace=False)
         if store_folder and os.path.isdir(store_folder):
             feature_store_path = os.path.join(store_folder, 'selected_feature.csv')
             featureinfo_store_path = os.path.join(store_folder, 'feature_select_info.csv')
 
             new_data_container.Save(feature_store_path)
             SaveSelectInfo(new_data_container, featureinfo_store_path, is_merge=False)
-
+        
         return new_data_container
 
 #################################################################
@@ -429,7 +376,7 @@ if __name__ == '__main__':
     print(data_container.GetArray().shape)
     print(data_container.GetFeatureName())
 
-    fs = FeatureSelectByKeyName([[], [], ['shape', 'firstorder', 'glrlm'], []], method='or')
+    fs = FeatureSelectBySubName(['shape', 'ADC'])
 
     output = fs.Run(data_container)
     print(output.GetFeatureName())

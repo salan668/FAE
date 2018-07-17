@@ -28,7 +28,7 @@ class DataContainer:
 
     def Save(self, store_path):
         self.UpdateFrameByData()
-        self.__df.to_csv(store_path)
+        self.__df.to_csv(store_path, index='CaseName')
 
     def LoadWithoutCase(self, file_path):
         self.__init__()
@@ -116,6 +116,8 @@ class DataContainer:
         self._array = new_array
         new_label = np.delete(self.__label, removed_index, axis=0)
         self.__label = new_label
+
+        self.UpdateFrameByData()
 
     def LoadAndGetData(self, file_path):
         self.Load(file_path)
