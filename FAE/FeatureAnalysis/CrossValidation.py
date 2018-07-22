@@ -18,7 +18,7 @@ from FAE.Func.Visualization import LoadWaitBar
 class CrossValidation:
     '''
     CrossValidation is the base class to explore the hpyer-parameters. Now it supported Leave-one-lout (LOO), 10-folder,
-    and 5-folders. A classifider nust be set before run CV. A training metric and validation metric will be returned.
+    and 5-folders. A classifier must be set before run CV. A training metric and validation metric will be returned.
     If a testing data container was also set, the test metric will be return.
     '''
     def __init__(self, cv_method):
@@ -245,7 +245,6 @@ class CrossValidationOnFeatureNumber(CrossValidation):
                 test_return_max_test_list.append(dict(sorted(test_metric_info.items(), key=lambda item:item[0])))
 
         return val_return_list, test_return_max_val_list, test_return_max_test_list
-
 
 
 
