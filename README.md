@@ -1,3 +1,17 @@
+> Due to some reasons, FAE will not be updated now. Thanks for everyone's STAR and FORK. Especially, thank **jmtaysom** for giving the suggestion of the name of the project; thank **Jing** and **Yi-lai** for coding; thank **Prof. Yang** for the desgning of the project and thank **Dr. Yu-dong Zhang** and **Dr. Xu Yan** for providing the demo data. 
+>
+> If you have any interests or co-opration intention, please feel free to connect with me. 
+>
+> Thank you.
+>
+> Sincerely, 
+>
+> Yang Song
+>
+> songyangmri@gmail.com
+>
+> BTW: Maybe this project will be activated in the future. :)
+
 # FAE
 
 Feature Analysis Explorer (FAE) can help researchers develop a classification model with comparision among diffferent methods. This project was inspired on the [Radiomics](http://www.radiomics.io/), and provides some functions to help extract features with batch process.
