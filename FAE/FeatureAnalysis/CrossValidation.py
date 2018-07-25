@@ -3,6 +3,7 @@ import numpy as np
 import os
 import numbers
 import csv
+import pandas as pd
 
 from sklearn.model_selection import KFold, StratifiedKFold, LeaveOneOut
 
@@ -17,7 +18,7 @@ from FAE.Func.Visualization import LoadWaitBar
 class CrossValidation:
     '''
     CrossValidation is the base class to explore the hpyer-parameters. Now it supported Leave-one-lout (LOO), 10-folder,
-    and 5-folders. A classifider nust be set before run CV. A training metric and validation metric will be returned.
+    and 5-folders. A classifier must be set before run CV. A training metric and validation metric will be returned.
     If a testing data container was also set, the test metric will be return.
     '''
     def __init__(self, cv_method):
@@ -44,7 +45,7 @@ class CrossValidation:
     def GetCV(self):
         return self.__cv
 
-    def SaveCVInfo(self, info, store_path):
+    def SaveResult(self, info, store_path):
         info = dict(sorted(info.items(), key= lambda item: item[0]))
 
         write_info = []
@@ -61,7 +62,7 @@ class CrossValidation:
 
         # write_info = [[key].extend(info[key]) for key in info.keys()]
         if os.path.isdir(store_path):
-            store_path = os.path.join(store_path, 'cv_info.csv')
+            store_path = os.path.join(store_path, 'result.csv')
 
         with open(store_path, 'w', newline='') as csvfile:
             writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
@@ -73,8 +74,11 @@ class CrossValidation:
 
         data = data_container.GetArray()
         label = data_container.GetLabel()
+        val_index_store = []
 
         for train_index, val_index in self.__cv.split(data, label):
+            val_index_store.extend(val_index)
+
             train_data = data[train_index, :]
             train_label = label[train_index]
             val_data = data[val_index, :]
@@ -124,6 +128,10 @@ class CrossValidation:
             np.save(os.path.join(store_folder, 'train_label.npy'), total_train_label)
             np.save(os.path.join(store_folder, 'val_label.npy'), total_label)
 
+            cv_info_path = os.path.join(store_folder, 'cv_info.csv')
+            df = pd.DataFrame(data=val_index_store)
+            df.to_csv(cv_info_path)
+
             DrawROCList(total_train_pred, total_train_label, store_path=os.path.join(store_folder, 'train_ROC.jpg'), is_show=False)
             DrawROCList(total_pred, total_label, store_path=os.path.join(store_folder, 'val_ROC.jpg'), is_show=False)
 
@@ -136,7 +144,7 @@ class CrossValidation:
 
             self.__classifier.Save(store_folder)
 
-            self.SaveCVInfo(info, store_folder)
+            self.SaveResult(info, store_folder)
 
         return train_metric, val_metric, test_metric
 
@@ -237,7 +245,6 @@ class CrossValidationOnFeatureNumber(CrossValidation):
                 test_return_max_test_list.append(dict(sorted(test_metric_info.items(), key=lambda item:item[0])))
 
         return val_return_list, test_return_max_val_list, test_return_max_test_list
-
 
 
 

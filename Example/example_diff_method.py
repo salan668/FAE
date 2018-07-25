@@ -3,7 +3,7 @@ import os
 
 from FAE.DataContainer.DataContainer import DataContainer
 from FAE.FeatureAnalysis.FeatureSelector import RemoveSameFeatures, RemoveCosSimilarityFeatures, FeatureSelectPipeline
-from FAE.FeatureAnalysis.FeatureSelector import FeatureSelectByANOVA, FeatureSelectByRFE, FeatureSelectByPCA, FeatureSelectByRelief
+from FAE.FeatureAnalysis.FeatureSelector import FeatureSelectByANOVA, FeatureSelectByRFE, FeatureSelectByRelief
 from FAE.FeatureAnalysis.Classifier import SVM, RandomForest, AE, LDA
 from FAE.FeatureAnalysis.CrossValidation import CrossValidationOnFeatureNumber
 from FAE.FeatureAnalysis.FeaturePipeline import FeatureAnalysisExplore
@@ -16,13 +16,13 @@ if __name__ == '__main__':
     feature_selector_list.append(FeatureSelectPipeline([RemoveSameFeatures(), RemoveCosSimilarityFeatures(), FeatureSelectByANOVA()]))
     feature_selector_list.append(FeatureSelectPipeline([RemoveSameFeatures(), RemoveCosSimilarityFeatures(), FeatureSelectByRelief()]))
     feature_selector_list.append(FeatureSelectPipeline([RemoveSameFeatures(), RemoveCosSimilarityFeatures(), FeatureSelectByRFE()]))
-    feature_selector_list.append(FeatureSelectPipeline([RemoveSameFeatures(), RemoveCosSimilarityFeatures(), FeatureSelectByPCA()]))
+
 
     # Set Classifier List
     classifier_list = []
     classifier_list.append(LDA())
     classifier_list.append(SVM())
-    classifier_list.append(AE(max_iter=1000))
+    classifier_list.append(AE(max_iter=800, early_stopping=True))
     classifier_list.append(RandomForest())
 
     cv = CrossValidationOnFeatureNumber('5-folder')

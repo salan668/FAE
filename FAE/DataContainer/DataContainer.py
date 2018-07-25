@@ -28,7 +28,7 @@ class DataContainer:
 
     def Save(self, store_path):
         self.UpdateFrameByData()
-        self.__df.to_csv(store_path)
+        self.__df.to_csv(store_path, index='CaseName')
 
     def LoadWithoutCase(self, file_path):
         self.__init__()
@@ -117,6 +117,8 @@ class DataContainer:
         new_label = np.delete(self.__label, removed_index, axis=0)
         self.__label = new_label
 
+        self.UpdateFrameByData()
+
     def LoadAndGetData(self, file_path):
         self.Load(file_path)
         return self.GetData()
@@ -134,7 +136,7 @@ class DataContainer:
     def SetFeatureName(self, feature_name): self.__feature_name = feature_name
     def SetCaseName(self, case_name): self.__case_name = case_name
     def SetFrame(self, frame):
-        if 'label' in list(frame.columns):
+        if 'label' in list(frame.columns) or 'Label' in list(frame.columns):
             self.__df = frame
         else:
             if len(frame.index.tolist()) != self.__label.size:
