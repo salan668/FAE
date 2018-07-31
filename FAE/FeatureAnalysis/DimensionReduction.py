@@ -57,9 +57,9 @@ class DimensionReductionByPCA(DimensionReduction):
         data = data_container.GetArray()
         data /= np.linalg.norm(data, ord=2, axis=0)
 
-        if data.shape[1] < super(DimensionReductionByPCA, self).GetRemainedNumber():
+        if data.shape[1] > super(DimensionReductionByPCA, self).GetRemainedNumber():
             print('The number of features in data container is smaller than the required number')
-            super(DimensionReductionByPCA, self).SetRemainedNumber(data.shape[1])
+            self.SetRemainedNumber(np.min(data.shape))
 
         self.GetModel().fit(data)
         sub_data = self.GetModel().transform(data)

@@ -307,7 +307,7 @@ class OnePipeline:
 
         if self.__dimension_reduction:
             raw_train_data_container = self.__dimension_reduction.Run(raw_train_data_container, store_folder)
-            if len(raw_train_data_container.GetFeatureName()) == len(train_data_container.GetFeatureName()):
+            if len(raw_train_data_container.GetFeatureName()) == np.min([len(train_data_container.GetFeatureName()), len(train_data_container.GetCaseName())]):
                 raw_test_data_conainer = self.__dimension_reduction.Run(raw_test_data_conainer)
 
         if self.__feature_selector:
