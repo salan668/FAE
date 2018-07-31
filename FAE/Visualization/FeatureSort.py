@@ -6,7 +6,8 @@ import seaborn as sns
 color = sns.color_palette('deep') + sns.color_palette('bright')
 
 
-def FeatureSort(feature_name, group=np.array(()), group_name=[], value=[], store_path='', is_sort=True):
+def FeatureSort(feature_name, group=np.array(()), group_name=[], value=[], store_path='',
+                is_sort=True, is_show=True, fig=plt.figure()):
     '''
     Draw the plot of the sorted feature, an option is to draw different color according to the group and group value.
 
@@ -42,28 +43,35 @@ def FeatureSort(feature_name, group=np.array(()), group_name=[], value=[], store
         sub_group[group[index], index] = value[index]
     y = range(len(feature_name))
 
-    for index in range(sub_group.shape[0]):
-        plt.barh(y, sub_group[index, :], color=color[index])
+    fig.clear()
+    ax = fig.add_subplot(111)
 
-    plt.yticks(range(len(feature_name)), feature_name)
-    plt.xticks([])
+    for index in range(sub_group.shape[0]):
+        ax.barh(y, sub_group[index, :], color=color[index])
+
+    ax.set_yticks(range(len(feature_name)))
+    ax.set_yticklabels(feature_name)
+    ax.set_xticks([])
     if len(group_name) > 1:
-        plt.legend(group_name)
+        ax.legend(group_name)
 
     if store_path:
-        plt.tight_layout()
+        fig.set_tight_layout(True)
         if store_path[-3:] == 'jpg':
             plt.savefig(store_path, dpi=300, format='jpeg')
         elif store_path[-3:] == 'eps':
             plt.savefig(store_path, dpi=1200, format='eps')
 
-    plt.show()
+    if is_show:
+        fig.show()
+
+    return ax
 
 def ShortFeatureFullName(feature_full_name):
     if len(feature_full_name) <= 5:
         return feature_full_name
 
-    sub = re.findall('[A-Z]', feature_full_name)
+    sub = re.findall("[A-Z]", feature_full_name)
     if len(sub) == 1:
         return feature_full_name[:5]
     elif len(sub) == 0:
@@ -132,14 +140,56 @@ def SeperateRadiomicsFeatures(feature_name):
 
     return sub_feature_name, np.asarray(group, dtype=np.uint8), group_name
 
-def SortRadiomicsFeature(feature_name, value=[], store_path=''):
+def SortRadiomicsFeature(feature_name, value=[], store_path='', is_show=False, fig=plt.figure()):
     sub_feature_name, group, group_name = SeperateRadiomicsFeatures(feature_name)
-    FeatureSort(sub_feature_name, group, group_name, value, store_path)
+    FeatureSort(sub_feature_name, group, group_name, value, store_path, is_show=is_show, fig=fig)
 
+def GeneralFeatureSort(feature_name, value=[], store_path='', is_sort=True, max_num=-1, is_show=True, fig=plt.figure()):
+    if not isinstance(value, list):
+        value = list(value)
+    if value == []:
+        value = [len(feature_name) - index for index in range(len(feature_name))]
+
+    if is_sort:
+        sort_index = sorted(range(len(value)), key=lambda k: value[k], reverse=True)
+
+        value = [value[index] for index in sort_index]
+        feature_name = [feature_name[index] for index in sort_index]
+
+    if max_num > 0:
+        value = value[:max_num]
+        feature_name = feature_name[:max_num]
+
+    fig.clear()
+    ax = fig.add_subplot(111)
+
+    ax.barh(range(len(feature_name)), value, color=color[0])
+    ax.set_yticks(range(len(feature_name)))
+    ax.set_yticklabels(feature_name)
+    ax.set_xticks([])
+
+    if store_path:
+        fig.set_tight_layout(True)
+        if store_path[-3:] == 'jpg':
+            plt.savefig(store_path, dpi=300, format='jpeg')
+        elif store_path[-3:] == 'eps':
+            plt.savefig(store_path, dpi=1200, format='eps')
+
+    if is_show:
+        fig.show()
+
+    return ax
 
 if __name__ == '__main__':
-    feature_name = ['DE', 'SAE', 'SZNUM', 'JE', 'Id']
-    group = [0, 1, 1, 0, 0]
-    group_name = ['GLCM', 'GLSZM']
-    value = 0.1, 0.5, 0.9, 0.2, 0.1
-    FeatureSort(feature_name, group, group_name, value)
+    # feature_name = ['DE', 'SAE', 'SZNUM', 'JE', 'Id']
+    # group = [0, 1, 1, 0, 0]
+    # group_name = ['GLCM', 'GLSZM']
+    # value = 0.1, 0.5, 0.9, 0.2, 0.1
+    # FeatureSort(feature_name, group, group_name, value)
+
+    import pandas as pd
+    df = pd.read_csv(r'..\..\Example\pipeline\Norm0CenterUnit_Cos_ANOVA_5_LDA\anova_sort.csv', index_col=0)
+    feature_name = list(df.index)
+    value = list(df['F'])
+    new_feature_name = [ShortFeatureFullName(index) for index in feature_name]
+    GeneralFeatureSort(new_feature_name, value, max_num=10, is_show=True)

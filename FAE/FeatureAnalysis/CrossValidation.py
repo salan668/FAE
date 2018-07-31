@@ -21,7 +21,7 @@ class CrossValidation:
     and 5-folders. A classifier must be set before run CV. A training metric and validation metric will be returned.
     If a testing data container was also set, the test metric will be return.
     '''
-    def __init__(self, cv_method):
+    def __init__(self, cv_method='5-folder'):
         self.__classifier = Classifier()
 
         if cv_method == 'LOO':
@@ -40,7 +40,12 @@ class CrossValidation:
         return self.__classifier
 
     def SetCV(self, cv):
-        self.__cv = cv
+        if cv == 'LOO':
+            self.__cv = LeaveOneOut
+        elif cv == '10-folder':
+            self.__cv = StratifiedKFold(10)
+        elif cv == '5-folder':
+            self.__cv = StratifiedKFold(5)
 
     def GetCV(self):
         return self.__cv
@@ -108,17 +113,16 @@ class CrossValidation:
 
         test_metric = {}
         if test_data_container.GetArray().size > 0:
-            selected_feature_name = data_container.GetFeatureName()
-            fs = FeatureSelector()
-            test_data_container = fs.SelectFeatureByName(test_data_container, selected_feature_name)
-
             test_data = test_data_container.GetArray()
             test_label = test_data_container.GetLabel()
             test_pred = self.__classifier.Predict(test_data)
 
             test_metric = EstimateMetirc(test_pred, test_label, 'test')
 
-        if store_folder and os.path.isdir(store_folder):
+        if store_folder:
+            if not os.path.exists(store_folder):
+                os.mkdir(store_folder)
+
             info = {}
             info.update(train_metric)
             info.update(val_metric)
@@ -143,7 +147,6 @@ class CrossValidation:
                             is_show=False)
 
             self.__classifier.Save(store_folder)
-
             self.SaveResult(info, store_folder)
 
         return train_metric, val_metric, test_metric

@@ -4,8 +4,11 @@ import os
 import pandas as pd
 from sklearn.svm import SVC
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
 from sklearn.neural_network import MLPClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.gaussian_process import GaussianProcessClassifier
+from sklearn.naive_bayes import GaussianNB
 
 from abc import ABCMeta,abstractmethod
 from FAE.DataContainer.DataContainer import DataContainer
@@ -86,9 +89,13 @@ class SVM(Classifier):
         super(SVM, self).__init__()
         if not 'kernel' in kwargs.keys():
             kwargs['kernel'] = 'linear'
+        if not 'C' in kwargs.keys():
+            kwargs['C'] = 1.0
         if not 'probability' in kwargs.keys():
             kwargs['probability'] = True
         super(SVM, self).SetModel(SVC(random_state=42, **kwargs))
+
+        self.__name = 'SVM_'+ kwargs['kernel'] + '_C_' + '{:.3f}'.format(kwargs['C'])
 
     def GetName(self):
         return 'SVM'
@@ -113,7 +120,6 @@ class SVM(Classifier):
             print("Not support Coef.")
 
         super(SVM, self).Save(store_path)
-
 
 class LDA(Classifier):
     def __init__(self, **kwargs):
@@ -161,6 +167,8 @@ class RandomForest(Classifier):
 class AE(Classifier):
     def __init__(self, **kwargs):
         super(AE, self).__init__()
+        if not 'early_stopping' in kwargs.keys():
+            kwargs['early_stopping'] = True
         super(AE, self).SetModel(MLPClassifier(random_state=42, **kwargs))
 
     def GetName(self):
@@ -172,6 +180,61 @@ class AE(Classifier):
         else:
             return super(AE, self).Predict(x)
 
+class AdaBoost(Classifier):
+    def __init__(self, **kwargs):
+        super(AdaBoost, self).__init__()
+        super(AdaBoost, self).SetModel(AdaBoostClassifier(random_state=42, **kwargs))
+
+    def GetName(self):
+        return 'AB'
+
+    def Predict(self, x, is_probability=True):
+        if is_probability:
+            return super(AdaBoost, self).GetModel().predict_proba(x)[:, 1]
+        else:
+            return super(AdaBoost, self).Predict(x)
+
+class DecisionTree(Classifier):
+    def __init__(self, **kwargs):
+        super(DecisionTree, self).__init__()
+        super(DecisionTree, self).SetModel(DecisionTreeClassifier(random_state=42, **kwargs))
+
+    def GetName(self):
+        return 'DT'
+
+    def Predict(self, x, is_probability=True):
+        if is_probability:
+            return super(DecisionTree, self).GetModel().predict_proba(x)[:, 1]
+        else:
+            return super(DecisionTree, self).Predict(x)
+
+class GaussianProcess(Classifier):
+    def __init__(self, **kwargs):
+        super(GaussianProcess, self).__init__()
+        super(GaussianProcess, self).SetModel(GaussianProcessClassifier(random_state=42, **kwargs))
+
+    def GetName(self):
+        return 'GP'
+
+    def Predict(self, x, is_probability=True):
+        if is_probability:
+            return super(GaussianProcess, self).GetModel().predict_proba(x)[:, 1]
+        else:
+            return super(GaussianProcess, self).Predict(x)
+
+class NativeBayes(Classifier):
+    def __init__(self, **kwargs):
+        super(NativeBayes, self).__init__()
+        super(NativeBayes, self).SetModel(GaussianNB(**kwargs))
+
+    def GetName(self):
+        return 'NB'
+
+    def Predict(self, x, is_probability=True):
+        if is_probability:
+            return super(NativeBayes, self).GetModel().predict_proba(x)[:, 1]
+        else:
+            return super(NativeBayes, self).Predict(x)
 
 
 if __name__ == '__main__':

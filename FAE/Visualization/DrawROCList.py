@@ -6,7 +6,7 @@ import seaborn as sns
 
 color_list = sns.color_palette('deep') + sns.color_palette('bright')
 
-def DrawROCList(pred_list, label_list, name_list='', store_path='', is_show=True):
+def DrawROCList(pred_list, label_list, name_list='', store_path='', is_show=True, fig=plt.figure()):
     '''
     To Draw the ROC curve.
     :param pred_list: The list of the prediction.
@@ -24,28 +24,31 @@ def DrawROCList(pred_list, label_list, name_list='', store_path='', is_show=True
     if not isinstance(name_list, list):
         name_list = [name_list]
 
-    fig = plt.figure()
+    fig.clear()
+    axes = fig.add_subplot(1, 1, 1)
+
     for index in range(len(pred_list)):
         fpr, tpr, threshold = roc_curve(label_list[index], pred_list[index])
         auc = roc_auc_score(label_list[index], pred_list[index])
         name_list[index] = name_list[index] + (' (AUC = %0.3f)' % auc)
 
-        plt.plot(fpr, tpr, color=color_list[index], label='ROC curve (AUC = %0.3f)' % auc,linewidth=3)
+        axes.plot(fpr, tpr, color=color_list[index], label='ROC curve (AUC = %0.3f)' % auc,linewidth=3)
 
-    plt.plot([0, 1], [0, 1], color='navy', linestyle='--')
-    plt.xlim([0.0, 1.0])
-    plt.ylim([0.0, 1.05])
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
-    plt.title('Receiver operating characteristic curve')
-    plt.legend(name_list, loc="lower right")
+    axes.plot([0, 1], [0, 1], color='navy', linestyle='--')
+    axes.set_xlim(0.0, 1.0)
+    axes.set_ylim(0.0, 1.05)
+    axes.set_xlabel('False Positive Rate')
+    axes.set_ylabel('True Positive Rate')
+    axes.set_title('Receiver operating characteristic curve')
+    axes.legend(name_list, loc="lower right")
     if store_path:
-        plt.tight_layout()
+        fig.set_tight_layout(True)
         if store_path[-3:] == 'jpg':
             fig.savefig(store_path, dpi=300, format='jpeg')
         elif store_path[-3:] == 'eps':
             fig.savefig(store_path, dpi=1200, format='eps')
 
     if is_show:
-        plt.show()
-    plt.close()
+        axes.show()
+
+    return axes
