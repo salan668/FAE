@@ -8,9 +8,10 @@ from FAE.DataContainer.DataContainer import DataContainer
 from sklearn.decomposition import PCA
 
 class DimensionReduction:
-    def __init__(self, model=None, number=0):
+    def __init__(self, model=None, number=0, is_transform=False):
         self.__model = model
         self.__remained_number = number
+        self.__is_transform=is_transform
 
     def SetModel(self, model):
         self.__model = model
@@ -24,26 +25,15 @@ class DimensionReduction:
     def GetRemainedNumber(self):
         return self.__remained_number
 
-    def Transform(self, data_container, store_path=''):
-        data = data_container.GetArray()
-        sub_feature_name = ['PCA_feature_' + str(index) for index in range(1, self.__remained_number + 1)]
-        try:
-            sub_data = self.__model.transform(data)
-            new_data_container = deepcopy(data_container)
-            new_data_container.SetArray(sub_data)
-            new_data_container.SetFeatureName(sub_feature_name)
-            new_data_container.UpdateFrameByData()
+    def SetTransform(self, is_transform):
+        self.__is_transform = is_transform
 
-            if store_path:
-                new_data_container.Save(store_path)
-
-            return new_data_container
-        except:
-            print('Cannot transform the data.')
+    def GetTransform(self):
+        return self.__is_transform
 
 class DimensionReductionByPCA(DimensionReduction):
     def __init__(self, number=0):
-        super(DimensionReductionByPCA, self).__init__(number=number)
+        super(DimensionReductionByPCA, self).__init__(number=number, is_transform=True)
         super(DimensionReductionByPCA, self).SetModel(PCA(n_components=super(DimensionReductionByPCA, self).GetRemainedNumber()))
 
     def GetName(self):
@@ -53,9 +43,25 @@ class DimensionReductionByPCA(DimensionReduction):
         super(DimensionReductionByPCA, self).SetRemainedNumber(number)
         super(DimensionReductionByPCA, self).SetModel(PCA(n_components=super(DimensionReductionByPCA, self).GetRemainedNumber()))
 
+    def Transform(self, data_container):
+        data = data_container.GetArray()
+        if data.shape[1] != self.GetModel().components_.shape[1]:
+            print('Data can not be transformed by existed PCA')
+        sub_data = self.GetModel().transform(data)
+
+        sub_feature_name = ['PCA_feature_' + str(index) for index in
+                            range(1, super(DimensionReductionByPCA, self).GetRemainedNumber() + 1)]
+
+        new_data_container = deepcopy(data_container)
+        new_data_container.SetArray(sub_data)
+        new_data_container.SetFeatureName(sub_feature_name)
+        new_data_container.UpdateFrameByData()
+
+        return new_data_container
+
+
     def Run(self, data_container, store_folder=''):
         data = data_container.GetArray()
-        data /= np.linalg.norm(data, ord=2, axis=0)
 
         if data.shape[1] > super(DimensionReductionByPCA, self).GetRemainedNumber():
             print('The number of features in data container is smaller than the required number')
@@ -85,6 +91,7 @@ class DimensionReductionByCos(DimensionReduction):
     def __init__(self, threshold=0.86):
         super(DimensionReductionByCos, self).__init__()
         self.__threshold = threshold
+        self.__selected_index = []
 
     def GetName(self):
         return 'Cos'
@@ -96,22 +103,31 @@ class DimensionReductionByCos(DimensionReduction):
         data = data_container.GetArray()
         data /= np.linalg.norm(data, ord=2, axis=0)
 
-        selected_feature_list = []
         for feature_index in range(data.shape[1]):
             is_similar = False
-            for save_index in selected_feature_list:
+            for save_index in self.__selected_index:
                 if self.__CosSimilarity(data[:, save_index], data[:, feature_index]) > self.__threshold:
                     is_similar = True
                     break
             if not is_similar:
-                selected_feature_list.append(feature_index)
+                self.__selected_index.append(feature_index)
 
-        return selected_feature_list
+    def Transform(self, data_container):
+        new_data = data_container.GetArray()[:, self.__selected_index]
+        new_feature = [data_container.GetFeatureName()[t] for t in self.__selected_index]
+
+        new_data_container = deepcopy(data_container)
+        new_data_container.SetArray(new_data)
+        new_data_container.SetFeatureName(new_feature)
+        new_data_container.UpdateFrameByData()
+
+        return new_data_container
 
     def Run(self, data_container, store_folder=''):
-        selected_list = self.GetSelectedFeatureIndex(data_container)
-        new_data = data_container.GetArray()[:, selected_list]
-        new_feature = [data_container.GetFeatureName()[t] for t in selected_list]
+        self.GetSelectedFeatureIndex(data_container)
+
+        new_data = data_container.GetArray()[:, self.__selected_index]
+        new_feature = [data_container.GetFeatureName()[t] for t in self.__selected_index]
 
         new_data_container = deepcopy(data_container)
         new_data_container.SetArray(new_data)
