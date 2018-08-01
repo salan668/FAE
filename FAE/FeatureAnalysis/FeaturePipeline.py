@@ -303,19 +303,20 @@ class OnePipeline:
 
         if self.__normalizer:
             raw_train_data_container = self.__normalizer.Run(raw_train_data_container, store_folder)
-            raw_test_data_conainer = self.__normalizer.Run(raw_test_data_conainer)
+            if not test_data_container.IsEmpty():
+                raw_test_data_conainer = self.__normalizer.Run(raw_test_data_conainer)
 
         if self.__dimension_reduction:
             raw_train_data_container = self.__dimension_reduction.Run(raw_train_data_container, store_folder)
-            if len(raw_train_data_container.GetFeatureName()) == np.min([len(train_data_container.GetFeatureName()), len(train_data_container.GetCaseName())]):
-                raw_test_data_conainer = self.__dimension_reduction.Run(raw_test_data_conainer)
+            if not test_data_container.IsEmpty():
+                raw_test_data_conainer = self.__dimension_reduction.Transform(raw_test_data_conainer)
 
         if self.__feature_selector:
             raw_train_data_container = self.__feature_selector.Run(raw_train_data_container, store_folder)
-            selected_feature_name = raw_train_data_container.GetFeatureName()
-            fs = FeatureSelector()
-            raw_test_data_conainer = fs.SelectFeatureByName(raw_test_data_conainer, selected_feature_name)
-
+            if not test_data_container.IsEmpty():
+                selected_feature_name = raw_train_data_container.GetFeatureName()
+                fs = FeatureSelector()
+                raw_test_data_conainer = fs.SelectFeatureByName(raw_test_data_conainer, selected_feature_name)
 
         self.__cv.SetClassifier(self.__classifier)
         train_metric, val_metric, test_metric = self.__cv.Run(raw_train_data_container, raw_test_data_conainer, store_folder)

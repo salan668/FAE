@@ -32,7 +32,8 @@ class Ui_Form(object):
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
         Form.setWindowTitle(_translate("Form", "Form"))
-        self.label.setText(_translate("Form", "FeAture Explorer (FAE)\n"
+        self.label.setText(_translate("Form",
+"FeAture Explorer (FAE)\n"
 "\n"
 "Author:\n"
 "Yang Song\n"
