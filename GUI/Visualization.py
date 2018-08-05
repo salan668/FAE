@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'GUI\Visualization.ui'
+# Form implementation generated from reading ui file 'Visualization.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.11.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -23,6 +23,10 @@ class Ui_Visualization(object):
         self.buttonLoadResult = QtWidgets.QPushButton(Visualization)
         self.buttonLoadResult.setObjectName("buttonLoadResult")
         self.verticalLayout.addWidget(self.buttonLoadResult)
+        self.buttonClearResult = QtWidgets.QPushButton(Visualization)
+        self.buttonClearResult.setEnabled(False)
+        self.buttonClearResult.setObjectName("buttonClearResult")
+        self.verticalLayout.addWidget(self.buttonClearResult)
         self.lineEditResultPath = QtWidgets.QLineEdit(Visualization)
         self.lineEditResultPath.setObjectName("lineEditResultPath")
         self.verticalLayout.addWidget(self.lineEditResultPath)
@@ -30,6 +34,7 @@ class Ui_Visualization(object):
         self.textEditDescription.setObjectName("textEditDescription")
         self.verticalLayout.addWidget(self.textEditDescription)
         self.buttonSaveFigure = QtWidgets.QPushButton(Visualization)
+        self.buttonSaveFigure.setEnabled(False)
         self.buttonSaveFigure.setObjectName("buttonSaveFigure")
         self.verticalLayout.addWidget(self.buttonSaveFigure)
         self.horizontalLayout_2.addLayout(self.verticalLayout)
@@ -206,6 +211,7 @@ class Ui_Visualization(object):
         _translate = QtCore.QCoreApplication.translate
         Visualization.setWindowTitle(_translate("Visualization", "Form"))
         self.buttonLoadResult.setText(_translate("Visualization", "Load"))
+        self.buttonClearResult.setText(_translate("Visualization", "Clear"))
         self.buttonSaveFigure.setText(_translate("Visualization", "Save Figure"))
         self.label_7.setText(_translate("Visualization", "Show:"))
         self.label.setText(_translate("Visualization", "Maximum AUC along:"))

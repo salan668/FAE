@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'GUI\Prepare.ui'
+# Form implementation generated from reading ui file 'Prepare.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.11.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -56,6 +56,7 @@ class Ui_Prepare(object):
         self.radioRemoveNonvalidFeatures.setObjectName("radioRemoveNonvalidFeatures")
         self.verticalLayout_2.addWidget(self.radioRemoveNonvalidFeatures)
         self.buttonRemove = QtWidgets.QPushButton(self.groupRemoveNonvalidValue)
+        self.buttonRemove.setEnabled(False)
         self.buttonRemove.setObjectName("buttonRemove")
         self.verticalLayout_2.addWidget(self.buttonRemove)
         self.gridLayout.addLayout(self.verticalLayout_2, 0, 0, 1, 1)
@@ -77,6 +78,7 @@ class Ui_Prepare(object):
         self.spinBoxSeparate.setObjectName("spinBoxSeparate")
         self.verticalLayout_3.addWidget(self.spinBoxSeparate)
         self.checkSeparate = QtWidgets.QCheckBox(self.groupSeparate)
+        self.checkSeparate.setTristate(False)
         self.checkSeparate.setObjectName("checkSeparate")
         self.verticalLayout_3.addWidget(self.checkSeparate)
         self.gridLayout_2.addLayout(self.verticalLayout_3, 0, 0, 1, 1)
@@ -85,6 +87,7 @@ class Ui_Prepare(object):
         self.groupBox_3.setObjectName("groupBox_3")
         self.verticalLayout.addWidget(self.groupBox_3)
         self.buttonSave = QtWidgets.QPushButton(Prepare)
+        self.buttonSave.setEnabled(False)
         self.buttonSave.setObjectName("buttonSave")
         self.verticalLayout.addWidget(self.buttonSave)
         self.horizontalLayout.addLayout(self.verticalLayout)
@@ -108,7 +111,7 @@ class Ui_Prepare(object):
         self.buttonRemove.setText(_translate("Prepare", "Remove"))
         self.groupSeparate.setTitle(_translate("Prepare", "Separate Train and Test"))
         self.label.setText(_translate("Prepare", "Percentage of Testing data"))
-        self.checkSeparate.setText(_translate("Prepare", "Separate Tran And Test"))
+        self.checkSeparate.setText(_translate("Prepare", "Separate Train And Test"))
         self.groupBox_3.setTitle(_translate("Prepare", "GroupBox"))
         self.buttonSave.setText(_translate("Prepare", "Check and Save"))
 

@@ -12,6 +12,8 @@ from FAE.Visualization.DrawROCList import DrawROCList
 from FAE.Visualization.PlotMetricVsFeatureNumber import DrawCurve, DrawBar
 from FAE.Visualization.FeatureSort import GeneralFeatureSort, SortRadiomicsFeature
 
+import os
+
 class VisualizationConnection(QWidget, Ui_Visualization):
     def __init__(self, parent=None):
         self._root_folder = ''
@@ -22,6 +24,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.setupUi(self)
 
         self.buttonLoadResult.clicked.connect(self.LoadAll)
+        self.buttonClearResult.clicked.connect(self.ClearAll)
         self.buttonSaveFigure.clicked.connect(self.Save)
 
         self.__plt_roc = self.canvasROC.getFigure().add_subplot(111)
@@ -73,12 +76,89 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         if dlg.exec_():
             self._root_folder = dlg.selectedFiles()[0]
 
-            self.lineEditResultPath.setText(self._root_folder)
-            self._fae.LoadAll(self._root_folder)
-            self.SetResultDescription()
-            self.SetResultTable()
+            if not os.path.exists(self._root_folder):
+                return
+            if not r'.FAEresult4129074093819729087' in os.listdir(self._root_folder):
+                QMessageBox.about(self, 'Load Error', 'This folder is not supported for import')
+                return
 
-            self.InitialUi()
+            try:
+                self.lineEditResultPath.setText(self._root_folder)
+                self._fae.LoadAll(self._root_folder)
+                self.SetResultDescription()
+                self.SetResultTable()
+                self.InitialUi()
+            except Exception as ex:
+                QMessageBox.about(self,"Load Error",ex.__str__())
+                self.ClearAll()
+                return
+
+            self.buttonClearResult.setEnabled(True)
+            self.buttonSaveFigure.setEnabled(True)
+            self.buttonLoadResult.setEnabled(False)
+
+    def ClearAll(self):
+
+        self.buttonLoadResult.setEnabled(True)
+        self.buttonSaveFigure.setEnabled(False)
+        self.buttonClearResult.setEnabled(False)
+
+        self.checkROCTrain.setChecked(False)
+        self.checkROCTest.setChecked(False)
+        self.checkROCValidation.setChecked(False)
+        self.checkPlotTrain.setChecked(False)
+        self.checkPlotTest.setChecked(False)
+        self.checkPlotValidation.setChecked(False)
+        self.checkPlotMaximum.setChecked(False)
+        self.checkContributionShow.setChecked(False)
+        self.radioContributionFeatureSelector.setChecked(True)
+        self.radioContributionFeatureSelector.setChecked(False)
+        self.checkMaxFeatureNumber.setChecked(False)
+        self.canvasROC.getFigure().clear()
+        self.canvasPlot.getFigure().clear()
+        self.canvasFeature.getFigure().clear()
+        self.__plt_roc = self.canvasROC.getFigure().add_subplot(111)
+        self.__plt_plot = self.canvasPlot.getFigure().add_subplot(111)
+        self.__contribution = self.canvasFeature.getFigure().add_subplot(111)
+        self.canvasROC.draw()
+        self.canvasPlot.draw()
+        self.canvasFeature.draw()
+
+        self.textEditDescription.clear()
+        self.lineEditResultPath.clear()
+
+        self.comboSheet.clear()
+        self.comboClassifier.clear()
+        self.comboDimensionReduction.clear()
+        self.comboNormalizer.clear()
+        self.comboFeatureSelector.clear()
+
+        self.comboPlotClassifier.clear()
+        self.comboPlotDimensionReduction.clear()
+        self.comboPlotFeatureSelector.clear()
+        self.comboPlotNormalizer.clear()
+        self.comboPlotX.clear()
+        self.comboPlotY.clear()
+
+        self.comboContributionClassifier.clear()
+        self.comboContributionFeatureSelector.clear()
+
+        self.spinBoxFeatureNumber.setValue(0)
+        self.spinPlotFeatureNumber.setValue(0)
+        self.spinPlotFeatureNumber.setEnabled(False)
+        self.spinFeatureSelectorFeatureNumber.setValue(1)
+        self.spinClassifierFeatureNumber.setValue(1)
+
+        self.tableClinicalStatistic.clear()
+
+        self.tableClinicalStatistic.setRowCount(0)
+        self.tableClinicalStatistic.setColumnCount(0)
+        self.tableClinicalStatistic.setHorizontalHeaderLabels(list([]))
+        self.tableClinicalStatistic.setVerticalHeaderLabels(list([]))
+
+        self._fae = FeatureAnalysisPipelines()
+        self._root_folder = ''
+        self.sheet_dict = dict()
 
     def Save(self):
         dlg = QFileDialog()

@@ -9,7 +9,6 @@ from FAE.DataContainer.DataContainer import DataContainer
 from FAE.DataContainer import DataSeparate
 
 from PyQt5.QtCore import QItemSelectionModel,QModelIndex
-
 class PrepareConnection(QWidget, Ui_Prepare):
     def __init__(self, parent=None):
         super(PrepareConnection, self).__init__(parent)
@@ -62,6 +61,9 @@ class PrepareConnection(QWidget, Ui_Prepare):
             print('Error')
 
         self.UpdateTable()
+
+        self.buttonRemove.setEnabled(True)
+        self.buttonSave.setEnabled(True)
 
     def RemoveNonValidValue(self):
         if self.radioRemoveNonvalidCases.isChecked():

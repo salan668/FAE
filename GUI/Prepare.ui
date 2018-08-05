@@ -98,6 +98,9 @@
             </item>
             <item>
              <widget class="QPushButton" name="buttonRemove">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
               <property name="text">
                <string>Remove</string>
               </property>
@@ -142,7 +145,7 @@
             <item>
              <widget class="QCheckBox" name="checkSeparate">
               <property name="text">
-               <string>Separate Tran And Test</string>
+               <string>Separate Train And Test</string>
               </property>
               <property name="tristate">
                <bool>false</bool>
@@ -163,6 +166,9 @@
        </item>
        <item>
         <widget class="QPushButton" name="buttonSave">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
          <property name="text">
           <string>Check and Save</string>
          </property>

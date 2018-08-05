@@ -196,8 +196,9 @@ class FeatureAnalysisPipelines:
                                         str(feature_num) + '_' + \
                                         classifier.GetName()
                             case_store_folder = os.path.join(store_folder, case_name)
-
                             train_metric, val_metric, test_metric = one_pipeline.Run(train_data_container, test_data_container, case_store_folder)
+
+
                             
                             self.__auc_matrix_dict['train'][normalizer_index,
                                                      dimension_reductor_index, 
