@@ -52,3 +52,8 @@ def DrawROCList(pred_list, label_list, name_list='', store_path='', is_show=True
         axes.show()
 
     return axes
+
+if __name__ == '__main__':
+    pred = np.array([0.2, 0.4, 0.6, 0.8])
+    label = np.array([0, 0, 1, 1])
+    DrawROCList(pred, label, store_path=r'C:\Users\18\Desktop\tem.jpg')

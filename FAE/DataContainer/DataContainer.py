@@ -59,8 +59,9 @@ class DataContainer:
             return True
 
     def HasNonValidNumber(self):
+        array_flat = self._array.flatten()
         for index in range(self._array.size):
-            if not self.IsValidNumber(self._array.flatten()[index]):
+            if not self.IsValidNumber(array_flat[index]):
                 return True
         return False
 

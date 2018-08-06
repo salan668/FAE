@@ -12,6 +12,8 @@ from FAE.FeatureAnalysis.Classifier import *
 from FAE.FeatureAnalysis.FeaturePipeline import FeatureAnalysisPipelines
 from FAE.FeatureAnalysis.CrossValidation import CrossValidation
 
+import os
+import struct
 class ProcessConnection(QWidget, Ui_Process):
     def __init__(self, parent=None):
         self.__training_data_container = DataContainer()
@@ -136,7 +138,14 @@ class ProcessConnection(QWidget, Ui_Process):
                     QApplication.processEvents()
 
                 text = self.textEditVerbose.toPlainText()
+
                 self.textEditVerbose.setPlainText(text + "\n DONE!")
+
+                with open(store_folder+'\\.FAEresult4129074093819729087','wb') as file:
+                    pass
+                file_hidden = os.popen('attrib +h '+ store_folder +'\\.FAEresult4129074093819729087')
+                file_hidden.close()
+
             else:
                 QMessageBox.about(self, 'Pipeline Error', 'Pipeline must include Classifier and CV method')
 

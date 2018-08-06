@@ -25,7 +25,7 @@ class CrossValidation:
         self.__classifier = Classifier()
 
         if cv_method == 'LOO':
-            self.__cv = LeaveOneOut
+            self.__cv = LeaveOneOut()
         elif cv_method == '10-folder':
             self.__cv = StratifiedKFold(10)
         elif cv_method == '5-folder':
@@ -41,7 +41,7 @@ class CrossValidation:
 
     def SetCV(self, cv):
         if cv == 'LOO':
-            self.__cv = LeaveOneOut
+            self.__cv = LeaveOneOut()
         elif cv == '10-folder':
             self.__cv = StratifiedKFold(10)
         elif cv == '5-folder':
