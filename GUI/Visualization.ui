@@ -28,6 +28,16 @@
           </widget>
          </item>
          <item>
+          <widget class="QPushButton" name="buttonClearResult">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="text">
+            <string>Clear</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QLineEdit" name="lineEditResultPath"/>
          </item>
          <item>
@@ -35,6 +45,9 @@
          </item>
          <item>
           <widget class="QPushButton" name="buttonSaveFigure">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="text">
             <string>Save Figure</string>
            </property>

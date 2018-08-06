@@ -43,7 +43,7 @@ class Ui_TabWidget(object):
 
     def retranslateUi(self, TabWidget):
         _translate = QtCore.QCoreApplication.translate
-        TabWidget.setWindowTitle(_translate("TabWidget", "FeAture Explorer (FAE), v.0.1.0"))
+        TabWidget.setWindowTitle(_translate("TabWidget", "FeAture Explorer (FAE) Only For Research, v.0.1.0"))
 
         TabWidget.setTabText(TabWidget.indexOf(self.tabPrepare), _translate("TabWidget", "Prepare"))
         TabWidget.setTabText(TabWidget.indexOf(self.tabProcess), _translate("TabWidget", "Process"))
