@@ -118,7 +118,7 @@ class DataContainer:
             index = np.nan
         self.__feature_name.pop(index)
         self.__label = self.__df[label_name].values
-        self._array = self.__df[self.__feature_name].values
+        self._array = np.asarray(self.__df[self.__feature_name].values, dtype=np.float32)
 
     def UpdateFrameByData(self):
         data = np.concatenate((self.__label[..., np.newaxis], self._array), axis=1)
