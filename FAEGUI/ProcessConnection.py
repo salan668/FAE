@@ -1,9 +1,10 @@
-
+import shutil
 import numpy as np
 from copy import deepcopy
 
 from PyQt5.QtWidgets import *
 from GUI.Process import Ui_Process
+from PyQt5.QtCore import *
 
 from FAE.FeatureAnalysis.Normalizer import *
 from FAE.FeatureAnalysis.DimensionReduction import *
@@ -14,11 +15,44 @@ from FAE.FeatureAnalysis.CrossValidation import CrossValidation
 
 import os
 import struct
+
+class CVRun(QThread):
+    signal = pyqtSignal(str)
+
+    def __init__(self):
+        super().__init__()
+        pass
+
+    def SetProcessConnectionAndStore_folder(self, process_connection, store_folder):
+        self._process_connection = process_connection
+        self._store_folder = store_folder
+
+    def run(self):
+        for current_normalizer_name, current_dimension_reductor_name, \
+            current_feature_selector_name, curreent_feature_num, \
+            current_classifier_name, num, total_num \
+                in self._process_connection.fae.Run(self._process_connection.training_data_container,
+                                                      self._process_connection.testing_data_container,
+                                                      self._store_folder):
+            text = self._process_connection.GenerateVerboseTest(current_normalizer_name,
+                                                     current_dimension_reductor_name,
+                                                     current_feature_selector_name,
+                                                     current_classifier_name,
+                                                     curreent_feature_num,
+                                                     num,
+                                                     total_num)
+
+            self.signal.emit(text)  # 反馈信号出去
+
+        self.signal.emit(text + "\n DONE!")
+        self._process_connection.SetStateAllButtonWhenRunning(True)
+
+
 class ProcessConnection(QWidget, Ui_Process):
     def __init__(self, parent=None):
-        self.__training_data_container = DataContainer()
-        self.__testing_data_container = DataContainer()
-        self.__fae = FeatureAnalysisPipelines()
+        self.training_data_container = DataContainer()
+        self.testing_data_container = DataContainer()
+        self.fae = FeatureAnalysisPipelines()
 
         self.__process_normalizer_list = []
         self.__process_dimension_reduction_list = []
@@ -60,30 +94,32 @@ class ProcessConnection(QWidget, Ui_Process):
         self.buttonRun.clicked.connect(self.Run)
 
         self.UpdatePipelineText()
+        self.SetStateButtonBeforeLoading(False)
 
     def LoadTrainingData(self):
         dlg = QFileDialog()
         file_name, _ = dlg.getOpenFileName(self, 'Open SCV file', directory=r'C:\MyCode\FAE\Example', filter="csv files (*.csv)")
         try:
-            self.__training_data_container.Load(file_name)
+            self.training_data_container.Load(file_name)
+            self.SetStateButtonBeforeLoading(True)
+            self.lineEditTrainingData.setText(file_name)
+            self.UpdateDataDescription()
         except:
             print('Loading Training Data Error')
 
-        self.lineEditTrainingData.setText(file_name)
-        self.UpdateDataDescription()
 
     def LoadTestingData(self):
         dlg = QFileDialog()
         file_name, _ = dlg.getOpenFileName(self, 'Open SCV file', filter="csv files (*.csv)")
         try:
-            self.__testing_data_container.Load(file_name)
+            self.testing_data_container.Load(file_name)
+            self.lineEditTestingData.setText(file_name)
+            self.UpdateDataDescription()
         except:
             print('Loading Testing Data Error')
 
-        self.lineEditTestingData.setText(file_name)
-        self.UpdateDataDescription()
 
-    def SetVerboseTest(self, normalizer_name, dimension_reduction_name, feature_selector_name, classifier_name, feature_num,
+    def GenerateVerboseTest(self, normalizer_name, dimension_reduction_name, feature_selector_name, classifier_name, feature_num,
                        current_num, total_num):
         text = "Current:\n"
 
@@ -110,11 +146,48 @@ class ProcessConnection(QWidget, Ui_Process):
         text += '\n'
 
         text += "Total process: {:d} / {:d}".format(current_num, total_num)
+        return text
 
-        self.textEditVerbose.setPlainText(text)
+    def SetStateAllButtonWhenRunning(self, state):
+        self.buttonLoadTrainingData.setEnabled(state)
+        self.buttonLoadTestingData.setEnabled(state)
+        
+        self.SetStateButtonBeforeLoading(state)
+
+    def SetStateButtonBeforeLoading(self, state):
+        self.buttonRun.setEnabled(state)
+        
+        self.checkNormalizeUnit.setEnabled(state)
+        self.checkNormalizeZeroCenter.setEnabled(state)
+        self.checkNormalizeUnitWithZeroCenter.setEnabled(state)
+        
+        self.checkPCA.setEnabled(state)
+        self.checkRemoveSimilarFeatures.setEnabled(state)
+        
+        self.checkANOVA.setEnabled(state)
+        self.checkRFE.setEnabled(state)
+        self.checkRelief.setEnabled(state)
+        
+        self.spinBoxMinFeatureNumber.setEnabled(state)
+        self.spinBoxMaxFeatureNumber.setEnabled(state)
+        
+        self.checkSVM.setEnabled(state)
+        self.checkAE.setEnabled(state)
+        self.checkLDA.setEnabled(state)
+        self.checkRF.setEnabled(state)
+        self.checkLogisticRegression.setEnabled(state)
+        self.checkLRLasso.setEnabled(state)
+        self.checkAdaboost.setEnabled(state)
+        self.checkDecisionTree.setEnabled(state)
+        self.checkNativeBayes.setEnabled(state)
+        self.checkGaussianProcess.setEnabled(state)
+
+        self.radioLeaveOneOut.setEnabled(state)
+        self.radio5folder.setEnabled(state)
+        self.radio10Folder.setEnabled(state)
 
     def Run(self):
-        if self.__training_data_container.IsEmpty():
+        if self.training_data_container.IsEmpty():
             QMessageBox.about(self, '', 'Training data is empty.')
             return
 
@@ -125,27 +198,42 @@ class ProcessConnection(QWidget, Ui_Process):
         if dlg.exec_():
             store_folder = dlg.selectedFiles()[0]
             if len(os.listdir(store_folder)) > 0:
-                QMessageBox.about(self, 'The folder is not empty', 'The folder is not empty')
-                return
+                reply = QMessageBox.question(self, 'Continue?',
+                                             'The folder is not empty, if you click Yes, the data would be clear in this folder', QMessageBox.Yes, QMessageBox.No)
+                if reply == QMessageBox.Yes:
+                    for file in os.listdir(store_folder):
+                        if os.path.isdir(os.path.join(store_folder, file)):
+                            shutil.rmtree(os.path.join(store_folder, file))
+                        else:
+                            os.remove(os.path.join(store_folder, file))
+                else:
+                    return
 
             self.textEditVerbose.setText(store_folder)
             if self.MakePipelines():
-                for current_normalizer_name, current_dimension_reductor_name, \
-                    current_feature_selector_name, curreent_feature_num, \
-                    current_classifier_name, num, total_num\
-                        in self.__fae.Run(self.__training_data_container, self.__testing_data_container, store_folder):
-                    self.SetVerboseTest(current_normalizer_name,
-                                        current_dimension_reductor_name,
-                                        current_feature_selector_name,
-                                        current_classifier_name,
-                                        curreent_feature_num,
-                                        num,
-                                        total_num)
-                    QApplication.processEvents()
+                # for current_normalizer_name, current_dimension_reductor_name, \
+                #     current_feature_selector_name, curreent_feature_num, \
+                #     current_classifier_name, num, total_num\
+                #         in self.__fae.Run(self.__training_data_container, self.__testing_data_container, store_folder):
+                #     text = self.GenerateVerboseTest(current_normalizer_name,
+                #                         current_dimension_reductor_name,
+                #                         current_feature_selector_name,
+                #                         current_classifier_name,
+                #                         curreent_feature_num,
+                #                         num,
+                #                         total_num)
+                #     self.textEditVerbose.setPlainText(text)
+                #     QApplication.processEvents()
+                #
+                # text = self.textEditVerbose.toPlainText()
+                # self.textEditVerbose.setPlainText(text + "\n DONE!")
 
-                text = self.textEditVerbose.toPlainText()
-
-                self.textEditVerbose.setPlainText(text + "\n DONE!")
+                thread = CVRun()
+                thread.moveToThread(QThread())
+                thread.SetProcessConnectionAndStore_folder(self, store_folder)
+                thread.signal.connect(self.textEditVerbose.setPlainText)
+                thread.start()
+                self.SetStateAllButtonWhenRunning(False)
 
                 hidden_file_path = os.path.join(store_folder, '.FAEresult4129074093819729087')
                 with open(hidden_file_path,'wb') as file:
@@ -230,40 +318,40 @@ class ProcessConnection(QWidget, Ui_Process):
         else:
             return False
 
-        self.__fae.SetNormalizerList(self.__process_normalizer_list)
-        self.__fae.SetDimensionReductionList(self.__process_dimension_reduction_list)
-        self.__fae.SetFeatureSelectorList(self.__process_feature_selector_list)
-        self.__fae.SetFeatureNumberList(self.__process_feature_number_list)
-        self.__fae.SetClassifierList(self.__process_classifier_list)
-        self.__fae.SetCrossValition(cv)
-        self.__fae.GenerateMetircDict()
+        self.fae.SetNormalizerList(self.__process_normalizer_list)
+        self.fae.SetDimensionReductionList(self.__process_dimension_reduction_list)
+        self.fae.SetFeatureSelectorList(self.__process_feature_selector_list)
+        self.fae.SetFeatureNumberList(self.__process_feature_number_list)
+        self.fae.SetClassifierList(self.__process_classifier_list)
+        self.fae.SetCrossValition(cv)
+        self.fae.GenerateMetircDict()
 
         return True
 
     def UpdateDataDescription(self):
         show_text = ""
-        if self.__training_data_container.GetArray().size > 0:
-            show_text += "The number of training cases: {:d}\n".format(len(self.__training_data_container.GetCaseName()))
-            show_text += "The number of training features: {:d}\n".format(len(self.__training_data_container.GetFeatureName()))
-            if len(np.unique(self.__training_data_container.GetLabel())) == 2:
+        if self.training_data_container.GetArray().size > 0:
+            show_text += "The number of training cases: {:d}\n".format(len(self.training_data_container.GetCaseName()))
+            show_text += "The number of training features: {:d}\n".format(len(self.training_data_container.GetFeatureName()))
+            if len(np.unique(self.training_data_container.GetLabel())) == 2:
                 positive_number = len(
-                    np.where(self.__training_data_container.GetLabel() == np.max(self.__training_data_container.GetLabel()))[0])
-                negative_number = len(self.__training_data_container.GetLabel()) - positive_number
-                assert (positive_number + negative_number == len(self.__training_data_container.GetLabel()))
+                    np.where(self.training_data_container.GetLabel() == np.max(self.training_data_container.GetLabel()))[0])
+                negative_number = len(self.training_data_container.GetLabel()) - positive_number
+                assert (positive_number + negative_number == len(self.training_data_container.GetLabel()))
                 show_text += "The number of training positive samples: {:d}\n".format(positive_number)
                 show_text += "The number of training negative samples: {:d}\n".format(negative_number)
 
         show_text += '\n'
-        if self.__testing_data_container.GetArray().size > 0:
-            show_text += "The number of testing cases: {:d}\n".format(len(self.__testing_data_container.GetCaseName()))
+        if self.testing_data_container.GetArray().size > 0:
+            show_text += "The number of testing cases: {:d}\n".format(len(self.testing_data_container.GetCaseName()))
             show_text += "The number of testing features: {:d}\n".format(
-                len(self.__testing_data_container.GetFeatureName()))
-            if len(np.unique(self.__testing_data_container.GetLabel())) == 2:
+                len(self.testing_data_container.GetFeatureName()))
+            if len(np.unique(self.testing_data_container.GetLabel())) == 2:
                 positive_number = len(
                     np.where(
-                        self.__testing_data_container.GetLabel() == np.max(self.__testing_data_container.GetLabel()))[0])
-                negative_number = len(self.__testing_data_container.GetLabel()) - positive_number
-                assert (positive_number + negative_number == len(self.__testing_data_container.GetLabel()))
+                        self.testing_data_container.GetLabel() == np.max(self.testing_data_container.GetLabel()))[0])
+                negative_number = len(self.testing_data_container.GetLabel()) - positive_number
+                assert (positive_number + negative_number == len(self.testing_data_container.GetLabel()))
                 show_text += "The number of testing positive samples: {:d}\n".format(positive_number)
                 show_text += "The number of testing negative samples: {:d}\n".format(negative_number)
 
