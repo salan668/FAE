@@ -228,6 +228,13 @@
          <layout class="QGridLayout" name="gridLayout_6">
           <item row="0" column="0">
            <layout class="QGridLayout" name="gridLayout_5">
+            <item row="2" column="0">
+             <widget class="QCheckBox" name="checkLDA">
+              <property name="text">
+               <string>LDA</string>
+              </property>
+             </widget>
+            </item>
             <item row="0" column="0">
              <widget class="QCheckBox" name="checkSVM">
               <property name="text">
@@ -235,13 +242,6 @@
               </property>
               <property name="checked">
                <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="0">
-             <widget class="QCheckBox" name="checkLDA">
-              <property name="text">
-               <string>LDA</string>
               </property>
              </widget>
             </item>
@@ -255,7 +255,49 @@
             <item row="2" column="1">
              <widget class="QCheckBox" name="checkRF">
               <property name="text">
-               <string>RandomForest</string>
+               <string>Random Forest</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="1">
+             <widget class="QCheckBox" name="checkDecisionTree">
+              <property name="text">
+               <string>Decision Tree</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="1">
+             <widget class="QCheckBox" name="checkLRLasso">
+              <property name="text">
+               <string>LR-Lasso</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QCheckBox" name="checkLogisticRegression">
+              <property name="text">
+               <string>Logistic Regression</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="0">
+             <widget class="QCheckBox" name="checkAdaboost">
+              <property name="text">
+               <string>Adaboost</string>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="0">
+             <widget class="QCheckBox" name="checkGaussianProcess">
+              <property name="text">
+               <string>Gaussian Process</string>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="1">
+             <widget class="QCheckBox" name="checkNativeBayes">
+              <property name="text">
+               <string>Native Bayes</string>
               </property>
              </widget>
             </item>

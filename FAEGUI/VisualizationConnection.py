@@ -89,7 +89,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                 self.SetResultTable()
                 self.InitialUi()
             except Exception as ex:
-                QMessageBox.about(self,"Load Error",ex.__str__())
+                QMessageBox.about(self,"Load Error", ex.__str__())
                 self.ClearAll()
                 return
 

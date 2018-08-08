@@ -9,6 +9,7 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.gaussian_process import GaussianProcessClassifier
 from sklearn.naive_bayes import GaussianNB
+from sklearn.linear_model import LogisticRegression
 
 from abc import ABCMeta,abstractmethod
 from FAE.DataContainer.DataContainer import DataContainer
@@ -236,31 +237,118 @@ class NativeBayes(Classifier):
         else:
             return super(NativeBayes, self).Predict(x)
 
+class LR(Classifier):
+    def __init__(self, **kwargs):
+        super(LR, self).__init__()
+        super(LR, self).SetModel(LogisticRegression(**kwargs))
+
+    def GetName(self):
+        return 'LR'
+
+    def Predict(self, x, is_probability=True):
+        if is_probability:
+            return super(LR, self).GetModel().predict_proba(x)[:, 1]
+        else:
+            return super(LR, self).Predict(x)
+
+    def Save(self, store_path):
+        if not os.path.isdir(store_path):
+            print('The store function of SVM must be a folder path')
+            return
+
+        # Save the coefficients
+        try:
+            coef_path = os.path.join(store_path, 'lr_coef.csv')
+            df = pd.DataFrame(data=np.transpose(self.GetModel().coef_), index=self._data_container.GetFeatureName(), columns=['Coef'])
+            df.to_csv(coef_path)
+        except:
+            print("Not support Coef.")
+
+        super(LR, self).Save(store_path)
+
+class LRLasso(Classifier):
+    def __init__(self, **kwargs):
+        super(LRLasso, self).__init__()
+        super(LRLasso, self).SetModel(LogisticRegression(penalty='l1', **kwargs))
+
+    def GetName(self):
+        return 'LRLasso'
+
+    def Predict(self, x, is_probability=True):
+        if is_probability:
+            return super(LRLasso, self).GetModel().predict_proba(x)[:, 1]
+        else:
+            return super(LRLasso, self).Predict(x)
+
+    def Save(self, store_path):
+        if not os.path.isdir(store_path):
+            print('The store function of SVM must be a folder path')
+            return
+
+        # Save the coefficients
+        try:
+            coef_path = os.path.join(store_path, 'lrlasso_coef.csv')
+            df = pd.DataFrame(data=np.transpose(self.GetModel().coef_), index=self._data_container.GetFeatureName(), columns=['Coef'])
+            df.to_csv(coef_path)
+        except:
+            print("Not support Coef.")
+
+        super(LRLasso, self).Save(store_path)
 
 if __name__ == '__main__':
     import numpy as np
     X = np.array([[-1, -1], [-2, -1], [1, 1], [2, 1]])
     y = np.array([1, 1, 2, 2])
 
+    clf = SVM()
+    clf.SetData(X, y)
+    clf.Fit()
+    print(clf.GetName(), clf.Predict([[1, 1]]))
 
-    svm = SVM()
-    svm.SetData(X, y)
-    svm.Fit()
-    print(svm.Predict([[1, 1]]))
 
-    svm = AE()
-    svm.SetData(X, y)
-    svm.Fit()
-    print(svm.Predict([[1, 1]]))
+    clf = AE()
+    clf.SetData(X, y)
+    clf.Fit()
+    print(clf.GetName(), clf.Predict([[1, 1]]))
 
-    svm = RandomForest()
-    svm.SetData(X, y)
-    svm.Fit()
-    print(svm.Predict([[1, 1]]))
+    clf = RandomForest()
+    clf.SetData(X, y)
+    clf.Fit()
+    print(clf.GetName(), clf.Predict([[1, 1]]))
 
-    svm = LDA()
-    svm.SetData(X, y)
-    svm.Fit()
-    print(svm.Predict([[1, 1]]))
+    clf = LDA()
+    clf.SetData(X, y)
+    clf.Fit()
+    print(clf.GetName(), clf.Predict([[1, 1]]))
+
+    clf = AdaBoost()
+    clf.SetData(X, y)
+    clf.Fit()
+    print(clf.GetName(), clf.Predict([[1, 1]]))
+
+    clf = DecisionTree()
+    clf.SetData(X, y)
+    clf.Fit()
+    print(clf.GetName(), clf.Predict([[1, 1]]))
+
+    clf = GaussianProcess()
+    clf.SetData(X, y)
+    clf.Fit()
+    print(clf.GetName(), clf.Predict([[1, 1]]))
+
+    clf = NativeBayes()
+    clf.SetData(X, y)
+    clf.Fit()
+    print(clf.GetName(), clf.Predict([[1, 1]]))
+
+    clf = LR()
+    clf.SetData(X, y)
+    clf.Fit()
+    print(clf.GetName(), clf.Predict([[1, 1]]))
+
+    clf = LRLasso()
+    clf.SetData(X, y)
+    clf.Fit()
+    print(clf.GetName(), clf.Predict([[1, 1]]))
 
 

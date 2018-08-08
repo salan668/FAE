@@ -79,10 +79,13 @@ class CrossValidation:
 
         data = data_container.GetArray()
         label = data_container.GetLabel()
+        group_index = 0
         val_index_store = []
 
         for train_index, val_index in self.__cv.split(data, label):
-            val_index_store.extend(val_index)
+            group_index += 1
+            for index in val_index:
+                val_index_store.append(['group_'+str(group_index), index])
 
             train_data = data[train_index, :]
             train_label = label[train_index]

@@ -50,6 +50,12 @@ class ProcessConnection(QWidget, Ui_Process):
         self.checkLDA.clicked.connect(self.UpdatePipelineText)
         self.checkAE.clicked.connect(self.UpdatePipelineText)
         self.checkRF.clicked.connect(self.UpdatePipelineText)
+        self.checkLogisticRegression.clicked.connect(self.UpdatePipelineText)
+        self.checkLRLasso.clicked.connect(self.UpdatePipelineText)
+        self.checkAdaboost.clicked.connect(self.UpdatePipelineText)
+        self.checkDecisionTree.clicked.connect(self.UpdatePipelineText)
+        self.checkNativeBayes.clicked.connect(self.UpdatePipelineText)
+        self.checkGaussianProcess.clicked.connect(self.UpdatePipelineText)
 
         self.buttonRun.clicked.connect(self.Run)
 
@@ -141,9 +147,10 @@ class ProcessConnection(QWidget, Ui_Process):
 
                 self.textEditVerbose.setPlainText(text + "\n DONE!")
 
-                with open(store_folder+'\\.FAEresult4129074093819729087','wb') as file:
+                hidden_file_path = os.path.join(store_folder, '.FAEresult4129074093819729087')
+                with open(hidden_file_path,'wb') as file:
                     pass
-                file_hidden = os.popen('attrib +h '+ store_folder +'\\.FAEresult4129074093819729087')
+                file_hidden = os.popen('attrib +h '+ hidden_file_path)
                 file_hidden.close()
 
             else:
@@ -198,6 +205,18 @@ class ProcessConnection(QWidget, Ui_Process):
             self.__process_classifier_list.append(AE())
         if self.checkRF.isChecked():
             self.__process_classifier_list.append(RandomForest())
+        if self.checkLogisticRegression.isChecked():
+            self.__process_classifier_list.append(LR())
+        if self.checkLRLasso.isChecked():
+            self.__process_classifier_list.append(LRLasso())
+        if self.checkAdaboost.isChecked():
+            self.__process_classifier_list.append(AdaBoost())
+        if self.checkDecisionTree.isChecked():
+            self.__process_classifier_list.append(DecisionTree())
+        if self.checkGaussianProcess.isChecked():
+            self.__process_classifier_list.append(GaussianProcess())
+        if self.checkNativeBayes.isChecked():
+            self.__process_classifier_list.append(NativeBayes())
         if len(self.__process_classifier_list) == 0:
             return False
 
@@ -294,6 +313,7 @@ class ProcessConnection(QWidget, Ui_Process):
             feature_selection_text += "Relief\n"
             feature_selector_num += 1
         if feature_selector_num == 0:
+            feature_selection_text += "None\n"
             feature_selector_num = 1
         self.listOnePipeline.addItem(feature_selection_text)
 
@@ -312,6 +332,25 @@ class ProcessConnection(QWidget, Ui_Process):
         if self.checkRF.isChecked():
             classifier_test += "RF\n"
             classifier_num += 1
+        if self.checkLogisticRegression.isChecked():
+            classifier_test += "Logistic Regression\n"
+            classifier_num += 1
+        if self.checkLRLasso.isChecked():
+            classifier_test += "Logistic Regression with Lasso\n"
+            classifier_num += 1
+        if self.checkAdaboost.isChecked():
+            classifier_test += "Adaboost\n"
+            classifier_num += 1
+        if self.checkDecisionTree.isChecked():
+            classifier_test += "Decision Tree\n"
+            classifier_num += 1
+        if self.checkGaussianProcess.isChecked():
+            classifier_test += "Gaussian Process\n"
+            classifier_num += 1
+        if self.checkNativeBayes.isChecked():
+            classifier_test += "Native Bayes\n"
+            classifier_num += 1
+
         if classifier_num == 0:
             classifier_num = 1
         self.listOnePipeline.addItem(classifier_test)

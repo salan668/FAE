@@ -38,3 +38,13 @@ class Index2Dict:
             return RandomForest()
         elif name == DecisionTree().GetName():
             return DecisionTree()
+        elif name == AdaBoost().GetName():
+            return AdaBoost()
+        elif name == NativeBayes().GetName():
+            return NativeBayes()
+        elif name == GaussianProcess().GetName():
+            return GaussianProcess()
+        elif name == LR().GetName():
+            return LR()
+        elif name == LRLasso().GetName():
+            return LRLasso()
