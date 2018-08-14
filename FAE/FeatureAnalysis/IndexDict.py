@@ -49,9 +49,9 @@ class Index2Dict:
             return LR()
         elif name == LRLasso().GetName():
             return LRLasso()
-        elif name == CrossValidationLeaveOneOut.GetName():
+        elif name == CrossValidationLeaveOneOut().GetName():
             return CrossValidationLeaveOneOut()
-        elif name == CrossValidation5Folder.GetName():
+        elif name == CrossValidation5Folder().GetName():
             return CrossValidation5Folder()
-        elif name == CrossValidation10Folder.GetName():
-            return  CrossValidation10Folder()
+        elif name == CrossValidation10Folder().GetName():
+            return CrossValidation10Folder()

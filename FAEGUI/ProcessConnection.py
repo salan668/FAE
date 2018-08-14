@@ -217,7 +217,7 @@ class ProcessConnection(QWidget, Ui_Process):
                 # for current_normalizer_name, current_dimension_reductor_name, \
                 #     current_feature_selector_name, curreent_feature_num, \
                 #     current_classifier_name, num, total_num\
-                #         in self.__fae.Run(self.__training_data_container, self.__testing_data_container, store_folder):
+                #         in self.fae.Run(self.training_data_container, self.testing_data_container, store_folder):
                 #     text = self.GenerateVerboseTest(current_normalizer_name,
                 #                         current_dimension_reductor_name,
                 #                         current_feature_selector_name,
