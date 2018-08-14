@@ -11,7 +11,7 @@ from FAE.FeatureAnalysis.DimensionReduction import *
 from FAE.FeatureAnalysis.FeatureSelector import *
 from FAE.FeatureAnalysis.Classifier import *
 from FAE.FeatureAnalysis.FeaturePipeline import FeatureAnalysisPipelines
-from FAE.FeatureAnalysis.CrossValidation import CrossValidation
+from FAE.FeatureAnalysis.CrossValidation import *
 
 import os
 import struct
@@ -91,6 +91,10 @@ class ProcessConnection(QWidget, Ui_Process):
         self.checkNativeBayes.clicked.connect(self.UpdatePipelineText)
         self.checkGaussianProcess.clicked.connect(self.UpdatePipelineText)
 
+        self.radioLeaveOneOut.clicked.connect(self.UpdatePipelineText)
+        self.radio5folder.clicked.connect(self.UpdatePipelineText)
+        self.radio10Folder.clicked.connect(self.UpdatePipelineText)
+
         self.buttonRun.clicked.connect(self.Run)
 
         self.UpdatePipelineText()
@@ -117,7 +121,6 @@ class ProcessConnection(QWidget, Ui_Process):
             self.UpdateDataDescription()
         except:
             print('Loading Testing Data Error')
-
 
     def GenerateVerboseTest(self, normalizer_name, dimension_reduction_name, feature_selector_name, classifier_name, feature_num,
                        current_num, total_num):
@@ -308,13 +311,12 @@ class ProcessConnection(QWidget, Ui_Process):
         if len(self.__process_classifier_list) == 0:
             return False
 
-        cv = CrossValidation()
         if self.radioLeaveOneOut.isChecked():
-            cv.SetCV('LOO')
+            cv = CrossValidationLeaveOneOut()
         elif self.radio5folder.isChecked():
-            cv.SetCV('5-folder')
+            cv = CrossValidation5Folder()
         elif self.radio10Folder.isChecked():
-            cv.SetCV('10-folder')
+            cv = CrossValidation10Folder()
         else:
             return False
 
@@ -406,42 +408,51 @@ class ProcessConnection(QWidget, Ui_Process):
         self.listOnePipeline.addItem(feature_selection_text)
 
 
-        classifier_test = 'Classifier:\n'
+        classifier_text = 'Classifier:\n'
         classifier_num = 0
         if self.checkSVM.isChecked():
-            classifier_test += "SVM\n"
+            classifier_text += "SVM\n"
             classifier_num += 1
         if self.checkLDA.isChecked():
-            classifier_test += "LDA\n"
+            classifier_text += "LDA\n"
             classifier_num += 1
         if self.checkAE.isChecked():
-            classifier_test += "AE\n"
+            classifier_text += "AE\n"
             classifier_num += 1
         if self.checkRF.isChecked():
-            classifier_test += "RF\n"
+            classifier_text += "RF\n"
             classifier_num += 1
         if self.checkLogisticRegression.isChecked():
-            classifier_test += "Logistic Regression\n"
+            classifier_text += "Logistic Regression\n"
             classifier_num += 1
         if self.checkLRLasso.isChecked():
-            classifier_test += "Logistic Regression with Lasso\n"
+            classifier_text += "Logistic Regression with Lasso\n"
             classifier_num += 1
         if self.checkAdaboost.isChecked():
-            classifier_test += "Adaboost\n"
+            classifier_text += "Adaboost\n"
             classifier_num += 1
         if self.checkDecisionTree.isChecked():
-            classifier_test += "Decision Tree\n"
+            classifier_text += "Decision Tree\n"
             classifier_num += 1
         if self.checkGaussianProcess.isChecked():
-            classifier_test += "Gaussian Process\n"
+            classifier_text += "Gaussian Process\n"
             classifier_num += 1
         if self.checkNativeBayes.isChecked():
-            classifier_test += "Native Bayes\n"
+            classifier_text += "Native Bayes\n"
             classifier_num += 1
 
         if classifier_num == 0:
             classifier_num = 1
-        self.listOnePipeline.addItem(classifier_test)
+        self.listOnePipeline.addItem(classifier_text)
+
+        cv_method = "Cross Validation:\n"
+        if self.radio5folder.isChecked():
+            cv_method += "5-Folder\n"
+        elif self.radio10Folder.isChecked():
+            cv_method += "10-folder\n"
+        elif self.radioLeaveOneOut.isChecked():
+            cv_method += 'Leave One Out\n'
+        self.listOnePipeline.addItem(cv_method)
 
         self.listOnePipeline.addItem("Total number of pipelines is:\n{:d}"
                                      .format(normalizer_num * feature_selector_num * feature_num * classifier_num))

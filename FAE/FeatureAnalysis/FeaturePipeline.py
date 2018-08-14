@@ -106,6 +106,11 @@ class FeatureAnalysisPipelines:
                 temp_row.append(index.GetName())
             writer.writerow(temp_row)
 
+            temp_row = []
+            temp_row.append('CrossValidation')
+            temp_row.append(self.__cross_validation.GetName())
+            writer.writerow(temp_row)
+
     def LoadPipelineInfo(self, store_folder):
         index_2_dict = Index2Dict()
         with open(os.path.join(store_folder, 'pipeline_info.csv'), 'r', newline='') as csvfile:
@@ -129,6 +134,8 @@ class FeatureAnalysisPipelines:
                     self.__classifier_list = []
                     for index in row[1:]:
                         self.__classifier_list.append(index_2_dict.GetInstantByIndex(index))
+                elif row[0] == 'CrossValidation':
+                    self.__cross_validation = index_2_dict.GetInstantByIndex(row[1])
                 else:
                     print('Unknown name.')
 
@@ -319,6 +326,16 @@ class OnePipeline:
 
         self.__cv.SetClassifier(self.__classifier)
         train_metric, val_metric, test_metric = self.__cv.Run(raw_train_data_container, raw_test_data_conainer, store_folder)
+
+        if store_folder:
+            with open(os.path.join(store_folder, 'pipeline_info.csv'), 'w', newline='') as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerow(['Normalizer', self.__normalizer.GetName()])
+                writer.writerow(['DimensionReduction', self.__dimension_reduction.GetName()])
+                writer.writerow(['FeatureSelector', self.__feature_selector.GetName()])
+                writer.writerow(['FeatureNumber', len(raw_train_data_container.GetFeatureName())])
+                writer.writerow(['Classifier', self.__classifier.GetName()])
+                writer.writerow(['CrossValidation', self.__cv.GetName()])
 
         return train_metric, val_metric, test_metric
 
