@@ -31,6 +31,11 @@ class DimensionReduction:
     def GetTransform(self):
         return self.__is_transform
 
+    def GetDescription(self):
+        text = "Since the dimension of feature space is low enough, we did not used any dimension reduction method " \
+               "here to reduce the dimension of feature space. "
+        return text
+
 class DimensionReductionByPCA(DimensionReduction):
     def __init__(self, number=0):
         super(DimensionReductionByPCA, self).__init__(number=number, is_transform=True)
@@ -58,6 +63,11 @@ class DimensionReductionByPCA(DimensionReduction):
         new_data_container.UpdateFrameByData()
 
         return new_data_container
+
+    def GetDescription(self):
+        text = "Since the dimension of feature space was high, we applied principle component analysis (PCA) on the feature matrix. " \
+               "The feature vector of the transformed feature matrix was independent to each other. "
+        return text
 
 
     def Run(self, data_container, store_folder=''):
@@ -144,3 +154,8 @@ class DimensionReductionByCos(DimensionReduction):
 
         return new_data_container
 
+    def GetDescription(self):
+        text = "Since the dimension of feature space was high, we compared the similarity of each feature pair. " \
+               "If the cosine value of the feature pair was larger than 0.86, we removed one of them. After this " \
+               "process, the dimension of the feature space was reduced and each feature was independent to each other. "
+        return text

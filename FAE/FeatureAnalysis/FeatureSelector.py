@@ -76,6 +76,11 @@ class FeatureSelector:
 
         return new_data_container
 
+    def GetDescription(self):
+        text = "Since the number of features is not too high, we did not apply any feature selection method here. " \
+               "All features were used to build the final model. "
+        return text
+
     __metaclass__ = ABCMeta
     @abstractmethod
     def Run(self, data_container, store_folder):
@@ -114,41 +119,6 @@ class RemoveSameFeatures(FeatureSelector):
             feature_list.remove(ind)
 
         return feature_list
-
-    def Run(self, data_container, store_folder=''):
-        new_data_container = self.SelectFeatureByIndex(data_container, self.GetSelectedFeatureIndex(data_container), is_replace=False)
-        if store_folder and os.path.isdir(store_folder):
-            feature_store_path = os.path.join(store_folder, 'selected_feature.csv')
-            featureinfo_store_path = os.path.join(store_folder, 'feature_select_info.csv')
-
-            new_data_container.Save(feature_store_path)
-            SaveSelectInfo(new_data_container, featureinfo_store_path, is_merge=False)
-
-        return new_data_container
-
-class RemoveCosSimilarityFeatures(FeatureSelector):
-    def __init__(self, threshold=0.86):
-        super(RemoveCosSimilarityFeatures, self).__init__()
-        self.__threshold = threshold
-
-    def __CosSimilarity(self, data1, data2):
-        return np.abs(np.dot(data1, data2))
-
-    def GetSelectedFeatureIndex(self, data_container):
-        data = data_container.GetArray()
-        data /= np.linalg.norm(data, ord=2, axis=0)
-
-        selected_feature_list = []
-        for feature_index in range(data.shape[1]):
-            is_similar = False
-            for save_index in selected_feature_list:
-                if self.__CosSimilarity(data[:, save_index], data[:, feature_index]) > self.__threshold:
-                    is_similar = True
-                    break
-            if not is_similar:
-                selected_feature_list.append(feature_index)
-
-        return selected_feature_list
 
     def Run(self, data_container, store_folder=''):
         new_data_container = self.SelectFeatureByIndex(data_container, self.GetSelectedFeatureIndex(data_container), is_replace=False)
@@ -234,6 +204,13 @@ class FeatureSelectByANOVA(FeatureSelectByAnalysis):
 
     def GetName(self):
         return 'ANOVA'
+
+    def GetDescription(self):
+        text = "Before build the model, we used analysis of variance (ANOVA) to select features. ANOVA was a commen method " \
+               "to explore the significant features corresponding to the labels. F-value was calculated to evaluate the relationship " \
+               "between features and the label. We sorted features according to the corresponding F-value and selected sepcific " \
+               "number of features to build the model. "
+        return text
 
     def Run(self, data_container, store_folder=''):
         selected_index, f_value, p_value = self.GetSelectedFeatureIndex(data_container)
@@ -436,6 +413,8 @@ class FeatureSelectPipeline(FeatureSelector):
         except:
             print('The last selector does not have method SetSelectedFeatureNumber')
 
+    def GetSelectedFeatureNumber(self):
+        return self.__selected_feature_number
 
     def GetName(self):
         try:

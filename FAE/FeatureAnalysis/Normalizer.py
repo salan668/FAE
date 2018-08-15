@@ -54,6 +54,10 @@ class NormalizerNone(Normalizer):
 
         return data_container
 
+    def GetDescription(self):
+        text = "We did not apply any normalization method on the feature matrix. "
+        return text
+
 class NormalizerUnit(Normalizer):
     def __init__(self):
         super(NormalizerUnit, self).__init__()
@@ -74,6 +78,11 @@ class NormalizerUnit(Normalizer):
             self.Save(store_path=os.path.join(store_folder, 'unit_normalization.csv'))
 
         return data_container
+
+    def GetDescription(self):
+        text = "We applied the normalization on the feature matrix. For each feature vector, we calculated the L2 norm " \
+               "and divided by it. Then the feature vector was mapped to an unit vector. "
+        return text
 
 class NormalizerZeroCenter(Normalizer):
     def __init__(self):

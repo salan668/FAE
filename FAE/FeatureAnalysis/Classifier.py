@@ -58,6 +58,10 @@ class Classifier:
     def Fit(self):
         self.__model.fit(self._x, self._y)
 
+    def GetDescription(self):
+        text = "We did not use any classifier. "
+        return
+
     def Predict(self, x):
         return self.__model.predict(x)
 
@@ -106,6 +110,13 @@ class SVM(Classifier):
             return super(SVM, self).GetModel().predict_proba(x)[:, 1]
         else:
             return super(SVM, self).Predict(x)
+
+    def GetDescription(self):
+        text = "We used support vector machine (SVM) as the classifier. SVM was an effective and robust classifier to " \
+               "build the model. The kernel function has the ability to map the features into a higher dimension to search " \
+               "the hyper-plane for separating the cases with different labels. Here we used the linear kernel function because " \
+               "it was easier to explain the coefficients of the features for the final model. "
+        return text
 
     def Save(self, store_path):
         if not os.path.isdir(store_path):
