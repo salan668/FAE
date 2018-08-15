@@ -47,19 +47,13 @@ class DataSeparate:
         test_data_container = self.__SetNewData(data_container, testing_index_list)
 
         if store_folder:
-            train_path = os.path.join(store_folder, 'train')
-            if not os.path.exists(train_path):
-                os.mkdir(train_path)
-            train_data_container.Save(os.path.join(train_path, 'numeric_feature.csv'))
+            train_data_container.Save(os.path.join(store_folder, 'train_numeric_feature.csv'))
             df_training = pd.DataFrame(self._training_index)
             df_training.to_csv(os.path.join(store_folder, 'training_index.csv'), sep=',', quotechar='"')
 
-            test_path = os.path.join(store_folder, 'test')
-            if not os.path.exists(test_path):
-                os.mkdir(test_path)
+            test_data_container.Save(os.path.join(store_folder, 'test_numeric_feature.csv'))
             df_testing = pd.DataFrame(testing_index_list)
             df_testing.to_csv(os.path.join(store_folder, 'testing_index.csv'), sep=',', quotechar='"')
-            test_data_container.Save(os.path.join(test_path, 'numeric_feature.csv'))
 
         return train_data_container, test_data_container
 
