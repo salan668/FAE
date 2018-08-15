@@ -105,6 +105,13 @@ class NormalizerZeroCenter(Normalizer):
 
         return data_container
 
+    def GetDescription(self):
+        text = "We applied the normalization on the feature matrix. For each feature vector, we calculated the mean " \
+               "value and the standard deviation. Each feature vector was subtracted by the mean value and the divided " \
+               "by the standard deviation. After normalization process, each vector has zero center and unit standard " \
+               "deviation. "
+        return text
+
 class NormalizerZeroCenterAndUnit(Normalizer):
     def __init__(self):
         super(NormalizerZeroCenterAndUnit, self).__init__()
@@ -126,6 +133,11 @@ class NormalizerZeroCenterAndUnit(Normalizer):
             self.Save(store_path=os.path.join(store_folder, 'zero_center_unit_normalization.csv'))
 
         return data_container
+
+    def GetDescription(self):
+        text = "We applied the normalization on the feature matrix.  Each feature vector was subtracted by the mean " \
+               "value of the vector and the divided by the length of it. "
+        return text
 
 if __name__ == '__main__':
     from FAE.DataContainer.DataContainer import DataContainer

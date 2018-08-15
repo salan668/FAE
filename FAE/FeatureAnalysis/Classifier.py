@@ -60,7 +60,7 @@ class Classifier:
 
     def GetDescription(self):
         text = "We did not use any classifier. "
-        return
+        return text
 
     def Predict(self, x):
         return self.__model.predict(x)
@@ -147,9 +147,14 @@ class LDA(Classifier):
         else:
             return super(LDA, self).Predict(x)
 
+    def GetDescription(self):
+        text = "We used linear discriminant analysis (LDA) as the classifier. LDA was an linear classifier by " \
+               "fitting class conditional densities to the data and using Bayes’rule. "
+        return text
+
     def Save(self, store_path):
         if not os.path.isdir(store_path):
-            print('The store function of SVM must be a folder path')
+            print('The store function of LDA must be a folder path')
             return
 
         # Save the coefficients
@@ -170,6 +175,12 @@ class RandomForest(Classifier):
     def GetName(self):
         return 'RF'
 
+    def GetDescription(self):
+        text = "We used random forest as the classifier. Random forest is an ensemble learning method which combining " \
+               "multiple decision trees at different subset of the training data set. Random forest is an effective " \
+               "method to avoid over-fitting. "
+        return text
+
     def Predict(self, x, is_probability=True):
         if is_probability:
             return super(RandomForest, self).GetModel().predict_proba(x)[:, 1]
@@ -186,6 +197,13 @@ class AE(Classifier):
     def GetName(self):
         return 'AE'
 
+    def GetDescription(self):
+        text = "We used multi-layer perceptron (MLP), sometimes called auto-encoder (AE), as the classifier. MLP is based " \
+               "neural network with multi-hidden layers to find the mapping from inputted features to the label. Here " \
+               "we used 1 hidden layers with 100 hidden units. The non-linear activate function was rectified linear " \
+               "unit function and the optimizer was Adam with step 0.001. "
+        return text
+
     def Predict(self, x, is_probability=True):
         if is_probability:
             return super(AE, self).GetModel().predict_proba(x)[:, 1]
@@ -199,6 +217,12 @@ class AdaBoost(Classifier):
 
     def GetName(self):
         return 'AB'
+
+    def GetDescription(self):
+        text = "We used AdaBoost as the classifier. AdaBoost is a meta-algorithm that conjunct other type of algorithms " \
+               "and combine them to get a final output of boosted classifier. AdaBoost is sensitive to the noise and " \
+               "the outlier. Over-fitting can also be avoided by AdaBoost. Here we used decision tree as the base classifier. "
+        return text
 
     def Predict(self, x, is_probability=True):
         if is_probability:
@@ -214,6 +238,11 @@ class DecisionTree(Classifier):
     def GetName(self):
         return 'DT'
 
+    def GetDescription(self):
+        text = "We used decision tree as the classifier. Decision tree is a non-parametric supervised learning method " \
+               "and can be used for classification with high interpretation. "
+        return text
+
     def Predict(self, x, is_probability=True):
         if is_probability:
             return super(DecisionTree, self).GetModel().predict_proba(x)[:, 1]
@@ -228,25 +257,35 @@ class GaussianProcess(Classifier):
     def GetName(self):
         return 'GP'
 
+    def GetDescription(self):
+        text = "We used Gaussian process as the classifier. Gaussian process combines the features to build a joint " \
+               "distribution to estimate the probability of the classification. "
+        return text
+
     def Predict(self, x, is_probability=True):
         if is_probability:
             return super(GaussianProcess, self).GetModel().predict_proba(x)[:, 1]
         else:
             return super(GaussianProcess, self).Predict(x)
 
-class NativeBayes(Classifier):
+class NaiveBayes(Classifier):
     def __init__(self, **kwargs):
-        super(NativeBayes, self).__init__()
-        super(NativeBayes, self).SetModel(GaussianNB(**kwargs))
+        super(NaiveBayes, self).__init__()
+        super(NaiveBayes, self).SetModel(GaussianNB(**kwargs))
 
     def GetName(self):
         return 'NB'
 
+    def GetDescription(self):
+        text = "We used naive Bayes as the classifier. Naive Bayes is a kind of probabilistic classifiers based on Bayes" \
+               "theorem. Naive Bayes requires  number of parameters linear in the number of features. "
+        return text
+
     def Predict(self, x, is_probability=True):
         if is_probability:
-            return super(NativeBayes, self).GetModel().predict_proba(x)[:, 1]
+            return super(NaiveBayes, self).GetModel().predict_proba(x)[:, 1]
         else:
-            return super(NativeBayes, self).Predict(x)
+            return super(NaiveBayes, self).Predict(x)
 
 class LR(Classifier):
     def __init__(self, **kwargs):
@@ -255,6 +294,11 @@ class LR(Classifier):
 
     def GetName(self):
         return 'LR'
+
+    def GetDescription(self):
+        text = "We used logistic regression as the classifier. Logistic regression is a linear classifier that " \
+               "combines all the features. A hyper-plane was searched in the high dimension to separate the samples.  "
+        return text
 
     def Predict(self, x, is_probability=True):
         if is_probability:
@@ -284,6 +328,12 @@ class LRLasso(Classifier):
 
     def GetName(self):
         return 'LRLasso'
+
+    def GetDescription(self):
+        text = "We used logistic regression with LASSO constrain as the classifier. Logistic regression with LASSON " \
+               "constrain is a linear classifier based on logistic regression. L1 norm is added in the final lost " \
+               "function and the weights was constrained, which make the features sparse. "
+        return text
 
     def Predict(self, x, is_probability=True):
         if is_probability:
@@ -347,7 +397,7 @@ if __name__ == '__main__':
     clf.Fit()
     print(clf.GetName(), clf.Predict([[1, 1]]))
 
-    clf = NativeBayes()
+    clf = NaiveBayes()
     clf.SetData(X, y)
     clf.Fit()
     print(clf.GetName(), clf.Predict([[1, 1]]))

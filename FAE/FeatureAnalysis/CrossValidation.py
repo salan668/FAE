@@ -65,6 +65,16 @@ class CrossValidationLeaveOneOut(CrossValidation):
     def GetName(self):
         return 'LeaveOneOut'
 
+    def GetDescription(self, is_test_data_container=False):
+        if is_test_data_container:
+            text = "To determine the hyper-parameter (e.g. the number of features) of model, we applied cross validation " \
+                   "with leave-one-out on the training data set. The hyper-parameters were set according to the model performance " \
+                   "on the validation data set. "
+        else:
+            text = "To prove the performance of the model, we applied corss validation with leave-one-out on the data set. "
+
+        return text
+
     def Run(self, data_container, test_data_container=DataContainer(), store_folder=''):
         train_pred_list, train_label_list, val_pred_list, val_label_list = [], [], [], []
 

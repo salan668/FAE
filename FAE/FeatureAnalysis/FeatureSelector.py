@@ -343,6 +343,11 @@ class FeatureSelectByRelief(FeatureSelectByAnalysis):
     def GetName(self):
         return 'Relief'
 
+    def GetDescription(self):
+        text = "Before build the model, we used Relief to select features. Relief selects sub data set and find the " \
+               "relative features according to the label recursively. "
+        return text
+
     def Run(self, data_container, store_folder=''):
         new_data_container = self.SelectFeatureByIndex(data_container, self.GetSelectedFeatureIndex(data_container), is_replace=False)
         if store_folder and os.path.isdir(store_folder):
@@ -361,6 +366,11 @@ class FeatureSelectByRFE(FeatureSelectByAnalysis):
     def __init__(self, selected_feature_number=1, classifier=SVC(kernel='linear')):
         super(FeatureSelectByRFE, self).__init__(selected_feature_number)
         self.__classifier = classifier
+
+    def GetDescription(self):
+        text = "Before build the model, we used recursive feature elimination (RFE) to select features. The goal of RFE " \
+               "is to select features based on a classifier by recursively considering smaller set of the features. "
+        return text
 
     def GetSelectedFeatureIndex(self, data_container):
         data = data_container.GetArray()

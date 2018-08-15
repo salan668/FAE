@@ -307,7 +307,7 @@ class ProcessConnection(QWidget, Ui_Process):
         if self.checkGaussianProcess.isChecked():
             self.__process_classifier_list.append(GaussianProcess())
         if self.checkNativeBayes.isChecked():
-            self.__process_classifier_list.append(NativeBayes())
+            self.__process_classifier_list.append(NaiveBayes())
         if len(self.__process_classifier_list) == 0:
             return False
 

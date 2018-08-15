@@ -41,8 +41,8 @@ class Index2Dict:
             return DecisionTree()
         elif name == AdaBoost().GetName():
             return AdaBoost()
-        elif name == NativeBayes().GetName():
-            return NativeBayes()
+        elif name == NaiveBayes().GetName():
+            return NaiveBayes()
         elif name == GaussianProcess().GetName():
             return GaussianProcess()
         elif name == LR().GetName():
