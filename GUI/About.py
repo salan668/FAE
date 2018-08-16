@@ -40,7 +40,7 @@ class Ui_Form(object):
 "songyangmri@gmail.com\n"
 "\n"
 "Jing Zhang\n"
-"798582238@qq.com\n"
+"zjzjhai@qq.com\n"
 "\n"
 "Guang Yang\n"
 "gyang@phy.ecnu.edu.cn\n"
@@ -51,5 +51,5 @@ class Ui_Form(object):
 " Tel: +86-021-62233873\n"
 "\n"
 " Version:\n"
-"0.1.0"))
+"0.2.0"))
 

@@ -1,12 +1,11 @@
-import numpy as np
 from copy import deepcopy
-import pandas as pd
 
 from PyQt5.QtWidgets import *
 from GUI.Visualization import Ui_Visualization
 
 from FAE.FeatureAnalysis.Classifier import *
 from FAE.FeatureAnalysis.FeaturePipeline import FeatureAnalysisPipelines
+from FAE.Report.Report import Report
 
 from FAE.Visualization.DrawROCList import DrawROCList
 from FAE.Visualization.PlotMetricVsFeatureNumber import DrawCurve, DrawBar
@@ -25,7 +24,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
 
         self.buttonLoadResult.clicked.connect(self.LoadAll)
         self.buttonClearResult.clicked.connect(self.ClearAll)
-        self.buttonSaveFigure.clicked.connect(self.Save)
+        self.buttonSave.clicked.connect(self.Save)
 
         self.__plt_roc = self.canvasROC.getFigure().add_subplot(111)
         self.__plt_plot = self.canvasPlot.getFigure().add_subplot(111)
@@ -94,13 +93,13 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                 return
 
             self.buttonClearResult.setEnabled(True)
-            self.buttonSaveFigure.setEnabled(True)
+            self.buttonSave.setEnabled(True)
             self.buttonLoadResult.setEnabled(False)
 
     def ClearAll(self):
 
         self.buttonLoadResult.setEnabled(True)
-        self.buttonSaveFigure.setEnabled(False)
+        self.buttonSave.setEnabled(False)
         self.buttonClearResult.setEnabled(False)
 
         self.checkROCTrain.setChecked(False)

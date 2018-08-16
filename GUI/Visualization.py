@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'Visualization.ui'
+# Form implementation generated from reading ui file 'GUI\Visualization.ui'
 #
-# Created by: PyQt5 UI code generator 5.11.2
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -33,10 +33,10 @@ class Ui_Visualization(object):
         self.textEditDescription = QtWidgets.QTextEdit(Visualization)
         self.textEditDescription.setObjectName("textEditDescription")
         self.verticalLayout.addWidget(self.textEditDescription)
-        self.buttonSaveFigure = QtWidgets.QPushButton(Visualization)
-        self.buttonSaveFigure.setEnabled(False)
-        self.buttonSaveFigure.setObjectName("buttonSaveFigure")
-        self.verticalLayout.addWidget(self.buttonSaveFigure)
+        self.buttonSave = QtWidgets.QPushButton(Visualization)
+        self.buttonSave.setEnabled(False)
+        self.buttonSave.setObjectName("buttonSave")
+        self.verticalLayout.addWidget(self.buttonSave)
         self.horizontalLayout_2.addLayout(self.verticalLayout)
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
@@ -212,7 +212,7 @@ class Ui_Visualization(object):
         Visualization.setWindowTitle(_translate("Visualization", "Form"))
         self.buttonLoadResult.setText(_translate("Visualization", "Load"))
         self.buttonClearResult.setText(_translate("Visualization", "Clear"))
-        self.buttonSaveFigure.setText(_translate("Visualization", "Save Figure"))
+        self.buttonSave.setText(_translate("Visualization", "Save Figure"))
         self.label_7.setText(_translate("Visualization", "Show:"))
         self.label.setText(_translate("Visualization", "Maximum AUC along:"))
         self.checkMaxFeatureNumber.setText(_translate("Visualization", "Feature Number"))

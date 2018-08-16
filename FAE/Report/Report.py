@@ -1,6 +1,8 @@
 from pdfdocument.document import PDFDocument
 import glob
 import numpy as np
+import os
+import pandas as pd
 
 from FAE.FeatureAnalysis.FeaturePipeline import OnePipeline
 from FAE.DataContainer.DataContainer import DataContainer
@@ -10,7 +12,6 @@ class Report:
         self.__paragraph_list = []
         self.__current_paragraph = ''
         pass
-
 
     def Run(self, training_data_container, pipeline, result_folder, store_folder, testing_data_container=DataContainer()):
         # Data Description
@@ -35,11 +36,11 @@ class Report:
 
         # Method Description
         method_description_text = "    "
-        method_description_text += one_pipeline.GetNormalizer().GetDescription()
-        method_description_text += one_pipeline.GetDimensionReduction().GetDescription()
-        method_description_text += one_pipeline.GetFeatureSelector().GetDescription()
-        method_description_text += one_pipeline.GetClassifier().GetDescription()
-        method_description_text += one_pipeline.GetCrossValidatiaon().GetDescription()
+        method_description_text += pipeline.GetNormalizer().GetDescription()
+        method_description_text += pipeline.GetDimensionReduction().GetDescription()
+        method_description_text += pipeline.GetFeatureSelector().GetDescription()
+        method_description_text += pipeline.GetClassifier().GetDescription()
+        method_description_text += pipeline.GetCrossValidatiaon().GetDescription()
         method_description_text += "\n"
 
         statistic_description_text = "    The performance of the model was evaluated using receiver operating characteristic " \
@@ -133,20 +134,15 @@ class Report:
               "(gyang@phy.ecnu.edu.cn). Welcome any co-operation and discussion. ")
         pdf.generate()
 
-
-if __name__ == '__main__':
+def GenerateReport():
     training_data_container = DataContainer()
     training_data_container.Load(r'..\..\Example\numeric_feature.csv')
-
-    from FAE.FeatureAnalysis.Normalizer import *
-    from FAE.FeatureAnalysis.DimensionReduction import *
-    from FAE.FeatureAnalysis.FeatureSelector import *
-    from FAE.FeatureAnalysis.Classifier import *
-    from FAE.FeatureAnalysis.CrossValidation import *
-
 
     one_pipeline = OnePipeline()
     one_pipeline.LoadPipeline(r'C:\MyCode\FAEGitHub\FAE\Example\report_temp\NormUnit_Cos_ANOVA_5_SVM\pipeline_info.csv')
 
     report = Report()
     report.Run(training_data_container, one_pipeline, r'..\..\Example\report_temp', r'..\..\Example\report')
+
+if __name__ == '__main__':
+    GenerateReport()

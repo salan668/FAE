@@ -44,7 +44,7 @@
           <widget class="QTextEdit" name="textEditDescription"/>
          </item>
          <item>
-          <widget class="QPushButton" name="buttonSaveFigure">
+          <widget class="QPushButton" name="buttonSave">
            <property name="enabled">
             <bool>false</bool>
            </property>
@@ -356,7 +356,7 @@
   <customwidget>
    <class>MatplotlibWidget</class>
    <extends>QWidget</extends>
-   <header>MatplotlibWidget.h</header>
+   <header location="global">MatplotlibWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

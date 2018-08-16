@@ -12,6 +12,7 @@ from FAEGUI.PrepareConnection import PrepareConnection
 from FAEGUI.ProcessConnection import ProcessConnection
 from FAEGUI.VisualizationConnection import VisualizationConnection
 from FAEGUI.AboutConnection import AboutConnection
+from FAEGUI.ReportConnection import ReportConnection
 
 class Ui_TabWidget(object):
     def setupUi(self, TabWidget):
@@ -19,6 +20,7 @@ class Ui_TabWidget(object):
         self.prepare = PrepareConnection()
         self.process = ProcessConnection()
         self.visualization = VisualizationConnection()
+        self.report = ReportConnection()
         self.about = AboutConnection()
 
         TabWidget.setObjectName("TabWidget")
@@ -34,18 +36,22 @@ class Ui_TabWidget(object):
         self.tabVisualization = self.visualization
         TabWidget.addTab(self.tabVisualization, "")
 
+        self.tabReport = self.report
+        TabWidget.addTab(self.tabReport, "")
+
         self.tabAbout = self.about
         TabWidget.addTab(self.tabAbout, "")
 
         self.retranslateUi(TabWidget)
-        TabWidget.setCurrentIndex(3)
+        TabWidget.setCurrentIndex(4)
         QtCore.QMetaObject.connectSlotsByName(TabWidget)
 
     def retranslateUi(self, TabWidget):
         _translate = QtCore.QCoreApplication.translate
-        TabWidget.setWindowTitle(_translate("TabWidget", "FeAture Explorer (FAE) Only For Research, v.0.1.0"))
+        TabWidget.setWindowTitle(_translate("TabWidget", "FeAture Explorer (FAE), Research used Only, v.0.2.0"))
 
         TabWidget.setTabText(TabWidget.indexOf(self.tabPrepare), _translate("TabWidget", "Prepare"))
         TabWidget.setTabText(TabWidget.indexOf(self.tabProcess), _translate("TabWidget", "Process"))
         TabWidget.setTabText(TabWidget.indexOf(self.tabVisualization), _translate("TabWidget", "Visualization"))
+        TabWidget.setTabText(TabWidget.indexOf(self.tabReport), _translate("TabWidget", "Report"))
         TabWidget.setTabText(TabWidget.indexOf(self.tabAbout), _translate("TabWidget", "About"))
