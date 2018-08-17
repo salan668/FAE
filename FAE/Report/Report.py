@@ -61,9 +61,21 @@ class Report:
 
         from FAE.Visualization.DrawROCList import DrawROCList
         if not testing_data_container.IsEmpty():
+            result_description_text = "We found that the model based on {:d} features can get the highest AUC on the " \
+                                      "validation data set. The AUC and the accuracy could achieve {:.3f} and {:.3f}, respectively. In this point, " \
+                                      "The AUC and the accuracy of the model achieve {:.3f} and {:.3f} on testing data set. " \
+                                      "The clinical statistics in the diagonsis and the selected features were shown in Table 1 and Table 2. " \
+                                      "The ROC curve was shown in Figure 1. \n" \
+                                      "".format(pipeline.GetFeatureSelector().GetSelectedFeatureNumber(),
+                                                float(result.loc['val_auc'].values),
+                                                float(result.loc['val_accuracy'].values),
+                                                float(result.loc['test_auc'].values),
+                                                float(result.loc['test_accuracy'].values)
+                                                )
+
             test_pred = np.load(os.path.join(result_folder, 'test_predict.npy'))
             test_label = np.load(os.path.join(result_folder, 'test_label.npy'))
-            DrawROCList([train_pred, val_pred, test_pred], [train_label, val_label, test_label], name_list=['train', 'val'],
+            DrawROCList([train_pred, val_pred, test_pred], [train_label, val_label, test_label], name_list=['train', 'val', 'test'],
                         store_path=os.path.join(store_folder, 'ROC.jpg'), is_show=False)
         else:
             result_description_text = "We found that the model based on {:d} features can get the highest AUC on the " \
@@ -130,7 +142,7 @@ class Report:
         pdf.image(os.path.join(store_folder, 'ROC.jpg'))
         pdf.table_header(figure_title)
 
-        pdf.end_connect("Thanks for using FAE v.0.1.1. If you need a specific report, please connect to Yang Song (songyangmri@gmail.com) or Guang Yang "
+        pdf.end_connect("Thanks for using FAE v.0.2.0. If you need a specific report, please connect to Yang Song (songyangmri@gmail.com) or Guang Yang "
               "(gyang@phy.ecnu.edu.cn). Welcome any co-operation and discussion. ")
         pdf.generate()
 

@@ -378,10 +378,15 @@ class ProcessConnection(QWidget, Ui_Process):
         self.listOnePipeline.addItem(normalization_text)
 
         preprocess_test = 'Preprocess:\n'
+        dimension_reduction_num = 0
         if self.checkPCA.isChecked():
             preprocess_test += "PCA\n"
+            dimension_reduction_num += 1
         if self.checkRemoveSimilarFeatures.isChecked():
             preprocess_test += "Remove Similary Features\n"
+            dimension_reduction_num += 1
+        if dimension_reduction_num == 0:
+            dimension_reduction_num = 1
         self.listOnePipeline.addItem(preprocess_test)
 
         feature_selection_text = "Feature Selection:\n"
@@ -455,6 +460,6 @@ class ProcessConnection(QWidget, Ui_Process):
         self.listOnePipeline.addItem(cv_method)
 
         self.listOnePipeline.addItem("Total number of pipelines is:\n{:d}"
-                                     .format(normalizer_num * feature_selector_num * feature_num * classifier_num))
+                                     .format(normalizer_num * dimension_reduction_num * feature_selector_num * feature_num * classifier_num))
 
 
