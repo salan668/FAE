@@ -3,6 +3,7 @@ import glob
 import numpy as np
 import os
 import pandas as pd
+import csv
 
 from FAE.FeatureAnalysis.FeaturePipeline import OnePipeline
 from FAE.DataContainer.DataContainer import DataContainer
@@ -116,8 +117,11 @@ class Report:
                 table_2.append([str(index), "{:.3f}".format(coef.loc[index].values[0])])
 
         else:
-            coef = pd.read_csv(os.path.join(os.path.join(result, 'feature_select_info.csv')), index_col=0)
-            features = list(coef.index['selected_faeture'].values)
+            with open(os.path.join(result_folder, 'feature_select_info.csv'), 'r', newline='') as file:
+                reader = csv.reader(file)
+                for row in reader:
+                    if row[0] == 'selected_feature':
+                        features = row[1:]
             table_2_header = 'Table 2. The selected of features. '
             table_2 = [['Features', 'Rank']]
             for index in range(len(features)):
