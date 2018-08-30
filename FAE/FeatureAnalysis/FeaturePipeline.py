@@ -344,7 +344,7 @@ class OnePipeline:
         if self.__normalizer:
             raw_train_data_container = self.__normalizer.Run(raw_train_data_container, store_folder)
             if not test_data_container.IsEmpty():
-                raw_test_data_conainer = self.__normalizer.Run(raw_test_data_conainer)
+                raw_test_data_conainer = self.__normalizer.Run(raw_test_data_conainer, store_folder, is_test=True)
 
         if self.__dimension_reduction:
             raw_train_data_container = self.__dimension_reduction.Run(raw_train_data_container, store_folder)
