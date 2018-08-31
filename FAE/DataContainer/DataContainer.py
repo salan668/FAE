@@ -8,6 +8,7 @@ import os
 import pandas as pd
 
 import copy
+import math
 
 
 class DataContainer:
@@ -25,6 +26,51 @@ class DataContainer:
             self.UpdateFrameByData()
         else:
             self.__df = None
+
+    def __IsNumber(self, input_data):
+        try:
+            float(input_data)
+            return True
+        except ValueError:
+            pass
+
+        try:
+            import unicodedata
+            unicodedata.numeric(input_data)
+            return True
+        except (TypeError, ValueError):
+            pass
+
+        return False
+
+    def IsValidNumber(self, input_data):
+        if not self.__IsNumber(input_data):
+            return False
+
+        if math.isnan(float(input_data)):
+            return False
+
+        return True
+
+    def IsEmpty(self):
+        if self._array.size > 0:
+            return False
+        else:
+            return True
+
+    def HasNonValidNumber(self):
+        array_flat = self._array.flatten()
+        for index in range(self._array.size):
+            if not self.IsValidNumber(array_flat[index]):
+                return True
+        return False
+
+    def FindNonValidNumberIndex(self):
+        for index0 in range(self._array.shape[0]):
+            for index1 in range(self._array.shape[1]):
+                if not self.IsValidNumber(self._array[index0,index1]):
+                    return index0,index1
+        return None,None
 
     def Save(self, store_path):
         self.UpdateFrameByData()
@@ -73,7 +119,7 @@ class DataContainer:
             index = np.nan
         self.__feature_name.pop(index)
         self.__label = self.__df[label_name].values
-        self._array = self.__df[self.__feature_name].values
+        self._array = np.asarray(self.__df[self.__feature_name].values, dtype=np.float32)
 
     def UpdateFrameByData(self):
         data = np.concatenate((self.__label[..., np.newaxis], self._array), axis=1)
@@ -147,73 +193,6 @@ class DataContainer:
 
         self.UpdateDataByFrame()
 
-    ## Normalizaion
-    def UsualNormalize(self, store_path='', axis=0):
-        mean_value = np.average(self._array, axis=axis)
-        std_value = np.std(self._array, axis=axis)
-        self._array -= mean_value
-        self._array /= std_value
-        self._array = np.nan_to_num(self._array)
-
-        self.UpdateFrameByData()
-
-        if store_path != '':
-            data = np.stack((mean_value, std_value), axis=0)
-
-            header = []
-            if axis == 0:
-                header = copy.deepcopy(self.__feature_name)
-            elif axis == 1:
-                header = copy.deepcopy(self.__case_name)
-            index = ['mean', 'std']
-
-            assert (len(header) == data.shape[1])
-            df = pd.DataFrame(data, columns=header, index=index)
-            df.to_csv(store_path)
-
-    def UsualAndL2Normalize(self, store_path='', axis=0):
-        mean_value = np.average(self._array, axis=axis)
-        std_value = np.std(self._array, axis=axis)
-        self._array -= mean_value
-        self._array /= std_value
-        self._array = np.nan_to_num(self._array)
-        self._array /= np.linalg.norm(self._array, ord=2, axis=0)
-
-        self.UpdateFrameByData()
-
-        if store_path != '':
-            data = np.stack((mean_value, std_value), axis=0)
-
-            header = []
-            if axis == 0:
-                header = copy.deepcopy(self.__feature_name)
-            elif axis == 1:
-                header = copy.deepcopy(self.__case_name)
-            index = ['mean', 'std']
-
-            assert (len(header) == data.shape[1])
-            df = pd.DataFrame(data, columns=header, index=index)
-            df.to_csv(store_path)
-
-    def ArtefactNormalize(self, normalization_file):
-        '''
-        This function can use the existing file with the infoamtion of the normalization. It is usually used on the fact
-        that a learnt model is used to process the testing data set.
-        :param normalization_file: the stored file with the information of the normalization.
-        :return:
-        '''
-        df = pd.read_csv(normalization_file, header=0, index_col=0)
-        mean_value = df.loc['mean'].values
-        std_value = df.loc['std'].values
-
-        if mean_value.size != self._array.shape[1] or mean_value.size != self._array.shape[1]:
-            print('Check the data shape and the normalization file')
-            return None
-        self._array -= mean_value
-        self._array /= std_value
-        self._array = np.nan_to_num(self._array)
-
-        self.UpdateFrameByData()
 
 def main():
     # test FeatureReader
@@ -231,8 +210,6 @@ def main():
     data.ShowInformation()
     data.UsualNormalize(r'..\Example\normalization.csv')
     data.ArtefactNormalize(r'..\Example\normalization.csv')
-
-
 
 if __name__ == '__main__':
     main()

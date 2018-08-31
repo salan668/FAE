@@ -157,7 +157,6 @@ class RadiomicsFeatureExtractor:
                 writer.writerow([feature_name, feature_value])
 
     def __IterateCase(self, root_folder, store_path=''):
-        num_cases = 0
         case_name_list = os.listdir(root_folder)
         case_name_list.sort()
         for case_name in case_name_list:
@@ -203,10 +202,7 @@ class RadiomicsFeatureExtractor:
     def Execute(self, root_folder, store_folder=''):
         if not os.path.exists(store_folder):
             os.mkdir(store_folder)
-        self.__IterateCase(root_folder, store_path=os.path.join(store_folder, 'Features.csv'))
-        # label_reader = LabelReader()
-        # label_reader.LoadLabel(root_folder=root_folder)
-        # label_reader.Save(os.path.join(store_folder, 'label.npy'))
+        self.__IterateCase(root_folder, store_path=os.path.join(store_folder, 'features.csv'))
 
 def main():
     extractor = RadiomicsFeatureExtractor(r'..\RadiomicsParams.yaml', r'x:\Radiomics_ZhangJing\MM_Ly\FileConfig.csv', ['T1C'])
