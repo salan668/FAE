@@ -28,7 +28,7 @@ def DrawCurve(x, y_list, xlabel='', ylabel='', title='', name_list=[], store_pat
     axes.set_ylabel(ylabel)
     axes.set_title(title)
     if name_list != []:
-        axes.legend(name_list)
+        axes.legend(name_list, loc=4)
 
     if store_path:
         # plt.tight_layout()
@@ -61,7 +61,7 @@ def DrawBar(x_ticks, y_list, ylabel='', title='', name_list=[], store_path='', i
     axes.set_xticklabels(x_ticks)
 
     if name_list != []:
-        axes.legend(name_list)
+        axes.legend(name_list, loc=4)
 
     if store_path:
         # plt.tight_layout()
