@@ -69,6 +69,7 @@ class ProcessConnection(QWidget, Ui_Process):
         self.checkNormalizeUnit.clicked.connect(self.UpdatePipelineText)
         self.checkNormalizeZeroCenter.clicked.connect(self.UpdatePipelineText)
         self.checkNormalizeUnitWithZeroCenter.clicked.connect(self.UpdatePipelineText)
+        self.checkNormalizationAll.clicked.connect(self.SelectAllNormalization)
 
         self.checkPCA.clicked.connect(self.UpdatePipelineText)
         self.checkRemoveSimilarFeatures.clicked.connect(self.UpdatePipelineText)
@@ -110,7 +111,6 @@ class ProcessConnection(QWidget, Ui_Process):
             self.UpdateDataDescription()
         except:
             print('Loading Training Data Error')
-
 
     def LoadTestingData(self):
         dlg = QFileDialog()
@@ -462,4 +462,14 @@ class ProcessConnection(QWidget, Ui_Process):
         self.listOnePipeline.addItem("Total number of pipelines is:\n{:d}"
                                      .format(normalizer_num * dimension_reduction_num * feature_selector_num * feature_num * classifier_num))
 
+    def SelectAllNormalization(self):
+        if self.checkNormalizationAll.isChecked():
+            self.checkNormalizeZeroCenter.setChecked(True)
+            self.checkNormalizeUnitWithZeroCenter.setChecked(True)
+            self.checkNormalizeUnit.setChecked(True)
+        else:
+            self.checkNormalizeZeroCenter.setChecked(False)
+            self.checkNormalizeUnitWithZeroCenter.setChecked(False)
+            self.checkNormalizeUnit.setChecked(False)
 
+        self.UpdatePipelineText()

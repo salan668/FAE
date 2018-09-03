@@ -113,6 +113,13 @@
               </property>
              </widget>
             </item>
+            <item>
+             <widget class="QCheckBox" name="checkNormalizationAll">
+              <property name="text">
+               <string>All Normalization</string>
+              </property>
+             </widget>
+            </item>
            </layout>
           </item>
          </layout>
