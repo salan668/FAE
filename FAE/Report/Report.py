@@ -99,14 +99,24 @@ class Report:
             ('ALIGN', (0, 0), (-1, -1), 'CENTER')
         )
         table_1_header = "Table 1. Clinical statistics in the diagnosis. "
-        table_1 = [['Statistics', 'Value'],
-                   ['Accuracy', str(result.loc['val_accuracy'].values[0])],
-                   ['AUC', str(result.loc['val_auc'].values[0])],
-                   ['AUC 95% CIs', str(result.loc['val_auc 95% CIs'].values[0])],
-                   ['NPV', str(result.loc['val_negative predictive value'].values[0])],
-                   ['PPV', str(result.loc['val_positive predictive value'].values[0])],
-                   ['Sensitivity', str(result.loc['val_sensitivity'].values[0])],
-                   ['Specificity', str(result.loc['val_specificity'].values[0])]]
+        if testing_data_container.IsEmpty():
+            table_1 = [['Statistics', 'Value'],
+                       ['Accuracy', str(result.loc['val_accuracy'].values[0])],
+                       ['AUC', str(result.loc['val_auc'].values[0])],
+                       ['AUC 95% CIs', str(result.loc['val_auc 95% CIs'].values[0])],
+                       ['NPV', str(result.loc['val_negative predictive value'].values[0])],
+                       ['PPV', str(result.loc['val_positive predictive value'].values[0])],
+                       ['Sensitivity', str(result.loc['val_sensitivity'].values[0])],
+                       ['Specificity', str(result.loc['val_specificity'].values[0])]]
+        else:
+            table_1 = [['Statistics', 'Value'],
+                       ['Accuracy', str(result.loc['test_accuracy'].values[0])],
+                       ['AUC', str(result.loc['test_auc'].values[0])],
+                       ['AUC 95% CIs', str(result.loc['test_auc 95% CIs'].values[0])],
+                       ['NPV', str(result.loc['test_negative predictive value'].values[0])],
+                       ['PPV', str(result.loc['test_positive predictive value'].values[0])],
+                       ['Sensitivity', str(result.loc['test_sensitivity'].values[0])],
+                       ['Specificity', str(result.loc['test_specificity'].values[0])]]
 
         candidate_file = glob.glob(os.path.join(result_folder, '*coef.csv'))
         if len(candidate_file) > 0:
