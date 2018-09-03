@@ -102,3 +102,9 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+Example/no_feature_selector_result/accuracy_metric.pkl
+Example/
+.idea/workspace.xml
+.idea/modules.xml
+.idea/misc.xml
+.idea/vcs.xml
