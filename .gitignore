@@ -104,3 +104,9 @@ venv.bak/
 .mypy_cache/
 Example/no_feature_selector_result/accuracy_metric.pkl
 Example/
+.idea/vcs.xml
+.idea/misc.xml
+.idea/FAE.iml___jb_old___
+.idea/workspace.xml
+.idea/modules.xml
+.idea/FAE.iml
