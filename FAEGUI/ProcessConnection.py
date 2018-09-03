@@ -111,7 +111,6 @@ class ProcessConnection(QWidget, Ui_Process):
         except:
             print('Loading Training Data Error')
 
-
     def LoadTestingData(self):
         dlg = QFileDialog()
         file_name, _ = dlg.getOpenFileName(self, 'Open SCV file', filter="csv files (*.csv)")
