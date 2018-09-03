@@ -122,13 +122,6 @@
             </item>
            </layout>
           </item>
-          <item row="1" column="0">
-           <widget class="QCheckBox" name="All">
-            <property name="text">
-             <string>All</string>
-            </property>
-           </widget>
-          </item>
          </layout>
         </widget>
        </item>
@@ -156,9 +149,9 @@
            </widget>
           </item>
           <item row="2" column="0">
-           <widget class="QCheckBox" name="checkBox">
+           <widget class="QCheckBox" name="checkAllPreprocess">
             <property name="text">
-             <string>CheckBox</string>
+             <string>All Preprocess</string>
             </property>
            </widget>
           </item>
@@ -234,16 +227,16 @@
                 </property>
                </widget>
               </item>
+              <item>
+               <widget class="QCheckBox" name="checkFeatureSelector">
+                <property name="text">
+                 <string>All Feature Selector</string>
+                </property>
+               </widget>
+              </item>
              </layout>
             </item>
            </layout>
-          </item>
-          <item row="1" column="0">
-           <widget class="QCheckBox" name="checkBox_2">
-            <property name="text">
-             <string>CheckBox</string>
-            </property>
-           </widget>
           </item>
          </layout>
         </widget>
@@ -256,13 +249,6 @@
          <layout class="QGridLayout" name="gridLayout_6">
           <item row="0" column="0">
            <layout class="QGridLayout" name="gridLayout_5">
-            <item row="2" column="0">
-             <widget class="QCheckBox" name="checkLDA">
-              <property name="text">
-               <string>LDA</string>
-              </property>
-             </widget>
-            </item>
             <item row="0" column="0">
              <widget class="QCheckBox" name="checkSVM">
               <property name="text">
@@ -301,24 +287,10 @@
               </property>
              </widget>
             </item>
-            <item row="3" column="0">
-             <widget class="QCheckBox" name="checkLogisticRegression">
+            <item row="2" column="0">
+             <widget class="QCheckBox" name="checkLDA">
               <property name="text">
-               <string>Logistic Regression</string>
-              </property>
-             </widget>
-            </item>
-            <item row="4" column="0">
-             <widget class="QCheckBox" name="checkAdaboost">
-              <property name="text">
-               <string>Adaboost</string>
-              </property>
-             </widget>
-            </item>
-            <item row="5" column="0">
-             <widget class="QCheckBox" name="checkGaussianProcess">
-              <property name="text">
-               <string>Gaussian Process</string>
+               <string>LDA</string>
               </property>
              </widget>
             </item>
@@ -329,14 +301,35 @@
               </property>
              </widget>
             </item>
+            <item row="3" column="0">
+             <widget class="QCheckBox" name="checkLogisticRegression">
+              <property name="text">
+               <string>Logistic Regression</string>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="0">
+             <widget class="QCheckBox" name="checkGaussianProcess">
+              <property name="text">
+               <string>Gaussian Process</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="0">
+             <widget class="QCheckBox" name="checkAdaboost">
+              <property name="text">
+               <string>Adaboost</string>
+              </property>
+             </widget>
+            </item>
+            <item row="6" column="0">
+             <widget class="QCheckBox" name="checkClassifier">
+              <property name="text">
+               <string>All Classifier</string>
+              </property>
+             </widget>
+            </item>
            </layout>
-          </item>
-          <item row="1" column="0">
-           <widget class="QCheckBox" name="checkBox_3">
-            <property name="text">
-             <string>CheckBox</string>
-            </property>
-           </widget>
           </item>
          </layout>
         </widget>
@@ -443,230 +436,5 @@
   </layout>
  </widget>
  <resources/>
- <connections>
-  <connection>
-   <sender>All</sender>
-   <signal>clicked()</signal>
-   <receiver>checkNormalizeUnit</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>96</x>
-     <y>263</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>93</x>
-     <y>201</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>All</sender>
-   <signal>clicked()</signal>
-   <receiver>checkNormalizeZeroCenter</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>151</x>
-     <y>254</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>135</x>
-     <y>221</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>checkBox</sender>
-   <signal>clicked()</signal>
-   <receiver>checkPCA</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>72</x>
-     <y>366</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>53</x>
-     <y>318</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>checkBox_2</sender>
-   <signal>clicked()</signal>
-   <receiver>checkRFE</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>90</x>
-     <y>467</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>165</x>
-     <y>448</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>checkBox_2</sender>
-   <signal>clicked()</signal>
-   <receiver>checkRelief</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>264</x>
-     <y>466</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>265</x>
-     <y>448</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>checkBox_3</sender>
-   <signal>clicked()</signal>
-   <receiver>checkLDA</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>63</x>
-     <y>630</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>50</x>
-     <y>552</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>checkBox_3</sender>
-   <signal>clicked()</signal>
-   <receiver>checkLogisticRegression</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>79</x>
-     <y>635</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>72</x>
-     <y>574</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>checkBox_3</sender>
-   <signal>clicked()</signal>
-   <receiver>checkAdaboost</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>100</x>
-     <y>635</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>73</x>
-     <y>594</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>checkBox_3</sender>
-   <signal>clicked()</signal>
-   <receiver>checkGaussianProcess</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>117</x>
-     <y>633</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>111</x>
-     <y>618</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>checkBox_3</sender>
-   <signal>clicked()</signal>
-   <receiver>checkAE</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>238</x>
-     <y>637</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>208</x>
-     <y>530</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>checkBox_3</sender>
-   <signal>clicked()</signal>
-   <receiver>checkRF</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>225</x>
-     <y>630</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>235</x>
-     <y>554</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>checkBox_3</sender>
-   <signal>clicked()</signal>
-   <receiver>checkLRLasso</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>263</x>
-     <y>632</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>234</x>
-     <y>573</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>checkBox_3</sender>
-   <signal>clicked()</signal>
-   <receiver>checkDecisionTree</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>285</x>
-     <y>628</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>261</x>
-     <y>597</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>checkBox_3</sender>
-   <signal>clicked()</signal>
-   <receiver>checkNativeBayes</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>287</x>
-     <y>635</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>238</x>
-     <y>618</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>
