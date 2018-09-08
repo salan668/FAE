@@ -7,6 +7,7 @@ from GUI.Prepare import Ui_Prepare
 
 from FAE.DataContainer.DataContainer import DataContainer
 from FAE.DataContainer import DataSeparate
+from FAE.DataContainer.DataBalance import UpSampling, DownSampling, SmoteSampling, DataBalance
 
 from PyQt5.QtCore import QItemSelectionModel,QModelIndex
 class PrepareConnection(QWidget, Ui_Prepare):
@@ -89,13 +90,23 @@ class PrepareConnection(QWidget, Ui_Prepare):
             self.tableFeature.setEditTriggers(QAbstractItemView.CurrentChanged)
             self.tableFeature.setCurrentCell(non_valid_number_Index[0],non_valid_number_Index[1]+1)
             self.tableFeature.setEditTriggers(old_edit_triggers)
-        elif self.checkSeparate.isChecked():
-            percentage_testing_data = self.spinBoxSeparate.value()
-            folder_name = QFileDialog.getExistingDirectory(self,"Save data")
-            if folder_name != '':
-                data_seperate = DataSeparate.DataSeparate(percentage_testing_data)
-                data_seperate.Run(self.data_container,folder_name)
         else:
-            file_name,_ = QFileDialog.getSaveFileName(self,"Save data",filter = "csv files (*.csv)")
-            if file_name != '':
-                self.data_container.Save(file_name)
+            data_balance = DataBalance()
+            if self.radioDownSampling.isChecked():
+                data_balance = DownSampling()
+            elif self.radioUpSampling.isChecked():
+                data_balance = UpSampling()
+            elif self.radioSmote.isChecked():
+                data_balance = SmoteSampling()
+
+            if self.checkSeparate.isChecked():
+                percentage_testing_data = self.spinBoxSeparate.value()
+                folder_name = QFileDialog.getExistingDirectory(self,"Save data")
+                if folder_name != '':
+                    data_seperate = DataSeparate.DataSeparate(percentage_testing_data)
+                    training_data_container, _, = data_seperate.Run(self.data_container, folder_name)
+                    data_balance.Run(training_data_container, store_path=folder_name)
+            else:
+                file_name,_ = QFileDialog.getSaveFileName(self, "Save data", filter="csv files (*.csv)")
+                if file_name != '':
+                    data_balance.Run(self.data_container, store_path=file_name)
