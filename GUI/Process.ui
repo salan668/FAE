@@ -149,7 +149,7 @@
            </widget>
           </item>
           <item row="2" column="0">
-           <widget class="QCheckBox" name="checkAllPreprocess">
+           <widget class="QCheckBox" name="checkPreprocessAll">
             <property name="text">
              <string>All Preprocess</string>
             </property>
@@ -228,7 +228,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QCheckBox" name="checkFeatureSelector">
+               <widget class="QCheckBox" name="checkFeatureSelectorAll">
                 <property name="text">
                  <string>All Feature Selector</string>
                 </property>
@@ -295,9 +295,9 @@
              </widget>
             </item>
             <item row="5" column="1">
-             <widget class="QCheckBox" name="checkNativeBayes">
+             <widget class="QCheckBox" name="checkNaiveBayes">
               <property name="text">
-               <string>Native Bayes</string>
+               <string>Naive Bayes</string>
               </property>
              </widget>
             </item>
@@ -323,7 +323,7 @@
              </widget>
             </item>
             <item row="6" column="0">
-             <widget class="QCheckBox" name="checkClassifier">
+             <widget class="QCheckBox" name="checkClassifierAll">
               <property name="text">
                <string>All Classifier</string>
               </property>
