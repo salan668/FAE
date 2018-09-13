@@ -30,7 +30,7 @@ class Normalizer:
         self._interception = np.array(df['interception'])
 
     @abstractmethod
-    def Run(self, data_container, store_folder):
+    def Run(self, data_container, store_folder, is_test=False):
         pass
 
     def GetName(self):
@@ -43,7 +43,7 @@ class NormalizerNone(Normalizer):
     def GetName(self):
         return 'NormNone'
 
-    def Run(self, data_container, store_folder=''):
+    def Run(self, data_container, store_folder='', is_test=False):
         self._slop = np.ones((len(data_container.GetFeatureName()),))
         self._interception = np.zeros((len(data_container.GetFeatureName()),))
         if store_folder:
@@ -65,18 +65,21 @@ class NormalizerUnit(Normalizer):
     def GetName(self):
         return 'NormUnit'
 
-    def Run(self, data_container, store_folder=''):
+    def Run(self, data_container, store_folder='', is_test=False):
         array = data_container.GetArray()
-        self._slop = np.sum(np.square(array), axis=0)
-        self._interception = np.zeros_like(self._slop)
+        if is_test:
+            self.Load(os.path.join(store_folder, 'unit_normalization_training.csv'))
+        else:
+            self._slop = np.sum(np.square(array), axis=0)
+            self._interception = np.zeros_like(self._slop)
 
         data_container = self.Transform(data_container)
         if store_folder:
-            store_path = os.path.join(store_folder, 'unit_normalized_feature.csv')
-            data_container.Save(store_path)
-
-            self.Save(store_path=os.path.join(store_folder, 'unit_normalization.csv'))
-
+            if not is_test:
+                data_container.Save(os.path.join(store_folder, 'unit_normalized_training_feature.csv'))
+                self.Save(store_path=os.path.join(store_folder, 'unit_normalization_training.csv'))
+            else:
+                data_container.Save(os.path.join(store_folder, 'unit_normalized_testing_feature.csv'))
         return data_container
 
     def GetDescription(self):
@@ -91,18 +94,21 @@ class NormalizerZeroCenter(Normalizer):
     def GetName(self):
         return 'Norm0Center'
 
-    def Run(self, data_container, store_folder=''):
+    def Run(self, data_container, store_folder='', is_test=False):
         array = data_container.GetArray()
-        self._slop = np.std(array, axis=0)
-        self._interception = np.mean(array, axis=0)
+        if is_test:
+            self.Load(os.path.join(store_folder, 'zero_center_normalization_training.csv'))
+        else:
+            self._slop = np.std(array, axis=0)
+            self._interception = np.mean(array, axis=0)
 
         data_container = self.Transform(data_container)
         if store_folder:
-            store_path = os.path.join(store_folder, 'zero_center_normalized_feature.csv')
-            data_container.Save(store_path)
-
-            self.Save(store_path=os.path.join(store_folder, 'zero_center_normalization.csv'))
-
+            if not is_test:
+                data_container.Save(os.path.join(store_folder, 'zero_center_normalized_training_feature.csv'))
+                self.Save(store_path=os.path.join(store_folder, 'zero_center_normalization_training.csv'))
+            else:
+                data_container.Save(os.path.join(store_folder, 'zero_center_normalized_testing_feature.csv'))
         return data_container
 
     def GetDescription(self):
@@ -119,19 +125,21 @@ class NormalizerZeroCenterAndUnit(Normalizer):
     def GetName(self):
         return 'Norm0CenterUnit'
 
-    def Run(self, data_container, store_folder=''):
+    def Run(self, data_container, store_folder='', is_test=False):
         array = data_container.GetArray()
-        self._slop = np.sum(np.square(array), axis=0)
-        self._interception = np.mean(array, axis=0)
+        if is_test:
+            self.Load(os.path.join(store_folder, 'zero_center_unit_normalization_training.csv'))
+        else:
+            self._slop = np.sum(np.square(array), axis=0)
+            self._interception = np.mean(array, axis=0)
 
         data_container = self.Transform(data_container)
-
         if store_folder:
-            store_path = os.path.join(store_folder, 'zero_center_unit_normalized_feature.csv')
-            data_container.Save(store_path)
-
-            self.Save(store_path=os.path.join(store_folder, 'zero_center_unit_normalization.csv'))
-
+            if not is_test:
+                data_container.Save(os.path.join(store_folder, 'zero_center_unit_training_feature.csv'))
+                self.Save(store_path=os.path.join(store_folder, 'zero_center_unit_normalization_training.csv'))
+            else:
+                data_container.Save(os.path.join(store_folder, 'zero_center_unit_normalized_testing_feature.csv'))
         return data_container
 
     def GetDescription(self):

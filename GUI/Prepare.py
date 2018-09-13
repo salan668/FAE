@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'Prepare.ui'
+# Form implementation generated from reading ui file 'GUI\Prepare.ui'
 #
-# Created by: PyQt5 UI code generator 5.11.2
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -85,6 +85,24 @@ class Ui_Prepare(object):
         self.verticalLayout.addWidget(self.groupSeparate)
         self.groupBox_3 = QtWidgets.QGroupBox(Prepare)
         self.groupBox_3.setObjectName("groupBox_3")
+        self.gridLayout_3 = QtWidgets.QGridLayout(self.groupBox_3)
+        self.gridLayout_3.setObjectName("gridLayout_3")
+        self.verticalLayout_4 = QtWidgets.QVBoxLayout()
+        self.verticalLayout_4.setObjectName("verticalLayout_4")
+        self.radioNoneBalance = QtWidgets.QRadioButton(self.groupBox_3)
+        self.radioNoneBalance.setChecked(True)
+        self.radioNoneBalance.setObjectName("radioNoneBalance")
+        self.verticalLayout_4.addWidget(self.radioNoneBalance)
+        self.radioUpSampling = QtWidgets.QRadioButton(self.groupBox_3)
+        self.radioUpSampling.setObjectName("radioUpSampling")
+        self.verticalLayout_4.addWidget(self.radioUpSampling)
+        self.radioDownSampling = QtWidgets.QRadioButton(self.groupBox_3)
+        self.radioDownSampling.setObjectName("radioDownSampling")
+        self.verticalLayout_4.addWidget(self.radioDownSampling)
+        self.radioSmote = QtWidgets.QRadioButton(self.groupBox_3)
+        self.radioSmote.setObjectName("radioSmote")
+        self.verticalLayout_4.addWidget(self.radioSmote)
+        self.gridLayout_3.addLayout(self.verticalLayout_4, 0, 0, 1, 1)
         self.verticalLayout.addWidget(self.groupBox_3)
         self.buttonSave = QtWidgets.QPushButton(Prepare)
         self.buttonSave.setEnabled(False)
@@ -112,6 +130,10 @@ class Ui_Prepare(object):
         self.groupSeparate.setTitle(_translate("Prepare", "Separate Train and Test"))
         self.label.setText(_translate("Prepare", "Percentage of Testing data"))
         self.checkSeparate.setText(_translate("Prepare", "Separate Train And Test"))
-        self.groupBox_3.setTitle(_translate("Prepare", "GroupBox"))
+        self.groupBox_3.setTitle(_translate("Prepare", "Balance Data"))
+        self.radioNoneBalance.setText(_translate("Prepare", "None Balance"))
+        self.radioUpSampling.setText(_translate("Prepare", "UpSampling"))
+        self.radioDownSampling.setText(_translate("Prepare", "DownSampling"))
+        self.radioSmote.setText(_translate("Prepare", "SMOTE"))
         self.buttonSave.setText(_translate("Prepare", "Check and Save"))
 

@@ -160,8 +160,45 @@
        <item>
         <widget class="QGroupBox" name="groupBox_3">
          <property name="title">
-          <string>GroupBox</string>
+          <string>Balance Data</string>
          </property>
+         <layout class="QGridLayout" name="gridLayout_3">
+          <item row="0" column="0">
+           <layout class="QVBoxLayout" name="verticalLayout_4">
+            <item>
+             <widget class="QRadioButton" name="radioNoneBalance">
+              <property name="text">
+               <string>None Balance</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="radioUpSampling">
+              <property name="text">
+               <string>UpSampling</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="radioDownSampling">
+              <property name="text">
+               <string>DownSampling</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="radioSmote">
+              <property name="text">
+               <string>SMOTE</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
         </widget>
        </item>
        <item>

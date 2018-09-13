@@ -69,9 +69,11 @@ class ProcessConnection(QWidget, Ui_Process):
         self.checkNormalizeUnit.clicked.connect(self.UpdatePipelineText)
         self.checkNormalizeZeroCenter.clicked.connect(self.UpdatePipelineText)
         self.checkNormalizeUnitWithZeroCenter.clicked.connect(self.UpdatePipelineText)
+        self.checkNormalizationAll.clicked.connect(self.SelectAllNormalization)
 
         self.checkPCA.clicked.connect(self.UpdatePipelineText)
         self.checkRemoveSimilarFeatures.clicked.connect(self.UpdatePipelineText)
+        self.checkAllPreprocess.clicked.connect(self.SelectAllPreprocess)
 
         self.spinBoxMinFeatureNumber.valueChanged.connect(self.MinFeatureNumberChange)
         self.spinBoxMaxFeatureNumber.valueChanged.connect(self.MaxFeatureNumberChange)
@@ -79,6 +81,7 @@ class ProcessConnection(QWidget, Ui_Process):
         self.checkANOVA.clicked.connect(self.UpdatePipelineText)
         self.checkRFE.clicked.connect(self.UpdatePipelineText)
         self.checkRelief.clicked.connect(self.UpdatePipelineText)
+        self.checkFeatureSelector.clicked.connect(self.SelectAllFeatureSelector)
 
         self.checkSVM.clicked.connect(self.UpdatePipelineText)
         self.checkLDA.clicked.connect(self.UpdatePipelineText)
@@ -90,6 +93,7 @@ class ProcessConnection(QWidget, Ui_Process):
         self.checkDecisionTree.clicked.connect(self.UpdatePipelineText)
         self.checkNativeBayes.clicked.connect(self.UpdatePipelineText)
         self.checkGaussianProcess.clicked.connect(self.UpdatePipelineText)
+        self.checkClassifier.clicked.connect(self.SelectAllClassifier)
 
         self.radioLeaveOneOut.clicked.connect(self.UpdatePipelineText)
         self.radio5folder.clicked.connect(self.UpdatePipelineText)
@@ -110,7 +114,6 @@ class ProcessConnection(QWidget, Ui_Process):
             self.UpdateDataDescription()
         except:
             print('Loading Training Data Error')
-
 
     def LoadTestingData(self):
         dlg = QFileDialog()
@@ -462,4 +465,62 @@ class ProcessConnection(QWidget, Ui_Process):
         self.listOnePipeline.addItem("Total number of pipelines is:\n{:d}"
                                      .format(normalizer_num * dimension_reduction_num * feature_selector_num * feature_num * classifier_num))
 
+    def SelectAllNormalization(self):
+        if self.checkNormalizationAll.isChecked():
+            self.checkNormalizeZeroCenter.setChecked(True)
+            self.checkNormalizeUnitWithZeroCenter.setChecked(True)
+            self.checkNormalizeUnit.setChecked(True)
+        else:
+            self.checkNormalizeZeroCenter.setChecked(False)
+            self.checkNormalizeUnitWithZeroCenter.setChecked(False)
+            self.checkNormalizeUnit.setChecked(False)
 
+        self.UpdatePipelineText()
+
+    def SelectAllPreprocess(self):
+        if self.checkAllPreprocess.isChecked():
+            self.checkPCA.setChecked(True)
+            self.checkRemoveSimilarFeatures.setChecked(True)
+        else:
+            self.checkPCA.setChecked(False)
+            self.checkRemoveSimilarFeatures.setChecked(False)
+
+        self.UpdatePipelineText()
+
+    def SelectAllFeatureSelector(self):
+        if self.checkFeatureSelector.isChecked():
+            self.checkANOVA.setChecked(True)
+            self.checkRFE.setChecked(True)
+            self.checkRelief.setChecked(True)
+        else:
+            self.checkANOVA.setChecked(False)
+            self.checkRFE.setChecked(False)
+            self.checkRelief.setChecked(False)
+
+        self.UpdatePipelineText()
+
+    def SelectAllClassifier(self):
+        if self.checkClassifier.isChecked():
+            self.checkSVM.setChecked(True)
+            self.checkAE.setChecked(True)
+            self.checkLDA.setChecked(True)
+            self.checkRF.setChecked(True)
+            self.checkLogisticRegression.setChecked(True)
+            self.checkLRLasso.setChecked(True)
+            self.checkAdaboost.setChecked(True)
+            self.checkDecisionTree.setChecked(True)
+            self.checkGaussianProcess.setChecked(True)
+            self.checkNativeBayes.setChecked(True)
+        else:
+            self.checkSVM.setChecked(False)
+            self.checkAE.setChecked(False)
+            self.checkLDA.setChecked(False)
+            self.checkRF.setChecked(False)
+            self.checkLogisticRegression.setChecked(False)
+            self.checkLRLasso.setChecked(False)
+            self.checkAdaboost.setChecked(False)
+            self.checkDecisionTree.setChecked(False)
+            self.checkGaussianProcess.setChecked(False)
+            self.checkNativeBayes.setChecked(False)
+
+        self.UpdatePipelineText()

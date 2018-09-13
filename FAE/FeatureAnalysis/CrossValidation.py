@@ -80,14 +80,12 @@ class CrossValidationLeaveOneOut(CrossValidation):
 
         data = data_container.GetArray()
         label = data_container.GetLabel()
-        group_index = 0
-        val_index_store = []
+        case_name = data_container.GetCaseName()
+
+        train_cv_info = [['CaseName', 'Pred', 'Label']]
+        val_cv_info = [['CaseName', 'Pred', 'Label']]
 
         for train_index, val_index in self.__cv.split(data, label):
-            group_index += 1
-            for index in val_index:
-                val_index_store.append(['group_'+str(group_index), index])
-
             train_data = data[train_index, :]
             train_label = label[train_index]
             val_data = data[val_index, :]
@@ -98,6 +96,12 @@ class CrossValidationLeaveOneOut(CrossValidation):
 
             train_prob = self._classifier.Predict(train_data)
             val_prob = self._classifier.Predict(val_data)
+
+            for index in range(len(train_index)):
+                train_cv_info.append(
+                    [case_name[train_index[index]], train_prob[index], train_label[index]])
+            for index in range(len(val_index)):
+                val_cv_info.append([case_name[val_index[index]], val_prob[index], val_label[index]])
 
             train_pred_list.extend(train_prob)
             train_label_list.extend(train_label)
@@ -119,6 +123,7 @@ class CrossValidationLeaveOneOut(CrossValidation):
         if test_data_container.GetArray().size > 0:
             test_data = test_data_container.GetArray()
             test_label = test_data_container.GetLabel()
+            test_case_name = test_data_container.GetCaseName()
             test_pred = self._classifier.Predict(test_data)
 
             test_metric = EstimateMetirc(test_pred, test_label, 'test')
@@ -136,19 +141,24 @@ class CrossValidationLeaveOneOut(CrossValidation):
             np.save(os.path.join(store_folder, 'train_label.npy'), total_train_label)
             np.save(os.path.join(store_folder, 'val_label.npy'), total_label)
 
-            cv_info_path = os.path.join(store_folder, 'cv_info.csv')
-            df = pd.DataFrame(data=val_index_store)
-            df.to_csv(cv_info_path)
-
-            # DrawROCList(total_train_pred, total_train_label, store_path=os.path.join(store_folder, 'train_ROC.jpg'), is_show=False)
-            # DrawROCList(total_pred, total_label, store_path=os.path.join(store_folder, 'val_ROC.jpg'), is_show=False)
+            with open(os.path.join(store_folder, 'train_cvloo_info.csv'), 'w', newline='') as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerows(train_cv_info)
+            with open(os.path.join(store_folder, 'val_cvloo_info.csv'), 'w', newline='') as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerows(val_cv_info)
 
             if test_data_container.GetArray().size > 0:
                 info.update(test_metric)
                 np.save(os.path.join(store_folder, 'test_predict.npy'), test_pred)
                 np.save(os.path.join(store_folder, 'test_label.npy'), test_label)
-                # DrawROCList(test_pred, test_label, store_path=os.path.join(store_folder, 'test_ROC.jpg'),
-                #             is_show=False)
+
+                test_result_info = [['CaseName', 'Pred', 'Label']]
+                for index in range(len(test_label)):
+                    test_result_info.append([test_case_name[index], test_pred[index], test_label[index]])
+                with open(os.path.join(store_folder, 'test_info.csv'), 'w', newline='') as csvfile:
+                    writer = csv.writer(csvfile)
+                    writer.writerows(test_result_info)
 
             self._classifier.Save(store_folder)
             self.SaveResult(info, store_folder)
@@ -182,13 +192,14 @@ class CrossValidation5Folder(CrossValidation):
 
         data = data_container.GetArray()
         label = data_container.GetLabel()
+        case_name = data_container.GetCaseName()
         group_index = 0
-        val_index_store = []
+
+        train_cv_info = [['CaseName', 'Group', 'Pred', 'Label']]
+        val_cv_info = [['CaseName', 'Group', 'Pred', 'Label']]
 
         for train_index, val_index in self.__cv.split(data, label):
             group_index += 1
-            for index in val_index:
-                val_index_store.append(['group_' + str(group_index), index])
 
             train_data = data[train_index, :]
             train_label = label[train_index]
@@ -200,6 +211,11 @@ class CrossValidation5Folder(CrossValidation):
 
             train_prob = self._classifier.Predict(train_data)
             val_prob = self._classifier.Predict(val_data)
+
+            for index in range(len(train_index)):
+                train_cv_info.append([case_name[train_index[index]], str(group_index), train_prob[index], train_label[index]])
+            for index in range(len(val_index)):
+                val_cv_info.append([case_name[val_index[index]], str(group_index), val_prob[index], val_label[index]])
 
             train_pred_list.extend(train_prob)
             train_label_list.extend(train_label)
@@ -221,6 +237,7 @@ class CrossValidation5Folder(CrossValidation):
         if test_data_container.GetArray().size > 0:
             test_data = test_data_container.GetArray()
             test_label = test_data_container.GetLabel()
+            test_case_name = test_data_container.GetCaseName()
             test_pred = self._classifier.Predict(test_data)
 
             test_metric = EstimateMetirc(test_pred, test_label, 'test')
@@ -238,25 +255,29 @@ class CrossValidation5Folder(CrossValidation):
             np.save(os.path.join(store_folder, 'train_label.npy'), total_train_label)
             np.save(os.path.join(store_folder, 'val_label.npy'), total_label)
 
-            cv_info_path = os.path.join(store_folder, 'cv_info.csv')
-            df = pd.DataFrame(data=val_index_store)
-            df.to_csv(cv_info_path)
-
-            # DrawROCList(total_train_pred, total_train_label, store_path=os.path.join(store_folder, 'train_ROC.jpg'), is_show=False)
-            # DrawROCList(total_pred, total_label, store_path=os.path.join(store_folder, 'val_ROC.jpg'), is_show=False)
+            with open(os.path.join(store_folder, 'train_cv5_info.csv'), 'w', newline='') as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerows(train_cv_info)
+            with open(os.path.join(store_folder, 'val_cv5_info.csv'), 'w', newline='') as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerows(val_cv_info)
 
             if test_data_container.GetArray().size > 0:
                 info.update(test_metric)
                 np.save(os.path.join(store_folder, 'test_predict.npy'), test_pred)
                 np.save(os.path.join(store_folder, 'test_label.npy'), test_label)
-                # DrawROCList(test_pred, test_label, store_path=os.path.join(store_folder, 'test_ROC.jpg'),
-                #             is_show=False)
+
+                test_result_info = [['CaseName', 'Pred', 'Label']]
+                for index in range(len(test_label)):
+                    test_result_info.append([test_case_name[index], test_pred[index], test_label[index]])
+                with open(os.path.join(store_folder, 'test_info.csv'), 'w', newline='') as csvfile:
+                    writer = csv.writer(csvfile)
+                    writer.writerows(test_result_info)
 
             self._classifier.Save(store_folder)
             self.SaveResult(info, store_folder)
 
         return train_metric, val_metric, test_metric
-
 
 class CrossValidation10Folder(CrossValidation):
     def __init__(self):
@@ -274,13 +295,14 @@ class CrossValidation10Folder(CrossValidation):
 
         data = data_container.GetArray()
         label = data_container.GetLabel()
+        case_name = data_container.GetCaseName()
         group_index = 0
-        val_index_store = []
+
+        train_cv_info = [['CaseName', 'Group', 'Pred', 'Label']]
+        val_cv_info = [['CaseName', 'Group', 'Pred', 'Label']]
 
         for train_index, val_index in self.__cv.split(data, label):
             group_index += 1
-            for index in val_index:
-                val_index_store.append(['group_' + str(group_index), index])
 
             train_data = data[train_index, :]
             train_label = label[train_index]
@@ -292,6 +314,12 @@ class CrossValidation10Folder(CrossValidation):
 
             train_prob = self._classifier.Predict(train_data)
             val_prob = self._classifier.Predict(val_data)
+
+            for index in range(len(train_index)):
+                train_cv_info.append(
+                    [case_name[train_index[index]], str(group_index), train_prob[index], train_label[index]])
+            for index in range(len(val_index)):
+                val_cv_info.append([case_name[val_index[index]], str(group_index), val_prob[index], val_label[index]])
 
             train_pred_list.extend(train_prob)
             train_label_list.extend(train_label)
@@ -313,6 +341,7 @@ class CrossValidation10Folder(CrossValidation):
         if test_data_container.GetArray().size > 0:
             test_data = test_data_container.GetArray()
             test_label = test_data_container.GetLabel()
+            test_case_name = test_data_container.GetCaseName()
             test_pred = self._classifier.Predict(test_data)
 
             test_metric = EstimateMetirc(test_pred, test_label, 'test')
@@ -330,19 +359,24 @@ class CrossValidation10Folder(CrossValidation):
             np.save(os.path.join(store_folder, 'train_label.npy'), total_train_label)
             np.save(os.path.join(store_folder, 'val_label.npy'), total_label)
 
-            cv_info_path = os.path.join(store_folder, 'cv_info.csv')
-            df = pd.DataFrame(data=val_index_store)
-            df.to_csv(cv_info_path)
-
-            # DrawROCList(total_train_pred, total_train_label, store_path=os.path.join(store_folder, 'train_ROC.jpg'), is_show=False)
-            # DrawROCList(total_pred, total_label, store_path=os.path.join(store_folder, 'val_ROC.jpg'), is_show=False)
+            with open(os.path.join(store_folder, 'train_cv10_info.csv'), 'w', newline='') as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerows(train_cv_info)
+            with open(os.path.join(store_folder, 'val_cv10_info.csv'), 'w', newline='') as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerows(val_cv_info)
 
             if test_data_container.GetArray().size > 0:
                 info.update(test_metric)
                 np.save(os.path.join(store_folder, 'test_predict.npy'), test_pred)
                 np.save(os.path.join(store_folder, 'test_label.npy'), test_label)
-                # DrawROCList(test_pred, test_label, store_path=os.path.join(store_folder, 'test_ROC.jpg'),
-                #             is_show=False)
+
+                test_result_info = [['CaseName', 'Pred', 'Label']]
+                for index in range(len(test_label)):
+                    test_result_info.append([test_case_name[index], test_pred[index], test_label[index]])
+                with open(os.path.join(store_folder, 'test_info.csv'), 'w', newline='') as csvfile:
+                    writer = csv.writer(csvfile)
+                    writer.writerows(test_result_info)
 
             self._classifier.Save(store_folder)
             self.SaveResult(info, store_folder)

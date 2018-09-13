@@ -3,6 +3,7 @@ import glob
 import numpy as np
 import os
 import pandas as pd
+import csv
 
 from FAE.FeatureAnalysis.FeaturePipeline import OnePipeline
 from FAE.DataContainer.DataContainer import DataContainer
@@ -98,14 +99,24 @@ class Report:
             ('ALIGN', (0, 0), (-1, -1), 'CENTER')
         )
         table_1_header = "Table 1. Clinical statistics in the diagnosis. "
-        table_1 = [['Statistics', 'Value'],
-                   ['Accuracy', str(result.loc['val_accuracy'].values[0])],
-                   ['AUC', str(result.loc['val_auc'].values[0])],
-                   ['AUC 95% CIs', str(result.loc['val_auc 95% CIs'].values[0])],
-                   ['NPV', str(result.loc['val_negative predictive value'].values[0])],
-                   ['PPV', str(result.loc['val_positive predictive value'].values[0])],
-                   ['Sensitivity', str(result.loc['val_sensitivity'].values[0])],
-                   ['Specificity', str(result.loc['val_specificity'].values[0])]]
+        if testing_data_container.IsEmpty():
+            table_1 = [['Statistics', 'Value'],
+                       ['Accuracy', str(result.loc['val_accuracy'].values[0])],
+                       ['AUC', str(result.loc['val_auc'].values[0])],
+                       ['AUC 95% CIs', str(result.loc['val_auc 95% CIs'].values[0])],
+                       ['NPV', str(result.loc['val_negative predictive value'].values[0])],
+                       ['PPV', str(result.loc['val_positive predictive value'].values[0])],
+                       ['Sensitivity', str(result.loc['val_sensitivity'].values[0])],
+                       ['Specificity', str(result.loc['val_specificity'].values[0])]]
+        else:
+            table_1 = [['Statistics', 'Value'],
+                       ['Accuracy', str(result.loc['test_accuracy'].values[0])],
+                       ['AUC', str(result.loc['test_auc'].values[0])],
+                       ['AUC 95% CIs', str(result.loc['test_auc 95% CIs'].values[0])],
+                       ['NPV', str(result.loc['test_negative predictive value'].values[0])],
+                       ['PPV', str(result.loc['test_positive predictive value'].values[0])],
+                       ['Sensitivity', str(result.loc['test_sensitivity'].values[0])],
+                       ['Specificity', str(result.loc['test_specificity'].values[0])]]
 
         candidate_file = glob.glob(os.path.join(result_folder, '*coef.csv'))
         if len(candidate_file) > 0:
@@ -116,8 +127,11 @@ class Report:
                 table_2.append([str(index), "{:.3f}".format(coef.loc[index].values[0])])
 
         else:
-            coef = pd.read_csv(os.path.join(os.path.join(result, 'feature_select_info.csv')), index_col=0)
-            features = list(coef.index['selected_faeture'].values)
+            with open(os.path.join(result_folder, 'feature_select_info.csv'), 'r', newline='') as file:
+                reader = csv.reader(file)
+                for row in reader:
+                    if row[0] == 'selected_feature':
+                        features = row[1:]
             table_2_header = 'Table 2. The selected of features. '
             table_2 = [['Features', 'Rank']]
             for index in range(len(features)):
