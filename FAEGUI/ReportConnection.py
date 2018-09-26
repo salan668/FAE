@@ -189,17 +189,17 @@ class ReportConnection(QWidget, Ui_Report):
 
     def InitialUi(self):
         # Update ROC canvers
+        self.comboNormalizer.clear()
         for normalizer in self._fae.GetNormalizerList():
-            self.comboNormalizer.clear()
             self.comboNormalizer.addItem(normalizer.GetName())
+        self.comboDimensionReduction.clear()
         for dimension_reduction in self._fae.GetDimensionReductionList():
-            self.comboDimensionReduction.clear()
             self.comboDimensionReduction.addItem(dimension_reduction.GetName())
+        self.comboClassifier.clear()
         for classifier in self._fae.GetClassifierList():
-            self.comboClassifier.clear()
             self.comboClassifier.addItem(classifier.GetName())
+        self.comboFeatureSelector.clear()
         for feature_selector in self._fae.GetFeatureSelectorList():
-            self.comboFeatureSelector.clear()
             self.comboFeatureSelector.addItem(feature_selector.GetName())
 
         if self._fae.GetFeatureNumberList() != []:

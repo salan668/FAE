@@ -153,10 +153,11 @@ class Report:
         pdf.table(table_1, 130, style=table_stype)
         pdf.table_header(table_2_header)
         pdf.table(table_2, 200, style=table_stype)
+        pdf.p("\n\n")
         pdf.image(os.path.join(store_folder, 'ROC.jpg'))
         pdf.table_header(figure_title)
 
-        pdf.end_connect("Thanks for using FAE v.0.2.0. If you need a specific report, please connect to Yang Song (songyangmri@gmail.com) or Guang Yang "
+        pdf.end_connect("Thanks for using FAE v.0.2. If you need a specific report, please connect to Yang Song (songyangmri@gmail.com) or Guang Yang "
               "(gyang@phy.ecnu.edu.cn). Welcome any co-operation and discussion. ")
         pdf.generate()
 
