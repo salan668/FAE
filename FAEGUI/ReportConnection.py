@@ -42,7 +42,13 @@ class ReportConnection(QWidget, Ui_Report):
         self.checkROCValidation.stateChanged.connect(self.UpdateROC)
         self.checkROCTest.stateChanged.connect(self.UpdateROC)
 
+        self.SetPipelineStateButton(False)
+
     def Generate(self):
+        if self._training_data_container.IsEmpty():
+            QMessageBox.about(self, '', 'Load training data at least')
+            return
+
         dlg = QFileDialog()
         dlg.setFileMode(QFileDialog.DirectoryOnly)
         dlg.setOption(QFileDialog.ShowDirsOnly)
@@ -58,7 +64,6 @@ class ReportConnection(QWidget, Ui_Report):
                 os.system("explorer.exe {:s}".format(os.path.normpath(store_folder)))
             except Exception as ex:
                 QMessageBox.about(self, 'Report Generate Error: ', ex.__str__())
-
 
     def LoadTrainingData(self):
         dlg = QFileDialog()
@@ -89,12 +94,12 @@ class ReportConnection(QWidget, Ui_Report):
 
     def ClearTestingData(self):
         self._testing_data_container = DataContainer()
-        self.lineEditTrainingData.setText("")
+        self.lineEditTestingData.setText("")
         self.UpdateDataDescription()
     
     def UpdateDataDescription(self):
-        show_text = ""
-        if self._training_data_container.GetArray().size > 0:
+        show_text = ''
+        if not self._training_data_container.IsEmpty():
             show_text += "The number of training cases: {:d}\n".format(len(self._training_data_container.GetCaseName()))
             show_text += "The number of training features: {:d}\n".format(len(self._training_data_container.GetFeatureName()))
             if len(np.unique(self._training_data_container.GetLabel())) == 2:
@@ -106,7 +111,7 @@ class ReportConnection(QWidget, Ui_Report):
                 show_text += "The number of training negative samples: {:d}\n".format(negative_number)
 
         show_text += '\n'
-        if self._testing_data_container.GetArray().size > 0:
+        if not self._testing_data_container.IsEmpty():
             show_text += "The number of testing cases: {:d}\n".format(len(self._testing_data_container.GetCaseName()))
             show_text += "The number of testing features: {:d}\n".format(
                 len(self._testing_data_container.GetFeatureName()))
@@ -144,25 +149,62 @@ class ReportConnection(QWidget, Ui_Report):
                 self.ClearAll()
                 return
 
-            self.buttonClearResult.setEnabled(True)
-            self.buttonLoadResult.setEnabled(False)
+            self.SetPipelineStateButton(True)
 
     def ClearAll(self):
         self.buttonLoadResult.setEnabled(True)
         self.buttonClearResult.setEnabled(False)
 
+        self._fae = FeatureAnalysisPipelines()
+        self.textEditDescription.setPlainText('')
+        self.lineEditResultPath.setText('')
+        self.InitialUi()
+
+        self.checkROCTrain.setChecked(False)
+        self.checkROCValidation.setChecked(False)
+        self.checkROCTest.setChecked(False)
+
+        self.spinBoxFeatureNumber.setValue(1)
+
+        self.canvasROC.getFigure().clear()
+        self.canvasROC.draw()
+
+        self.SetPipelineStateButton(False)
+
+    def SetPipelineStateButton(self, state):
+        self.checkROCTrain.setEnabled(state)
+        self.checkROCValidation.setEnabled(state)
+        self.checkROCTest.setEnabled(state)
+
+        self.comboNormalizer.setEnabled(state)
+        self.comboDimensionReduction.setEnabled(state)
+        self.comboFeatureSelector.setEnabled(state)
+        self.comboClassifier.setEnabled(state)
+        self.spinBoxFeatureNumber.setEnabled(state)
+
+        self.buttonClearResult.setEnabled(state)
+        self.buttonLoadResult.setEnabled(not state)
+
+        self.buttonGenerate.setEnabled(state)
+
     def InitialUi(self):
         # Update ROC canvers
+        self.comboNormalizer.clear()
         for normalizer in self._fae.GetNormalizerList():
             self.comboNormalizer.addItem(normalizer.GetName())
+        self.comboDimensionReduction.clear()
         for dimension_reduction in self._fae.GetDimensionReductionList():
             self.comboDimensionReduction.addItem(dimension_reduction.GetName())
+        self.comboClassifier.clear()
         for classifier in self._fae.GetClassifierList():
             self.comboClassifier.addItem(classifier.GetName())
+        self.comboFeatureSelector.clear()
         for feature_selector in self._fae.GetFeatureSelectorList():
             self.comboFeatureSelector.addItem(feature_selector.GetName())
-        self.spinBoxFeatureNumber.setMinimum(int(self._fae.GetFeatureNumberList()[0]))
-        self.spinBoxFeatureNumber.setMaximum(int(self._fae.GetFeatureNumberList()[-1]))
+
+        if self._fae.GetFeatureNumberList() != []:
+            self.spinBoxFeatureNumber.setMinimum(int(self._fae.GetFeatureNumberList()[0]))
+            self.spinBoxFeatureNumber.setMaximum(int(self._fae.GetFeatureNumberList()[-1]))
 
     def SetResultDescription(self):
         text = "Normalizer:\n"

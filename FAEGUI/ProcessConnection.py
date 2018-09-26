@@ -73,7 +73,7 @@ class ProcessConnection(QWidget, Ui_Process):
 
         self.checkPCA.clicked.connect(self.UpdatePipelineText)
         self.checkRemoveSimilarFeatures.clicked.connect(self.UpdatePipelineText)
-        self.checkAllPreprocess.clicked.connect(self.SelectAllPreprocess)
+        self.checkPreprocessAll.clicked.connect(self.SelectAllPreprocess)
 
         self.spinBoxMinFeatureNumber.valueChanged.connect(self.MinFeatureNumberChange)
         self.spinBoxMaxFeatureNumber.valueChanged.connect(self.MaxFeatureNumberChange)
@@ -81,7 +81,7 @@ class ProcessConnection(QWidget, Ui_Process):
         self.checkANOVA.clicked.connect(self.UpdatePipelineText)
         self.checkRFE.clicked.connect(self.UpdatePipelineText)
         self.checkRelief.clicked.connect(self.UpdatePipelineText)
-        self.checkFeatureSelector.clicked.connect(self.SelectAllFeatureSelector)
+        self.checkFeatureSelectorAll.clicked.connect(self.SelectAllFeatureSelector)
 
         self.checkSVM.clicked.connect(self.UpdatePipelineText)
         self.checkLDA.clicked.connect(self.UpdatePipelineText)
@@ -91,9 +91,9 @@ class ProcessConnection(QWidget, Ui_Process):
         self.checkLRLasso.clicked.connect(self.UpdatePipelineText)
         self.checkAdaboost.clicked.connect(self.UpdatePipelineText)
         self.checkDecisionTree.clicked.connect(self.UpdatePipelineText)
-        self.checkNativeBayes.clicked.connect(self.UpdatePipelineText)
+        self.checkNaiveBayes.clicked.connect(self.UpdatePipelineText)
         self.checkGaussianProcess.clicked.connect(self.UpdatePipelineText)
-        self.checkClassifier.clicked.connect(self.SelectAllClassifier)
+        self.checkClassifierAll.clicked.connect(self.SelectAllClassifier)
 
         self.radioLeaveOneOut.clicked.connect(self.UpdatePipelineText)
         self.radio5folder.clicked.connect(self.UpdatePipelineText)
@@ -166,13 +166,16 @@ class ProcessConnection(QWidget, Ui_Process):
         self.checkNormalizeUnit.setEnabled(state)
         self.checkNormalizeZeroCenter.setEnabled(state)
         self.checkNormalizeUnitWithZeroCenter.setEnabled(state)
+        self.checkNormalizationAll.setEnabled(state)
         
         self.checkPCA.setEnabled(state)
         self.checkRemoveSimilarFeatures.setEnabled(state)
+        self.checkPreprocessAll.setEnabled(state)
         
         self.checkANOVA.setEnabled(state)
         self.checkRFE.setEnabled(state)
         self.checkRelief.setEnabled(state)
+        self.checkFeatureSelectorAll.setEnabled(state)
         
         self.spinBoxMinFeatureNumber.setEnabled(state)
         self.spinBoxMaxFeatureNumber.setEnabled(state)
@@ -185,8 +188,9 @@ class ProcessConnection(QWidget, Ui_Process):
         self.checkLRLasso.setEnabled(state)
         self.checkAdaboost.setEnabled(state)
         self.checkDecisionTree.setEnabled(state)
-        self.checkNativeBayes.setEnabled(state)
+        self.checkNaiveBayes.setEnabled(state)
         self.checkGaussianProcess.setEnabled(state)
+        self.checkClassifierAll.setEnabled(state)
 
         self.radioLeaveOneOut.setEnabled(state)
         self.radio5folder.setEnabled(state)
@@ -217,23 +221,6 @@ class ProcessConnection(QWidget, Ui_Process):
 
             self.textEditVerbose.setText(store_folder)
             if self.MakePipelines():
-                # for current_normalizer_name, current_dimension_reductor_name, \
-                #     current_feature_selector_name, curreent_feature_num, \
-                #     current_classifier_name, num, total_num\
-                #         in self.fae.Run(self.training_data_container, self.testing_data_container, store_folder):
-                #     text = self.GenerateVerboseTest(current_normalizer_name,
-                #                         current_dimension_reductor_name,
-                #                         current_feature_selector_name,
-                #                         current_classifier_name,
-                #                         curreent_feature_num,
-                #                         num,
-                #                         total_num)
-                #     self.textEditVerbose.setPlainText(text)
-                #     QApplication.processEvents()
-                #
-                # text = self.textEditVerbose.toPlainText()
-                # self.textEditVerbose.setPlainText(text + "\n DONE!")
-
                 thread = CVRun()
                 thread.moveToThread(QThread())
                 thread.SetProcessConnectionAndStore_folder(self, store_folder)
@@ -242,7 +229,7 @@ class ProcessConnection(QWidget, Ui_Process):
                 self.SetStateAllButtonWhenRunning(False)
 
                 hidden_file_path = os.path.join(store_folder, '.FAEresult4129074093819729087')
-                with open(hidden_file_path,'wb') as file:
+                with open(hidden_file_path, 'wb') as file:
                     pass
                 file_hidden = os.popen('attrib +h '+ hidden_file_path)
                 file_hidden.close()
@@ -309,7 +296,7 @@ class ProcessConnection(QWidget, Ui_Process):
             self.__process_classifier_list.append(DecisionTree())
         if self.checkGaussianProcess.isChecked():
             self.__process_classifier_list.append(GaussianProcess())
-        if self.checkNativeBayes.isChecked():
+        if self.checkNaiveBayes.isChecked():
             self.__process_classifier_list.append(NaiveBayes())
         if len(self.__process_classifier_list) == 0:
             return False
@@ -445,8 +432,8 @@ class ProcessConnection(QWidget, Ui_Process):
         if self.checkGaussianProcess.isChecked():
             classifier_text += "Gaussian Process\n"
             classifier_num += 1
-        if self.checkNativeBayes.isChecked():
-            classifier_text += "Native Bayes\n"
+        if self.checkNaiveBayes.isChecked():
+            classifier_text += "Naive Bayes\n"
             classifier_num += 1
 
         if classifier_num == 0:
@@ -510,7 +497,7 @@ class ProcessConnection(QWidget, Ui_Process):
             self.checkAdaboost.setChecked(True)
             self.checkDecisionTree.setChecked(True)
             self.checkGaussianProcess.setChecked(True)
-            self.checkNativeBayes.setChecked(True)
+            self.checkNaiveBayes.setChecked(True)
         else:
             self.checkSVM.setChecked(False)
             self.checkAE.setChecked(False)
@@ -521,6 +508,6 @@ class ProcessConnection(QWidget, Ui_Process):
             self.checkAdaboost.setChecked(False)
             self.checkDecisionTree.setChecked(False)
             self.checkGaussianProcess.setChecked(False)
-            self.checkNativeBayes.setChecked(False)
+            self.checkNaiveBayes.setChecked(False)
 
         self.UpdatePipelineText()
