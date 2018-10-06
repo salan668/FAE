@@ -3,7 +3,7 @@ import seaborn as sns
 import numpy as np
 color_list = sns.color_palette('deep') + sns.color_palette('bright')
 
-def DrawCurve(x, y_list, xlabel='', ylabel='', title='', name_list=[], store_path='', is_show=True, fig=plt.figure()):
+def DrawCurve(x, y_list, std_list, xlabel='', ylabel='', title='', name_list=[], store_path='', is_show=True, fig=plt.figure()):
     '''
     Draw the curve like ROC
     :param x: the vector of the x
@@ -23,7 +23,9 @@ def DrawCurve(x, y_list, xlabel='', ylabel='', title='', name_list=[], store_pat
     axes = fig.add_subplot(1, 1, 1)
 
     for index in range(len(y_list)):
-        axes.plot(x, y_list[index], color=color_list[index])
+        axes.errorbar(x, y_list[index], yerr=std_list[index], fmt='-o',
+                      color=color_list[index], elinewidth=2, capsize=4,alpha=0.7,marker='.')
+        # axes.plot(x, y_list[index], color=color_list[index])
     axes.set_xlabel(xlabel)
     axes.set_ylabel(ylabel)
     axes.set_title(title)

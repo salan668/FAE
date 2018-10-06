@@ -24,6 +24,7 @@ class DataSeparate:
 
     def Run(self, data_container, store_folder=''):
         data = data_container.GetArray()
+        case_name = data_container.GetCaseName()
         label = data_container.GetLabel()
 
         if self._training_index == []:
@@ -40,19 +41,22 @@ class DataSeparate:
         else:
             testing_index_list = [temp for temp in list(range(data.shape[0])) if temp not in self._training_index]
 
-        self._training_index.sort()
-        testing_index_list.sort()
+        # self._training_index.sort()
+        # testing_index_list.sort()
 
         train_data_container = self.__SetNewData(data_container, self._training_index)
         test_data_container = self.__SetNewData(data_container, testing_index_list)
 
         if store_folder:
             train_data_container.Save(os.path.join(store_folder, 'train_numeric_feature.csv'))
-            df_training = pd.DataFrame(self._training_index)
+            df_training = pd.DataFrame(data=self._training_index, columns=['training_index'],
+                                       index=[case_name[index] for index in self._training_index])
+
             df_training.to_csv(os.path.join(store_folder, 'training_index.csv'), sep=',', quotechar='"')
 
             test_data_container.Save(os.path.join(store_folder, 'test_numeric_feature.csv'))
-            df_testing = pd.DataFrame(testing_index_list)
+            df_testing = pd.DataFrame(data=testing_index_list, columns=['training_index'],
+                                       index=[case_name[index] for index in testing_index_list])
             df_testing.to_csv(os.path.join(store_folder, 'testing_index.csv'), sep=',', quotechar='"')
 
         return train_data_container, test_data_container

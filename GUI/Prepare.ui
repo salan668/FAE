@@ -127,6 +127,13 @@
              </widget>
             </item>
             <item>
+             <widget class="QPushButton" name="load_training_index">
+              <property name="text">
+               <string>Load Training Index</string>
+              </property>
+             </widget>
+            </item>
+            <item>
              <widget class="QDoubleSpinBox" name="spinBoxSeparate">
               <property name="decimals">
                <number>1</number>
