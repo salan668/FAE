@@ -72,10 +72,7 @@ class DimensionReductionByPCA(DimensionReduction):
 
     def Run(self, data_container, store_folder=''):
         data = data_container.GetArray()
-
-        if data.shape[1] > super(DimensionReductionByPCA, self).GetRemainedNumber():
-            print('The number of features in data container is smaller than the required number')
-            self.SetRemainedNumber(np.min(data.shape))
+        self.SetRemainedNumber(np.min(data.shape))
 
         self.GetModel().fit(data)
         sub_data = self.GetModel().transform(data)
