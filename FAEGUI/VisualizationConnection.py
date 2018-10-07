@@ -338,30 +338,37 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         index = self._UpdatePlotButtons(selected_index)
 
         show_data = []
+        show_data_std =[]
         name_list = []
 
         if self.comboPlotY.currentText() == 'AUC':
             if self.checkPlotTrain.isChecked():
                 temp = deepcopy(self._fae.GetAUCMetric()['train'])
+                auc_std = deepcopy(self._fae.GetAUCstdMetric()['train'])
                 if self.checkPlotMaximum.isChecked():
                     show_data.append(np.max(temp, axis=max_axis).tolist())
                 else:
                     show_data.append(temp[index].tolist())
+                    show_data_std.append(auc_std[index].tolist())
                 name_list.append('Train')
             if self.checkPlotValidation.isChecked():
                 temp = deepcopy(self._fae.GetAUCMetric()['val'])
+                auc_std = deepcopy(self._fae.GetAUCstdMetric()['val'])
                 if self.checkPlotMaximum.isChecked():
                     show_data.append(np.max(temp, axis=max_axis).tolist())
                 else:
                     show_data.append(temp[index].tolist())
+                    show_data_std.append(auc_std[index].tolist())
                 name_list.append('Validation')
             if self.checkPlotTest.isChecked():
                 temp = deepcopy(self._fae.GetAUCMetric()['test'])
+                auc_std = deepcopy(self._fae.GetAUCstdMetric()['test'])
                 if temp.size > 0:
                     if self.checkPlotMaximum.isChecked():
                         show_data.append(np.max(temp, axis=max_axis).tolist())
                     else:
                         show_data.append(temp[index].tolist())
+                        show_data_std.append(auc_std[index].tolist())
                     name_list.append('Test')
         elif self.comboPlotY.currentText() == 'Accuracy':
             if self.checkPlotTrain.isChecked():
@@ -389,7 +396,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
 
         if len(show_data) > 0:
             if selected_index == 3:
-                DrawCurve(x_ticks, show_data, xlabel=x_label, ylabel=self.comboPlotY.currentText(),
+                DrawCurve(x_ticks, show_data, show_data_std, xlabel=x_label, ylabel=self.comboPlotY.currentText(),
                           name_list=name_list, is_show=False, fig=self.canvasPlot.getFigure())
             else:
                 DrawBar(x_ticks, show_data, ylabel=self.comboPlotY.currentText(),
@@ -458,24 +465,35 @@ class VisualizationConnection(QWidget, Ui_Visualization):
     def UpdateSheet(self):
         data = np.array([])
         df = pd.DataFrame()
+        data = self._fae.GetAUCMetric()
+        std_data = self._fae.GetAUCstdMetric()
         if self.comboSheet.currentText() == 'Train':
             data = self._fae.GetAUCMetric()['train']
+            std_data = self._fae.GetAUCstdMetric()['train']
             df = self.sheet_dict['train']
         elif self.comboSheet.currentText() == 'Validation':
             data = self._fae.GetAUCMetric()['val']
+            std_data = self._fae.GetAUCstdMetric()['val']
             df = self.sheet_dict['val']
         elif self.comboSheet.currentText() == 'Test':
             data = self._fae.GetAUCMetric()['test']
+            std_data = self._fae.GetAUCstdMetric()['test']
             df = self.sheet_dict['test']
         elif self.comboSheet.currentText() == 'Test On Val':
             data = self._fae.GetAUCMetric()['val']
+            std_data = self._fae.GetAUCstdMetric()['val']
             df = self.sheet_dict['test']
+
         else:
             return
+        df.sort_index(inplace=True)
 
         if self.checkMaxFeatureNumber.isChecked():
             name_list = []
+            # one_se = np.max(data, axis=3)-std_data[np.argmax(data, axis=3)]
+            max_auc = np.max(data, axis=3)
             arg_max_index = np.argmax(data, axis=3)
+            # one_se = std_data[np.argmax(data, axis=3)]
             for normalizer, normalizer_index in zip(self._fae.GetNormalizerList(), range(len(self._fae.GetNormalizerList()))):
                 for dimension_reducer, dimension_reducer_index in zip(self._fae.GetDimensionReductionList(),
                                                                       range(len(self._fae.GetDimensionReductionList()))):
@@ -483,12 +501,20 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                                                                         range(len(self._fae.GetFeatureSelectorList()))):
                         for classifier, classifier_index in zip(self._fae.GetClassifierList(),
                                                                 range(len(self._fae.GetClassifierList()))):
-                            name = normalizer.GetName() + '_' + \
-                                   dimension_reducer.GetName() + '_' + \
-                                   feature_selector.GetName() + '_' + \
-                                   self._fae.GetFeatureNumberList()[arg_max_index[normalizer_index, dimension_reducer_index, feature_selector_index, classifier_index]] + '_' + \
-                                   classifier.GetName()
-                            name_list.append(name)
+                            sub_auc = data[normalizer_index, dimension_reducer_index, feature_selector_index, :,
+                                      classifier_index]
+                            sub_auc_std = std_data[normalizer_index, dimension_reducer_index, feature_selector_index, :,
+                                      classifier_index]
+                            one_se = max(sub_auc)-sub_auc_std[np.argmax(sub_auc)]
+                            for feature_number_index in range(len(self._fae.GetFeatureNumberList())):
+                                if data[normalizer_index,dimension_reducer_index,
+                                        feature_selector_index,feature_number_index,classifier_index] >= one_se:
+                                    name = normalizer.GetName() + '_' + dimension_reducer.GetName() + '_' + \
+                                    feature_selector.GetName() + '_' + str(feature_number_index+1)+ '_' + \
+                                    classifier.GetName()
+                                    name_list.append(name)
+                                    break
+
 
             df = df.loc[name_list]
 
@@ -496,6 +522,8 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.tableClinicalStatistic.setColumnCount(df.shape[1])
         self.tableClinicalStatistic.setHorizontalHeaderLabels(list(df.columns))
         self.tableClinicalStatistic.setVerticalHeaderLabels(list(df.index))
+        self.tableClinicalStatistic.setSortingEnabled(True)
+
 
         for row_index in range(df.shape[0]):
             for col_index in range(df.shape[1]):

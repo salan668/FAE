@@ -70,6 +70,7 @@ class FeatureAnalysisPipelines:
             matrix = np.zeros(())
 
         self.__auc_matrix_dict = {'train': deepcopy(matrix), 'val': deepcopy(matrix), 'test': deepcopy(matrix)}
+        self.__auc_std_matrix_dict = {'train': deepcopy(matrix), 'val': deepcopy(matrix), 'test': deepcopy(matrix)}
         self.__accuracy_matrix_dict = {'train': deepcopy(matrix), 'val': deepcopy(matrix), 'test': deepcopy(matrix)}
 
     def SavePipelineInfo(self, store_folder):
@@ -142,24 +143,31 @@ class FeatureAnalysisPipelines:
     def SaveMetricDict(self, store_folder):
         with open(os.path.join(store_folder, 'auc_metric.pkl'), 'wb') as file:
             pickle.dump(self.__auc_matrix_dict, file, pickle.HIGHEST_PROTOCOL)
+        with open(os.path.join(store_folder, 'auc_std_metric.pkl'), 'wb') as file:
+            pickle.dump(self.__auc_std_matrix_dict, file, pickle.HIGHEST_PROTOCOL)
         with open(os.path.join(store_folder, 'accuracy_metric.pkl'), 'wb') as file:
             pickle.dump(self.__accuracy_matrix_dict, file, pickle.HIGHEST_PROTOCOL)
 
     def LoadMetricDict(self, store_folder):
         with open(os.path.join(store_folder, 'auc_metric.pkl'), 'rb') as file:
             self.__auc_matrix_dict = pickle.load(file)
+        with open(os.path.join(store_folder, 'auc_std_metric.pkl'), 'rb') as file:
+            self.__auc_std_matrix_dict = pickle.load(file)
         with open(os.path.join(store_folder, 'accuracy_metric.pkl'), 'rb') as file:
             self.__accuracy_matrix_dict = pickle.load(file)
 
     def GetAUCMetric(self):
         return self.__auc_matrix_dict
 
+    def GetAUCstdMetric(self):
+        return self.__auc_std_matrix_dict
+
     def GetAccuracyMetric(self):
         return self.__accuracy_matrix_dict
 
     def Run(self, train_data_container, test_data_container=DataContainer(), store_folder=''):
         column_list = ['sample_number', 'positive_number', 'negative_number',
-                       'auc', 'auc 95% CIs', 'accuracy',
+                       'auc', 'auc 95% CIs', 'auc std', 'accuracy',
                        'Yorden Index', 'sensitivity', 'specificity',
                        'positive predictive value', 'negative predictive value']
         train_df = pd.DataFrame(columns=column_list)
@@ -206,11 +214,21 @@ class FeatureAnalysisPipelines:
                                                      feature_selector_index, 
                                                      feature_num_index, 
                                                      classifier_index] = train_metric['train_auc']
+                            self.__auc_std_matrix_dict['train'][normalizer_index,
+                                                     dimension_reductor_index,
+                                                     feature_selector_index,
+                                                     feature_num_index,
+                                                     classifier_index] = train_metric['train_auc std']
                             self.__auc_matrix_dict['val'][normalizer_index,
                                                      dimension_reductor_index,
                                                      feature_selector_index,
                                                      feature_num_index,
                                                      classifier_index] = val_metric['val_auc']
+                            self.__auc_std_matrix_dict['val'][normalizer_index,
+                                                     dimension_reductor_index,
+                                                     feature_selector_index,
+                                                     feature_num_index,
+                                                     classifier_index] = val_metric['val_auc std']
 
                             self.__accuracy_matrix_dict['train'][normalizer_index,
                                                      dimension_reductor_index,
@@ -240,6 +258,11 @@ class FeatureAnalysisPipelines:
                                                                    feature_selector_index,
                                                                    feature_num_index,
                                                                    classifier_index] = test_metric['test_auc']
+                                    self.__auc_std_matrix_dict['test'][normalizer_index,
+                                                                   dimension_reductor_index,
+                                                                   feature_selector_index,
+                                                                   feature_num_index,
+                                                                   classifier_index] = test_metric['test_auc std']
                                     self.__accuracy_matrix_dict['test'][normalizer_index,
                                                                         dimension_reductor_index,
                                                                         feature_selector_index,
@@ -252,6 +275,7 @@ class FeatureAnalysisPipelines:
                                     test_df.to_csv(store_path)
 
                                 self.SaveMetricDict(store_folder)
+
 
 class OnePipeline:
     def __init__(self, normalizer=None, dimension_reduction=None, feature_selector=None, classifier=None, cross_validation=None):

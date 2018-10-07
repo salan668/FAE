@@ -1,5 +1,6 @@
 
 import numpy as np
+import csv
 from copy import deepcopy
 
 from PyQt5.QtWidgets import *
@@ -16,8 +17,11 @@ class PrepareConnection(QWidget, Ui_Prepare):
         self.setupUi(self)
         self.data_container = DataContainer()
 
+
         self.buttonLoad.clicked.connect(self.LoadData)
         self.buttonRemove.clicked.connect(self.RemoveNonValidValue)
+        self.load_training_index.clicked.connect(self.LoadTrainingIndex)
+        self.train_index = []
         self.checkSeparate.clicked.connect(self.SetSeparateStatus)
         self.spinBoxSeparate.setEnabled(False)
 
@@ -66,6 +70,15 @@ class PrepareConnection(QWidget, Ui_Prepare):
         self.buttonRemove.setEnabled(True)
         self.buttonSave.setEnabled(True)
 
+    def LoadTrainingIndex(self):
+        dlg = QFileDialog()
+        file_name, _ = dlg.getOpenFileName(self, 'Open SCV file', filter="csv files (*.csv)")
+        with open(file_name, 'r', newline='') as train_file:
+            train_csv = csv.reader(train_file)
+            for index in train_csv:
+                if index[1] != 'training_index':
+                    self.train_index.append(int(index[1]))
+
     def RemoveNonValidValue(self):
         if self.radioRemoveNonvalidCases.isChecked():
             self.data_container.RemoveUneffectiveCases()
@@ -101,9 +114,9 @@ class PrepareConnection(QWidget, Ui_Prepare):
 
             if self.checkSeparate.isChecked():
                 percentage_testing_data = self.spinBoxSeparate.value()
-                folder_name = QFileDialog.getExistingDirectory(self,"Save data")
+                folder_name = QFileDialog.getExistingDirectory(self, "Save data")
                 if folder_name != '':
-                    data_seperate = DataSeparate.DataSeparate(percentage_testing_data)
+                    data_seperate = DataSeparate.DataSeparate(percentage_testing_data, training_index=self.train_index)
                     training_data_container, _, = data_seperate.Run(self.data_container, folder_name)
                     data_balance.Run(training_data_container, store_path=folder_name)
             else:
