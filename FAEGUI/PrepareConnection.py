@@ -21,6 +21,7 @@ class PrepareConnection(QWidget, Ui_Prepare):
         self.buttonLoad.clicked.connect(self.LoadData)
         self.buttonRemove.clicked.connect(self.RemoveNonValidValue)
         self.load_training_index.clicked.connect(self.LoadTrainingIndex)
+        self.clear_training_index.clicked.connect(self.ClearTrainingIndex)
         self.train_index = []
         self.checkSeparate.clicked.connect(self.SetSeparateStatus)
         self.spinBoxSeparate.setEnabled(False)
@@ -78,6 +79,9 @@ class PrepareConnection(QWidget, Ui_Prepare):
             for index in train_csv:
                 if index[1] != 'training_index':
                     self.train_index.append(int(index[1]))
+
+    def ClearTrainingIndex(self):
+        self.train_index = []
 
     def RemoveNonValidValue(self):
         if self.radioRemoveNonvalidCases.isChecked():

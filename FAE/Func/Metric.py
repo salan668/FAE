@@ -43,7 +43,7 @@ def AUC_Confidence_Interval(y_true, y_pred, CI_index=0.95):
     confidence_lower = sorted_scores[int((1.0 - CI_index) / 2 * len(sorted_scores))]
     confidence_upper = sorted_scores[int(1.0 - (1.0 - CI_index) / 2 * len(sorted_scores))]
     CI = [confidence_lower, confidence_upper]
-
+    # final_auc = (confidence_lower+confidence_upper)/2
     # print('AUC is {:.3f}, Confidence interval : [{:0.3f} - {:0.3}]'.format(AUC, confidence_lower, confidence_upper))
     return mean_auc, CI, sorted_scores, std_auc
 

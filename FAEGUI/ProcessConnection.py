@@ -465,7 +465,7 @@ class ProcessConnection(QWidget, Ui_Process):
         self.UpdatePipelineText()
 
     def SelectAllPreprocess(self):
-        if self.checkAllPreprocess.isChecked():
+        if self.checkPreprocessAll.isChecked():
             self.checkPCA.setChecked(True)
             self.checkRemoveSimilarFeatures.setChecked(True)
         else:
@@ -475,7 +475,7 @@ class ProcessConnection(QWidget, Ui_Process):
         self.UpdatePipelineText()
 
     def SelectAllFeatureSelector(self):
-        if self.checkFeatureSelector.isChecked():
+        if self.checkFeatureSelectorAll.isChecked():
             self.checkANOVA.setChecked(True)
             self.checkRFE.setChecked(True)
             self.checkRelief.setChecked(True)
@@ -487,7 +487,7 @@ class ProcessConnection(QWidget, Ui_Process):
         self.UpdatePipelineText()
 
     def SelectAllClassifier(self):
-        if self.checkClassifier.isChecked():
+        if self.checkFeatureSelectorAll.isChecked():
             self.checkSVM.setChecked(True)
             self.checkAE.setChecked(True)
             self.checkLDA.setChecked(True)
