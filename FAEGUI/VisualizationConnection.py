@@ -88,7 +88,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                 self.SetResultTable()
                 self.InitialUi()
             except Exception as ex:
-                QMessageBox.about(self,"Load Error", ex.__str__())
+                QMessageBox.about(self, "Load Error", ex.__str__())
                 self.ClearAll()
                 return
 
@@ -467,6 +467,8 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         df = pd.DataFrame()
         data = self._fae.GetAUCMetric()
         std_data = self._fae.GetAUCstdMetric()
+        self.tableClinicalStatistic.clear()
+        self.tableClinicalStatistic.setSortingEnabled(False)
         if self.comboSheet.currentText() == 'Train':
             data = self._fae.GetAUCMetric()['train']
             std_data = self._fae.GetAUCstdMetric()['train']
@@ -486,14 +488,10 @@ class VisualizationConnection(QWidget, Ui_Visualization):
 
         else:
             return
-        df.sort_index(inplace=True)
+
 
         if self.checkMaxFeatureNumber.isChecked():
             name_list = []
-            # one_se = np.max(data, axis=3)-std_data[np.argmax(data, axis=3)]
-            max_auc = np.max(data, axis=3)
-            arg_max_index = np.argmax(data, axis=3)
-            # one_se = std_data[np.argmax(data, axis=3)]
             for normalizer, normalizer_index in zip(self._fae.GetNormalizerList(), range(len(self._fae.GetNormalizerList()))):
                 for dimension_reducer, dimension_reducer_index in zip(self._fae.GetDimensionReductionList(),
                                                                       range(len(self._fae.GetDimensionReductionList()))):
@@ -517,17 +515,28 @@ class VisualizationConnection(QWidget, Ui_Visualization):
 
 
             df = df.loc[name_list]
+        df.sort_index(inplace=True)
+
 
         self.tableClinicalStatistic.setRowCount(df.shape[0])
-        self.tableClinicalStatistic.setColumnCount(df.shape[1])
-        self.tableClinicalStatistic.setHorizontalHeaderLabels(list(df.columns))
-        self.tableClinicalStatistic.setVerticalHeaderLabels(list(df.index))
-        self.tableClinicalStatistic.setSortingEnabled(True)
+        self.tableClinicalStatistic.setColumnCount(df.shape[1]+1)
+        headerlabels = df.columns.tolist()
+        headerlabels.insert(0, 'models name')
+        self.tableClinicalStatistic.setHorizontalHeaderLabels(headerlabels)
+        # self.tableClinicalStatistic.setVerticalHeaderLabels(list(df.index))
+
 
 
         for row_index in range(df.shape[0]):
-            for col_index in range(df.shape[1]):
-                self.tableClinicalStatistic.setItem(row_index, col_index, QTableWidgetItem(str(df.iloc[row_index, col_index])))
+            for col_index in range(df.shape[1]+1):
+                if col_index == 0:
+                    self.tableClinicalStatistic.setItem(row_index, col_index,
+                                                        QTableWidgetItem(df.index[row_index]))
+                else:
+                    self.tableClinicalStatistic.setItem(row_index, col_index,
+                                                        QTableWidgetItem(str(df.iloc[row_index, col_index-1])))
+
+        self.tableClinicalStatistic.setSortingEnabled(True)
 
     def SetResultTable(self):
         self.sheet_dict['train'] = pd.read_csv(os.path.join(self._root_folder, 'train_result.csv'), index_col=0)
