@@ -1,10 +1,8 @@
 # FAE
 
-Feature Analysis Explorer (FAE) can help researchers develop a classification model with comparison among different methods. This project was inspired on the [Radiomics](http://www.radiomics.io/), and provides some functions to help extract features with batch process.
+Feature Analysis Explorer (FAE) can help researchers develop a classification model with comparison among different methods. This project was inspired on the [Radiomics](http://www.radiomics.io/), and provides a GUI to help analyze the feature matrix, including feature matrix pre-process, model development, and results visualization.
 
-
-
-If you publish any work which uses this package, I will appreciate that you could cite the following publication: [Song Y, Zhang YD, Yan X, Liu H, Zhou M, Hu B, Yang G, Computer-aided diagnosis of prostate cancer using a deep convolutional neural network from multiparametric MRI. J Magn Reson Imaging. 2018 Apr 16. doi: 10.1002/jmri.26047.](https://www.ncbi.nlm.nih.gov/pubmed/29659067) 
+If you publish any work which uses this package, I will appreciate that you could give the following link (https://github.com/salan668/FAE)
 
 Welcome any issues and PR. 
 
@@ -12,20 +10,28 @@ Welcome any issues and PR.
 ![Contributions welcome](https://img.shields.io/badge/contributions-welcome-orange.svg)
 [![License](https://img.shields.io/badge/license-GPL3.0-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
+## Release
+
+The Windows 64 version was release here https://drive.google.com/open?id=1htts7YsfaxKtN1NeDcNU4iksXfjr_XyK
+
 ## Getting Started
+
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
 
-### Prerequisties
+### Pre-install
 The below modules must be installed first to make the FAE work. 
 
 ```
-- pyradiomics
-- pandas
+- matplotlib (seaborn)
 - numpy
+- pandas
+- pdfdocument(https://github.com/salan668/pdfdocument.git)
+- pyradiomics
+- PyQt5
+- PyQtGraph
+- imblance-learn
 - scikit-learn
 - scipy
-- matplotlib (seaborn)
-- PyQt5
 ```
 
 ### Installing
@@ -35,9 +41,6 @@ Just clone it by typing in:
 git clone https://github.com/salan668/FAE.git
 ```
 If you would like to use FAE in any project, please add the path in your system envirement. A trick method is to create a .pth file in the site-packages folder (<Your own python folder>\Lib\site-packages) and add a path that point to the root folder of the FAE.
-
-### Running the example. 
-**TODO**
 
 ### Architecture of Project 
 - **DataContainer**
@@ -59,6 +62,8 @@ If you would like to use FAE in any project, please add the path in your system 
     - **FeatureRelationship**. This function helps draw the distribution of the values of different features. I can only show at most 3 features in one figure. 
     - **FeatureSort**. This function helps draw the features and the weights of them on the classifiction model. 
     - **PlotMetricVsFeatureNumber**. This function helps draw the AUC / Accuracy / other metrics against the number of chosen features. This can help find the adaptive number of the features. 
+- **Report**
+    - To Generate the report with PDF format. 
 
 ## Document
 TODO
