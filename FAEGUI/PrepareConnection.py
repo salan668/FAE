@@ -121,8 +121,13 @@ class PrepareConnection(QWidget, Ui_Prepare):
                 folder_name = QFileDialog.getExistingDirectory(self, "Save data")
                 if folder_name != '':
                     data_seperate = DataSeparate.DataSeparate(percentage_testing_data, training_index=self.train_index)
-                    training_data_container, _, = data_seperate.Run(self.data_container, folder_name)
-                    data_balance.Run(training_data_container, store_path=folder_name)
+                    try:
+                        training_data_container, _, = data_seperate.Run(self.data_container, folder_name)
+                        data_balance.Run(training_data_container, store_path=folder_name)
+                    except:
+                        QMessageBox.information(self, 'Error',
+                            'The train index mismatch, please check the train index really exists in current data')
+
             else:
                 file_name,_ = QFileDialog.getSaveFileName(self, "Save data", filter="csv files (*.csv)")
                 if file_name != '':

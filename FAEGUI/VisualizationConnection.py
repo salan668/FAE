@@ -245,13 +245,13 @@ class VisualizationConnection(QWidget, Ui_Visualization):
             train_label = np.load(os.path.join(case_folder, 'train_label.npy'))
             pred_list.append(train_pred)
             label_list.append(train_label)
-            name_list.append('train')
+            name_list.append('Train')
         if self.checkROCValidation.isChecked():
             val_pred = np.load(os.path.join(case_folder, 'val_predict.npy'))
             val_label = np.load(os.path.join(case_folder, 'val_label.npy'))
             pred_list.append(val_pred)
             label_list.append(val_label)
-            name_list.append('validation')
+            name_list.append('Validation')
         if self.checkROCTest.isChecked():
             if os.path.exists(os.path.join(case_folder, 'test_label.npy')):
                 test_pred = np.load(os.path.join(case_folder, 'test_predict.npy'))
@@ -384,7 +384,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                     show_data.append(np.max(temp, axis=max_axis).tolist())
                 else:
                     show_data.append(temp[index].tolist())
-                name_list.append('Validation')
+                name_list.append('validation')
             if self.checkPlotTest.isChecked():
                 temp = deepcopy(self._fae.GetAccuracyMetric()['test'])
                 if temp.size > 0:

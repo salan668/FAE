@@ -13,7 +13,7 @@ def AUC_Confidence_Interval(y_true, y_pred, CI_index=0.95):
     :return: The AUC value, a list of the confidence interval, the boot strap result.
     '''
 
-    AUC = roc_auc_score(y_true, y_pred)
+    single_auc = roc_auc_score(y_true, y_pred)
 
     n_bootstraps = 1000
     rng_seed = 42  # control reproducibility
@@ -45,7 +45,7 @@ def AUC_Confidence_Interval(y_true, y_pred, CI_index=0.95):
     CI = [confidence_lower, confidence_upper]
     # final_auc = (confidence_lower+confidence_upper)/2
     # print('AUC is {:.3f}, Confidence interval : [{:0.3f} - {:0.3}]'.format(AUC, confidence_lower, confidence_upper))
-    return mean_auc, CI, sorted_scores, std_auc
+    return single_auc, mean_auc, CI, sorted_scores, std_auc
 
 def EstimateMetirc(prediction, label, key_word=''):
     '''
@@ -66,7 +66,7 @@ def EstimateMetirc(prediction, label, key_word=''):
 
     fpr, tpr, threshold = roc_curve(label, prediction)
     index = np.argmax(1 - fpr + tpr)
-    metric[key_word + 'Yorden Index'] = '{:.4f}'.format(threshold[index])
+    metric[key_word + 'Youden’s index'] = '{:.4f}'.format(threshold[index])
 
     pred = np.zeros_like(label)
     pred[prediction >= threshold[index]] = 1
@@ -90,8 +90,8 @@ def EstimateMetirc(prediction, label, key_word=''):
     else:
         metric[key_word + 'negative predictive value'] = '{:.4f}'.format(C[1, 1]/np.sum(C[:, 1]))
 
-    auc, ci, score, std = AUC_Confidence_Interval(label, prediction)
-    metric[key_word + 'auc'] = '{:.4f}'.format(auc)
+    single_auc, mean_auc, ci, score, std = AUC_Confidence_Interval(label, prediction)
+    metric[key_word + 'auc'] = '{:.4f}'.format(single_auc)
     metric[key_word + 'auc 95% CIs'] = '[{:.4f}-{:.4f}]'.format(ci[0], ci[1])
     metric[key_word + 'auc std'] = '{:.4f}'.format(std)
 
