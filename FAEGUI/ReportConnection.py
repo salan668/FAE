@@ -6,7 +6,7 @@ from FAE.FeatureAnalysis.FeaturePipeline import FeatureAnalysisPipelines, OnePip
 from FAE.Report.Report import Report
 
 from FAE.Visualization.DrawROCList import DrawROCList
-
+from FAE.Visualization.PlotMetricVsFeatureNumber import DrawCurve, DrawBar
 import os
 
 class ReportConnection(QWidget, Ui_Report):

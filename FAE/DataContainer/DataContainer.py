@@ -84,6 +84,15 @@ class DataContainer:
         except:
             print('Check the CSV file path. ')
 
+
+    def LoadwithNonNumeric(self, file_path):
+        self.__init__()
+        try:
+            self.__df = pd.read_csv(file_path, header=0, index_col=0)
+        except:
+            print('Check the CSV file path. ')
+
+
     def Load(self, file_path):
         self.__init__()
         try:
