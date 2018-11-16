@@ -112,12 +112,12 @@ class RemoveSameFeatures(FeatureSelector):
 
     def GetSelectedFeatureIndex(self, data_container):
         data = data_container.GetArray()
-        std_value = np.nan_to_num(np.std(data, axis=0))
-        index = np.where(std_value == 0)[0]
-        feature_list = list(range(data.shape[1]))
-        for ind in index:
-            feature_list.remove(ind)
-
+        feature_list = []
+        for feature_index in range(data.shape[1]):
+            feature = data[:, feature_index]
+            unique, counts = np.unique(feature, return_counts=True)
+            if np.max(counts) / np.sum(counts) < 0.9:   # This is arbitrarily
+                feature_list.append(feature_index)
         return feature_list
 
     def Run(self, data_container, store_folder=''):

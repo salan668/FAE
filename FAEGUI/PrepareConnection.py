@@ -98,7 +98,6 @@ class PrepareConnection(QWidget, Ui_Prepare):
             self.spinBoxSeparate.setEnabled(False)
 
     def CheckAndSave(self):
-
         if self.data_container.IsEmpty():
             QMessageBox.warning(self, "Warning", "There is no data", QMessageBox.Ok)
         elif self.data_container.HasNonValidNumber():
