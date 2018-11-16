@@ -66,7 +66,7 @@ def EstimateMetirc(prediction, label, key_word=''):
 
     fpr, tpr, threshold = roc_curve(label, prediction)
     index = np.argmax(1 - fpr + tpr)
-    metric[key_word + 'Youden’s index'] = '{:.4f}'.format(threshold[index])
+    metric[key_word + 'Youden Index'] = '{:.4f}'.format(threshold[index])
 
     pred = np.zeros_like(label)
     pred[prediction >= threshold[index]] = 1

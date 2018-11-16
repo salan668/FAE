@@ -70,7 +70,7 @@ class DataContainer:
             for index1 in range(self._array.shape[1]):
                 if not self.IsValidNumber(self._array[index0,index1]):
                     return index0,index1
-        return None,None
+        return None, None
 
     def Save(self, store_path):
         self.UpdateFrameByData()
