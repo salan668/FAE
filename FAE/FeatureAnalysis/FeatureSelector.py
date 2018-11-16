@@ -112,12 +112,12 @@ class RemoveSameFeatures(FeatureSelector):
 
     def GetSelectedFeatureIndex(self, data_container):
         data = data_container.GetArray()
-        std_value = np.nan_to_num(np.std(data, axis=0))
-        index = np.where(std_value == 0)[0]
-        feature_list = list(range(data.shape[1]))
-        for ind in index:
-            feature_list.remove(ind)
-
+        feature_list = []
+        for feature_index in range(data.shape[1]):
+            feature = data[:, feature_index]
+            unique, counts = np.unique(feature, return_counts=True)
+            if np.max(counts) / np.sum(counts) < 0.9:   # This is arbitrarily
+                feature_list.append(feature_index)
         return feature_list
 
     def Run(self, data_container, store_folder=''):
@@ -193,7 +193,8 @@ class FeatureSelectByANOVA(FeatureSelectByAnalysis):
         label = data_container.GetLabel()
 
         if data.shape[1] < self.GetSelectedFeatureNumber():
-            print('The number of features in data container is smaller than the required number')
+            print('ANOVA: The number of features {:d} in data container is smaller than the required number {:d}'.format(
+                data.shape[1], self.GetSelectedFeatureNumber()))
             self.SetSelectedFeatureNumber(data.shape[1])
 
         fs = SelectKBest(f_classif, k=self.GetSelectedFeatureNumber())
@@ -335,7 +336,7 @@ class FeatureSelectByRelief(FeatureSelectByAnalysis):
     def GetSelectedFeatureIndex(self, data_container):
         feature_sort_list = self.__SortByRelief(data_container)
         if len(feature_sort_list) < self.GetSelectedFeatureNumber():
-            print('The number of features in data container is smaller than the required number')
+            print('Relief: The number of features {:d} in data container is smaller than the required number {:d}'.format(len(feature_sort_list), self.GetSelectedFeatureNumber()))
             self.SetSelectedFeatureNumber(len(feature_sort_list))
         selected_feature_index = feature_sort_list[:self.GetSelectedFeatureNumber()]
         return selected_feature_index
@@ -378,7 +379,8 @@ class FeatureSelectByRFE(FeatureSelectByAnalysis):
         label = data_container.GetLabel()
 
         if data.shape[1] < self.GetSelectedFeatureNumber():
-            print('The number of features in data container is smaller than the required number')
+            print('RFE: The number of features {:d} in data container is smaller than the required number {:d}'.format(
+                data.shape[1], self.GetSelectedFeatureNumber()))
             self.SetSelectedFeatureNumber(data.shape[1])
 
         fs = RFE(self.__classifier, self.GetSelectedFeatureNumber(), step=0.05)
