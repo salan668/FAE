@@ -74,11 +74,12 @@ class PrepareConnection(QWidget, Ui_Prepare):
     def LoadTrainingIndex(self):
         dlg = QFileDialog()
         file_name, _ = dlg.getOpenFileName(self, 'Open SCV file', filter="csv files (*.csv)")
-        with open(file_name, 'r', newline='') as train_file:
-            train_csv = csv.reader(train_file)
-            for index in train_csv:
-                if index[1] != 'training_index':
-                    self.train_index.append(int(index[1]))
+        if file_name:
+            with open(file_name, 'r', newline='') as train_file:
+                train_csv = csv.reader(train_file)
+                for index in train_csv:
+                    if index[1] != 'training_index':
+                        self.train_index.append(int(index[1]))
 
     def ClearTrainingIndex(self):
         self.train_index = []
