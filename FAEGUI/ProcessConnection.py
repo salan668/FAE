@@ -487,7 +487,7 @@ class ProcessConnection(QWidget, Ui_Process):
         self.UpdatePipelineText()
 
     def SelectAllClassifier(self):
-        if self.checkFeatureSelectorAll.isChecked():
+        if self.checkClassifierAll.isChecked():
             self.checkSVM.setChecked(True)
             self.checkAE.setChecked(True)
             self.checkLDA.setChecked(True)
