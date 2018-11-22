@@ -106,7 +106,7 @@ class ProcessConnection(QWidget, Ui_Process):
 
     def LoadTrainingData(self):
         dlg = QFileDialog()
-        file_name, _ = dlg.getOpenFileName(self, 'Open SCV file', directory=r'C:\MyCode\FAE\Example', filter="csv files (*.csv)")
+        file_name, _ = dlg.getOpenFileName(self, 'Open CSV file', directory=r'C:\MyCode\FAE\Example', filter="csv files (*.csv)")
         try:
             self.training_data_container.Load(file_name)
             self.SetStateButtonBeforeLoading(True)
@@ -117,7 +117,7 @@ class ProcessConnection(QWidget, Ui_Process):
 
     def LoadTestingData(self):
         dlg = QFileDialog()
-        file_name, _ = dlg.getOpenFileName(self, 'Open SCV file', filter="csv files (*.csv)")
+        file_name, _ = dlg.getOpenFileName(self, 'Open CSV file', filter="csv files (*.csv)")
         try:
             self.testing_data_container.Load(file_name)
             self.lineEditTestingData.setText(file_name)
@@ -487,7 +487,7 @@ class ProcessConnection(QWidget, Ui_Process):
         self.UpdatePipelineText()
 
     def SelectAllClassifier(self):
-        if self.checkFeatureSelectorAll.isChecked():
+        if self.checkClassifierAll.isChecked():
             self.checkSVM.setChecked(True)
             self.checkAE.setChecked(True)
             self.checkLDA.setChecked(True)
