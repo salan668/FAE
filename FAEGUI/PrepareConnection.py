@@ -1,4 +1,3 @@
-
 import numpy as np
 import csv
 from copy import deepcopy
@@ -8,6 +7,7 @@ from GUI.Prepare import Ui_Prepare
 
 from FAE.DataContainer.DataContainer import DataContainer
 from FAE.DataContainer import DataSeparate
+from FAE.FeatureAnalysis.FeatureSelector import RemoveSameFeatures
 from FAE.DataContainer.DataBalance import UpSampling, DownSampling, SmoteSampling, DataBalance
 
 from PyQt5.QtCore import QItemSelectionModel,QModelIndex
@@ -74,11 +74,12 @@ class PrepareConnection(QWidget, Ui_Prepare):
     def LoadTrainingIndex(self):
         dlg = QFileDialog()
         file_name, _ = dlg.getOpenFileName(self, 'Open SCV file', filter="csv files (*.csv)")
-        with open(file_name, 'r', newline='') as train_file:
-            train_csv = csv.reader(train_file)
-            for index in train_csv:
-                if index[1] != 'training_index':
-                    self.train_index.append(int(index[1]))
+        if file_name:
+            with open(file_name, 'r', newline='') as train_file:
+                train_csv = csv.reader(train_file)
+                for index in train_csv:
+                    if index[1] != 'training_index':
+                        self.train_index.append(int(index[1]))
 
     def ClearTrainingIndex(self):
         self.train_index = []
@@ -108,6 +109,9 @@ class PrepareConnection(QWidget, Ui_Prepare):
             self.tableFeature.setCurrentCell(non_valid_number_Index[0],non_valid_number_Index[1]+1)
             self.tableFeature.setEditTriggers(old_edit_triggers)
         else:
+            remove_features_with_same_value = RemoveSameFeatures()
+            self.data_container = remove_features_with_same_value.Run(self.data_container)
+
             data_balance = DataBalance()
             if self.radioDownSampling.isChecked():
                 data_balance = DownSampling()

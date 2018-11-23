@@ -168,7 +168,7 @@ class FeatureAnalysisPipelines:
     def Run(self, train_data_container, test_data_container=DataContainer(), store_folder=''):
         column_list = ['sample_number', 'positive_number', 'negative_number',
                        'auc', 'auc 95% CIs', 'auc std', 'accuracy',
-                       'Yorden Index', 'sensitivity', 'specificity',
+                       'Youden Index', 'sensitivity', 'specificity',
                        'positive predictive value', 'negative predictive value']
         train_df = pd.DataFrame(columns=column_list)
         val_df = pd.DataFrame(columns=column_list)
