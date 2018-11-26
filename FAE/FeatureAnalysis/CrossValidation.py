@@ -3,6 +3,7 @@ import numpy as np
 import os
 import numbers
 import csv
+from copy import deepcopy
 import pandas as pd
 
 from sklearn.model_selection import KFold, StratifiedKFold, LeaveOneOut
@@ -23,12 +24,25 @@ class CrossValidation:
     '''
     def __init__(self):
         self._classifier = Classifier()
+        self._classifier_parameter_list = [{}]
 
     def SetClassifier(self, classifier):
         self._classifier = classifier
 
     def GetClassifier(self):
         return self._classifier
+
+    def SetClassifierParameterList(self, parameter_list):
+        self._classifier_parameter_list = deepcopy(parameter_list)
+
+    def GetClassifierParameterList(self):
+        return self._classifier_parameter_list
+
+    def _GetNameOfParamDict(self, param_dict):
+        name = ''
+        for key, item in param_dict.items():
+            name += str(key) + '_' + str(item) + '-'
+        return name[:len(name) - 1]
 
     def SaveResult(self, info, store_path):
         info = dict(sorted(info.items(), key= lambda item: item[0]))
@@ -165,7 +179,6 @@ class CrossValidationLeaveOneOut(CrossValidation):
 
         return train_metric, val_metric, test_metric
 
-
 class CrossValidation5Folder(CrossValidation):
     def __init__(self):
         super(CrossValidation5Folder, self).__init__()
@@ -198,39 +211,70 @@ class CrossValidation5Folder(CrossValidation):
         train_cv_info = [['CaseName', 'Group', 'Pred', 'Label']]
         val_cv_info = [['CaseName', 'Group', 'Pred', 'Label']]
 
-        for train_index, val_index in self.__cv.split(data, label):
-            group_index += 1
+        param_metric_train_auc = []
+        param_metric_val_auc = []
+        param_all = []
 
-            train_data = data[train_index, :]
-            train_label = label[train_index]
-            val_data = data[val_index, :]
-            val_label = label[val_index]
+        for parameter in self._classifier_parameter_list:
+            self._classifier.SetModelParameter(parameter)
 
-            self._classifier.SetData(train_data, train_label)
-            self._classifier.Fit()
+            for train_index, val_index in self.__cv.split(data, label):
+                group_index += 1
 
-            train_prob = self._classifier.Predict(train_data)
-            val_prob = self._classifier.Predict(val_data)
+                train_data = data[train_index, :]
+                train_label = label[train_index]
+                val_data = data[val_index, :]
+                val_label = label[val_index]
 
-            for index in range(len(train_index)):
-                train_cv_info.append([case_name[train_index[index]], str(group_index), train_prob[index], train_label[index]])
-            for index in range(len(val_index)):
-                val_cv_info.append([case_name[val_index[index]], str(group_index), val_prob[index], val_label[index]])
+                self._classifier.SetData(train_data, train_label)
+                self._classifier.Fit()
 
-            train_pred_list.extend(train_prob)
-            train_label_list.extend(train_label)
-            val_pred_list.extend(val_prob)
-            val_label_list.extend(val_label)
+                train_prob = self._classifier.Predict(train_data)
+                val_prob = self._classifier.Predict(val_data)
 
-        total_train_label = np.asarray(train_label_list, dtype=np.uint8)
-        total_train_pred = np.asarray(train_pred_list, dtype=np.float32)
-        train_metric = EstimateMetirc(total_train_pred, total_train_label, 'train')
+                for index in range(len(train_index)):
+                    train_cv_info.append([case_name[train_index[index]], str(group_index), train_prob[index], train_label[index]])
+                for index in range(len(val_index)):
+                    val_cv_info.append([case_name[val_index[index]], str(group_index), val_prob[index], val_label[index]])
 
-        total_label = np.asarray(val_label_list, dtype=np.uint8)
-        total_pred = np.asarray(val_pred_list, dtype=np.float32)
-        val_metric = EstimateMetirc(total_pred, total_label, 'val')
+                train_pred_list.extend(train_prob)
+                train_label_list.extend(train_label)
+                val_pred_list.extend(val_prob)
+                val_label_list.extend(val_label)
+
+            total_train_label = np.asarray(train_label_list, dtype=np.uint8)
+            total_train_pred = np.asarray(train_pred_list, dtype=np.float32)
+            train_metric = EstimateMetirc(total_train_pred, total_train_label, 'train')
+
+            total_val_label = np.asarray(val_label_list, dtype=np.uint8)
+            total_val_pred = np.asarray(val_pred_list, dtype=np.float32)
+            val_metric = EstimateMetirc(total_val_pred, total_val_label, 'val')
+
+            param_metric_train_auc.append(float(train_metric['train_auc']))
+            param_metric_val_auc.append(float(val_metric['val_auc']))
+            param_all.append({'total_train_label': total_train_label,
+                              'total_train_pred': total_train_pred,
+                              'train_metric': train_metric,
+                              'train_cv_info': train_cv_info,
+                              'total_val_label': total_val_label,
+                              'total_val_pred': total_val_pred,
+                              'val_metric': val_metric,
+                              'val_cv_info': val_cv_info
+                              })
+
+        # find the best parameter
+        index = np.argmax(param_metric_val_auc)
+        total_train_label = param_all[index]['total_train_label']
+        total_train_pred = param_all[index]['total_train_pred']
+        train_metric = param_all[index]['train_metric']
+        train_cv_info = param_all[index]['train_cv_info']
+        total_val_label = param_all[index]['total_val_label']
+        total_val_pred = param_all[index]['total_val_pred']
+        val_metric = param_all[index]['val_metric']
+        val_cv_info = param_all[index]['val_cv_info']
 
         self._classifier.SetDataContainer(data_container)
+        self._classifier.SetModelParameter(self._classifier_parameter_list[index])
         self._classifier.Fit()
 
         test_metric = {}
@@ -246,14 +290,24 @@ class CrossValidation5Folder(CrossValidation):
             if not os.path.exists(store_folder):
                 os.mkdir(store_folder)
 
+            # Save the Parameter:
+            if self._classifier_parameter_list[0] != {}:
+                with open(os.path.join(store_folder, 'Classifier_Param_Result.csv'), 'w', newline='') as csvfile:
+                    writer = csv.writer(csvfile)
+                    writer.writerow(['Param', 'Train AUC', 'Val AUC'])
+                    for param, param_index in zip(self._classifier_parameter_list, range(len(self._classifier_parameter_list))):
+                        writer.writerow([self._GetNameOfParamDict(param),
+                                         param_metric_train_auc[param_index],
+                                         param_metric_val_auc[param_index]])
+
             info = {}
             info.update(train_metric)
             info.update(val_metric)
 
             np.save(os.path.join(store_folder, 'train_predict.npy'), total_train_pred)
-            np.save(os.path.join(store_folder, 'val_predict.npy'), total_pred)
+            np.save(os.path.join(store_folder, 'val_predict.npy'), total_val_pred)
             np.save(os.path.join(store_folder, 'train_label.npy'), total_train_label)
-            np.save(os.path.join(store_folder, 'val_label.npy'), total_label)
+            np.save(os.path.join(store_folder, 'val_label.npy'), total_val_label)
 
             with open(os.path.join(store_folder, 'train_cv5_info.csv'), 'w', newline='') as csvfile:
                 writer = csv.writer(csvfile)
@@ -393,5 +447,29 @@ class CrossValidation10Folder(CrossValidation):
 
         return text
 
+if __name__ == '__main__':
+    from FAE.DataContainer.DataContainer import DataContainer
+    from FAE.FeatureAnalysis.Normalizer import NormalizerZeroCenter
+    from FAE.FeatureAnalysis.Classifier import SVM
+    import numpy as np
 
+    data_container = DataContainer()
+    data_container.Load(r'C:\MyCode\FAEGitHub\FAE\Example\numeric_feature.csv')
 
+    normalizer = NormalizerZeroCenter()
+    data_container = normalizer.Run(data_container)
+
+    data = data_container.GetArray()
+    label = np.asarray(data_container.GetLabel())
+
+    from sklearn.model_selection import ParameterGrid
+
+    grid = [{'kernel': ['linear']}, {'kernel': ['rbf'], 'gamma': [1, 10]}]
+    param_list = list(ParameterGrid(grid))
+
+    cv = CrossValidation5Folder()
+    cv.SetClassifier(SVM())
+    # cv.SetClassifierParameterList(param_list)
+    train_metric, val_metric, test_metric = cv.Run(data_container, store_folder=r'C:\Users\SY\Desktop\temp_fae')
+    print(train_metric)
+    print(val_metric)
