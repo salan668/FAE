@@ -220,7 +220,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
             self.comboContributionFeatureSelector.addItem(selector.GetName())
         for classifier in self._fae.GetClassifierList():
             specific_name = classifier.GetName() + '_coef.csv'
-            if self._SearchSpecificFile(specific_name, int(self._fae.GetFeatureNumberList()[0])):
+            if self._SearchSpecificFile(int(self._fae.GetFeatureNumberList()[0]), specific_name):
                 self.comboContributionClassifier.addItem(classifier.GetName())
 
     def UpdateROC(self):
@@ -410,7 +410,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
 
         if self.radioContributionFeatureSelector.isChecked():
             file_name = self.comboContributionFeatureSelector.currentText() + '_sort.csv'
-            file_path = self._SearchSpecificFile(file_name, int(self._fae.GetFeatureNumberList()[0]))
+            file_path = self._SearchSpecificFile(int(self._fae.GetFeatureNumberList()[0]), file_name)
             if file_path:
                 df = pd.read_csv(file_path, index_col=0)
 
@@ -421,7 +421,8 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                                    is_show=False, fig=self.canvasFeature.getFigure())
         elif self.radioContributionClassifier.isChecked():
             specific_name = self.comboContributionClassifier.currentText() + '_coef.csv'
-            file_path = self._SearchSpecificFile(specific_name, self.spinClassifierFeatureNumber.value())
+            feature_selector_name = self.comboContributionFeatureSelector.currentText()
+            file_path = self._SearchSpecificFile(self.spinClassifierFeatureNumber.value(), specific_name, feature_selector_name)
             if file_path:
                 df = pd.read_csv(file_path, index_col=0)
                 feature_name = list(df.index)
@@ -550,11 +551,17 @@ class VisualizationConnection(QWidget, Ui_Visualization):
 
         self.UpdateSheet()
 
-    def _SearchSpecificFile(self, specific_file_name, feature_number):
+    def _SearchSpecificFile(self, feature_number, specific_file_name, specific_file_name2=''):
         for rt, folder, files in os.walk(self._root_folder):
             for file_name in files:
                 # print(file_name)
-                if (file_name.lower() == specific_file_name.lower()) and ('_{:d}_'.format(feature_number) in rt):
-                    return os.path.join(rt, file_name)
+                if specific_file_name2:
+                    if (file_name.lower() == specific_file_name.lower()) and \
+                            ('_{:d}_'.format(feature_number) in rt) and \
+                            (specific_file_name2 in rt):
+                        return os.path.join(rt, file_name)
+                else:
+                    if (file_name.lower() == specific_file_name.lower()) and ('_{:d}_'.format(feature_number) in rt):
+                        return os.path.join(rt, file_name)
 
         return ''
