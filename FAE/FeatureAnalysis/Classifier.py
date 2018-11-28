@@ -55,6 +55,9 @@ class Classifier:
     def GetModel(self):
         return self.__model
 
+    def SetModelParameter(self, param):
+        self.__model.set_params(**param)
+
     def Fit(self):
         self.__model.fit(self._x, self._y)
 
