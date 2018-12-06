@@ -47,7 +47,6 @@ class CVRun(QThread):
         self.signal.emit(text + "\n DONE!")
         self._process_connection.SetStateAllButtonWhenRunning(True)
 
-
 class ProcessConnection(QWidget, Ui_Process):
     def __init__(self, parent=None):
         self.training_data_container = DataContainer()

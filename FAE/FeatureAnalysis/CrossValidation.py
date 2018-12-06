@@ -18,23 +18,33 @@ class CrossValidation:
     If a testing data container was also set, the test metric will be return.
     '''
     def __init__(self):
-        self._classifier = Classifier()
+        self._raw_classifier = Classifier()
+        self.__classifier = Classifier()
         self._hyper_parameter_manager = HyperParameterManager()
-        self._classifier_parameter_list = [{}]
+        self.__classifier_parameter_list = [{}]
+
+    def SetDefaultClassifier(self):
+        self.__classifier = deepcopy(self._raw_classifier)
 
     def SetClassifier(self, classifier):
-        self._classifier = classifier
-        self.__SetClassifierParameterList()
+        self.__init__()
+        self._raw_classifier = deepcopy(classifier)
+        self.__classifier = classifier
 
     def GetClassifier(self):
-        return self._classifier
+        return self.__classifier
+    classifier = property(GetClassifier, SetClassifier)
 
-    def __SetClassifierParameterList(self):
-        self._hyper_parameter_manager.LoadSpecificConfig(self._classifier.GetName())
-        self._classifier_parameter_list = self._hyper_parameter_manager.GetParameterSetting()
+    def AutoLoadClassifierParameterList(self, relative_path=r'HyperParameters\Classifier'):
+        self._hyper_parameter_manager.LoadSpecificConfig(self.classifier.GetName(), relative_path=relative_path)
+        self.__classifier_parameter_list = self._hyper_parameter_manager.GetParameterSetting()
+
+    def SetClassifierParameterList(self, classifier_parameter_list):
+        self.__classifier_parameter_list = deepcopy(classifier_parameter_list)
 
     def GetClassifierParameterList(self):
-        return self._classifier_parameter_list
+        return self.__classifier_parameter_list
+    classifier_parameter_list = property(GetClassifierParameterList, SetClassifierParameterList)
 
     def _GetNameOfParamDict(self, param_dict):
         name = ''
@@ -103,11 +113,11 @@ class CrossValidationLeaveOneOut(CrossValidation):
             val_data = data[val_index, :]
             val_label = label[val_index]
 
-            self._classifier.SetData(train_data, train_label)
-            self._classifier.Fit()
+            self.classifier.SetData(train_data, train_label)
+            self.classifier.Fit()
 
-            train_prob = self._classifier.Predict(train_data)
-            val_prob = self._classifier.Predict(val_data)
+            train_prob = self.classifier.Predict(train_data)
+            val_prob = self.classifier.Predict(val_data)
 
             for index in range(len(train_index)):
                 train_cv_info.append(
@@ -128,15 +138,15 @@ class CrossValidationLeaveOneOut(CrossValidation):
         total_pred = np.asarray(val_pred_list, dtype=np.float32)
         val_metric = EstimateMetirc(total_pred, total_label, 'val')
 
-        self._classifier.SetDataContainer(data_container)
-        self._classifier.Fit()
+        self.classifier.SetDataContainer(data_container)
+        self.classifier.Fit()
 
         test_metric = {}
         if test_data_container.GetArray().size > 0:
             test_data = test_data_container.GetArray()
             test_label = test_data_container.GetLabel()
             test_case_name = test_data_container.GetCaseName()
-            test_pred = self._classifier.Predict(test_data)
+            test_pred = self.classifier.Predict(test_data)
 
             test_metric = EstimateMetirc(test_pred, test_label, 'test')
 
@@ -172,7 +182,7 @@ class CrossValidationLeaveOneOut(CrossValidation):
                     writer = csv.writer(csvfile)
                     writer.writerows(test_result_info)
 
-            self._classifier.Save(store_folder)
+            self.classifier.Save(store_folder)
             self.SaveResult(info, store_folder)
 
         return train_metric, val_metric, test_metric
@@ -198,7 +208,7 @@ class CrossValidation5Folder(CrossValidation):
 
         return text
 
-    def Run(self, data_container, test_data_container=DataContainer(), store_folder=''):
+    def Run(self, data_container, test_data_container=DataContainer(), store_folder='', relative_config_path=r'FAE\HyperParameterConfig'):
         train_pred_list, train_label_list, val_pred_list, val_label_list = [], [], [], []
 
         data = data_container.GetArray()
@@ -213,8 +223,12 @@ class CrossValidation5Folder(CrossValidation):
         param_metric_val_auc = []
         param_all = []
 
-        for parameter in self._classifier_parameter_list:
-            self._classifier.SetModelParameter(parameter)
+        if len(self.classifier_parameter_list) == 1:
+            self.AutoLoadClassifierParameterList(relative_path=relative_config_path)
+
+        for parameter in self.classifier_parameter_list:
+            self.SetDefaultClassifier()
+            self.classifier.SetModelParameter(parameter)
 
             for train_index, val_index in self.__cv.split(data, label):
                 group_index += 1
@@ -224,11 +238,11 @@ class CrossValidation5Folder(CrossValidation):
                 val_data = data[val_index, :]
                 val_label = label[val_index]
 
-                self._classifier.SetData(train_data, train_label)
-                self._classifier.Fit()
+                self.classifier.SetData(train_data, train_label)
+                self.classifier.Fit()
 
-                train_prob = self._classifier.Predict(train_data)
-                val_prob = self._classifier.Predict(val_data)
+                train_prob = self.classifier.Predict(train_data)
+                val_prob = self.classifier.Predict(val_data)
 
                 for index in range(len(train_index)):
                     train_cv_info.append([case_name[train_index[index]], str(group_index), train_prob[index], train_label[index]])
@@ -271,16 +285,17 @@ class CrossValidation5Folder(CrossValidation):
         val_metric = param_all[index]['val_metric']
         val_cv_info = param_all[index]['val_cv_info']
 
-        self._classifier.SetDataContainer(data_container)
-        self._classifier.SetModelParameter(self._classifier_parameter_list[index])
-        self._classifier.Fit()
+        self.SetDefaultClassifier()
+        self.classifier.SetModelParameter(self.classifier_parameter_list[index])
+        self.classifier.SetDataContainer(data_container)
+        self.classifier.Fit()
 
         test_metric = {}
         if test_data_container.GetArray().size > 0:
             test_data = test_data_container.GetArray()
             test_label = test_data_container.GetLabel()
             test_case_name = test_data_container.GetCaseName()
-            test_pred = self._classifier.Predict(test_data)
+            test_pred = self.classifier.Predict(test_data)
 
             test_metric = EstimateMetirc(test_pred, test_label, 'test')
 
@@ -289,11 +304,11 @@ class CrossValidation5Folder(CrossValidation):
                 os.mkdir(store_folder)
 
             # Save the Parameter:
-            if self._classifier_parameter_list[0] != {}:
+            if self.classifier_parameter_list[0] != {}:
                 with open(os.path.join(store_folder, 'Classifier_Param_Result.csv'), 'w', newline='') as csvfile:
                     writer = csv.writer(csvfile)
                     writer.writerow(['Param', 'Train AUC', 'Val AUC'])
-                    for param, param_index in zip(self._classifier_parameter_list, range(len(self._classifier_parameter_list))):
+                    for param, param_index in zip(self.classifier_parameter_list, range(len(self.classifier_parameter_list))):
                         writer.writerow([self._GetNameOfParamDict(param),
                                          param_metric_train_auc[param_index],
                                          param_metric_val_auc[param_index]])
@@ -326,7 +341,7 @@ class CrossValidation5Folder(CrossValidation):
                     writer = csv.writer(csvfile)
                     writer.writerows(test_result_info)
 
-            self._classifier.Save(store_folder)
+            self.classifier.Save(store_folder)
             self.SaveResult(info, store_folder)
 
         return train_metric, val_metric, test_metric
@@ -342,7 +357,17 @@ class CrossValidation10Folder(CrossValidation):
     def GetName(self):
         return '10-Folder'
 
-    def Run(self, data_container, test_data_container=DataContainer(), store_folder=''):
+    def GetDescription(self, is_test_data_container=False):
+        if is_test_data_container:
+            text = "To determine the hyper-parameter (e.g. the number of features) of model, we applied cross validation " \
+                   "with 10-folder on the training data set. The hyper-parameters were set according to the model performance " \
+                   "on the validation data set. "
+        else:
+            text = "To prove the performance of the model, we applied corss validation with 10-folder on the data set. "
+
+        return text
+
+    def Run(self, data_container, test_data_container=DataContainer(), store_folder='', relative_config_path=r'FAE\HyperParameterConfig'):
         train_pred_list, train_label_list, val_pred_list, val_label_list = [], [], [], []
 
         data = data_container.GetArray()
@@ -357,8 +382,12 @@ class CrossValidation10Folder(CrossValidation):
         param_metric_val_auc = []
         param_all = []
 
-        for parameter in self._classifier_parameter_list:
-            self._classifier.SetModelParameter(parameter)
+        if len(self.classifier_parameter_list) == 1:
+            self.AutoLoadClassifierParameterList(relative_path=relative_config_path)
+
+        for parameter in self.classifier_parameter_list:
+            self.SetDefaultClassifier()
+            self.classifier.SetModelParameter(parameter)
 
             for train_index, val_index in self.__cv.split(data, label):
                 group_index += 1
@@ -368,15 +397,14 @@ class CrossValidation10Folder(CrossValidation):
                 val_data = data[val_index, :]
                 val_label = label[val_index]
 
-                self._classifier.SetData(train_data, train_label)
-                self._classifier.Fit()
+                self.classifier.SetData(train_data, train_label)
+                self.classifier.Fit()
 
-                train_prob = self._classifier.Predict(train_data)
-                val_prob = self._classifier.Predict(val_data)
+                train_prob = self.classifier.Predict(train_data)
+                val_prob = self.classifier.Predict(val_data)
 
                 for index in range(len(train_index)):
-                    train_cv_info.append(
-                        [case_name[train_index[index]], str(group_index), train_prob[index], train_label[index]])
+                    train_cv_info.append([case_name[train_index[index]], str(group_index), train_prob[index], train_label[index]])
                 for index in range(len(val_index)):
                     val_cv_info.append([case_name[val_index[index]], str(group_index), val_prob[index], val_label[index]])
 
@@ -416,16 +444,17 @@ class CrossValidation10Folder(CrossValidation):
         val_metric = param_all[index]['val_metric']
         val_cv_info = param_all[index]['val_cv_info']
 
-        self._classifier.SetDataContainer(data_container)
-        self._classifier.SetModelParameter(self._classifier_parameter_list[index])
-        self._classifier.Fit()
+        self.SetDefaultClassifier()
+        self.classifier.SetModelParameter(self.classifier_parameter_list[index])
+        self.classifier.SetDataContainer(data_container)
+        self.classifier.Fit()
 
         test_metric = {}
         if test_data_container.GetArray().size > 0:
             test_data = test_data_container.GetArray()
             test_label = test_data_container.GetLabel()
             test_case_name = test_data_container.GetCaseName()
-            test_pred = self._classifier.Predict(test_data)
+            test_pred = self.classifier.Predict(test_data)
 
             test_metric = EstimateMetirc(test_pred, test_label, 'test')
 
@@ -434,12 +463,11 @@ class CrossValidation10Folder(CrossValidation):
                 os.mkdir(store_folder)
 
             # Save the Parameter:
-            if self._classifier_parameter_list[0] != {}:
+            if self.classifier_parameter_list[0] != {}:
                 with open(os.path.join(store_folder, 'Classifier_Param_Result.csv'), 'w', newline='') as csvfile:
                     writer = csv.writer(csvfile)
                     writer.writerow(['Param', 'Train AUC', 'Val AUC'])
-                    for param, param_index in zip(self._classifier_parameter_list,
-                                                  range(len(self._classifier_parameter_list))):
+                    for param, param_index in zip(self.classifier_parameter_list, range(len(self.classifier_parameter_list))):
                         writer.writerow([self._GetNameOfParamDict(param),
                                          param_metric_train_auc[param_index],
                                          param_metric_val_auc[param_index]])
@@ -453,10 +481,10 @@ class CrossValidation10Folder(CrossValidation):
             np.save(os.path.join(store_folder, 'train_label.npy'), total_train_label)
             np.save(os.path.join(store_folder, 'val_label.npy'), total_val_label)
 
-            with open(os.path.join(store_folder, 'train_cv10_info.csv'), 'w', newline='') as csvfile:
+            with open(os.path.join(store_folder, 'train_cv5_info.csv'), 'w', newline='') as csvfile:
                 writer = csv.writer(csvfile)
                 writer.writerows(train_cv_info)
-            with open(os.path.join(store_folder, 'val_cv10_info.csv'), 'w', newline='') as csvfile:
+            with open(os.path.join(store_folder, 'val_cv5_info.csv'), 'w', newline='') as csvfile:
                 writer = csv.writer(csvfile)
                 writer.writerows(val_cv_info)
 
@@ -472,44 +500,46 @@ class CrossValidation10Folder(CrossValidation):
                     writer = csv.writer(csvfile)
                     writer.writerows(test_result_info)
 
-            self._classifier.Save(store_folder)
+            self.classifier.Save(store_folder)
             self.SaveResult(info, store_folder)
 
         return train_metric, val_metric, test_metric
 
-    def GetDescription(self, is_test_data_container=False):
-        if is_test_data_container:
-            text = "To determine the hyper-parameter (e.g. the number of features) of model, we applied cross validation " \
-                   "with 10-folder on the training data set. The hyper-parameters were set according to the model performance " \
-                   "on the validation data set. "
-        else:
-            text = "To prove the performance of the model, we applied corss validation with 10-folder on the data set. "
-
-        return text
-
 if __name__ == '__main__':
     from FAE.DataContainer.DataContainer import DataContainer
     from FAE.FeatureAnalysis.Normalizer import NormalizerZeroCenter
-    from FAE.FeatureAnalysis.Classifier import SVM
+    from FAE.FeatureAnalysis.Classifier import SVM, LR, LDA, LRLasso, GaussianProcess, NaiveBayes, DecisionTree, RandomForest, AE, AdaBoost
     import numpy as np
 
-    data_container = DataContainer()
-    data_container.Load(r'C:\MyCode\FAEGitHub\FAE\Example\numeric_feature.csv')
+    train_data_container = DataContainer()
+    train_data_container.Load(r'C:\MyCode\FAEGitHub\FAE\Example\withoutshape\non_balance_features.csv')
 
     normalizer = NormalizerZeroCenter()
-    data_container = normalizer.Run(data_container)
+    train_data_container = normalizer.Run(train_data_container)
 
-    data = data_container.GetArray()
-    label = np.asarray(data_container.GetLabel())
+    data = train_data_container.GetArray()
+    label = np.asarray(train_data_container.GetLabel())
 
-    from sklearn.model_selection import ParameterGrid
-
-    grid = [{'kernel': ['linear']}, {'kernel': ['rbf'], 'gamma': [1, 10]}]
-    param_list = list(ParameterGrid(grid))
+#     param_list = [
+# {"hidden_layer_sizes": [(30,), (100,)],
+# "solver": ["adam"],
+# "alpha": [0.0001, 0.001],
+# "learning_rate_init": [0.001, 0.01]}
+# ]
+#     from sklearn.model_selection import ParameterGrid
+#     pl = ParameterGrid(param_list)
 
     cv = CrossValidation5Folder()
-    cv.SetClassifier(SVM())
-    # cv.__SetClassifierParameterList()
-    train_metric, val_metric, test_metric = cv.Run(data_container, store_folder=r'C:\Users\SY\Desktop\temp_fae')
+    cv.SetClassifier(LR())
+    # cv.SetClassifierParameterList(pl)
+    train_metric, val_metric, test_metric = cv.Run(train_data_container, store_folder=r'C:\Users\SY\Desktop\temp_fae',
+                                                   relative_config_path=r'..\..\HyperParameters\Classifier')
+    print(train_metric)
+    print(val_metric)
+
+    cv.SetClassifier(LRLasso())
+    # cv.SetClassifierParameterList(pl)
+    train_metric, val_metric, test_metric = cv.Run(train_data_container, store_folder=r'C:\Users\SY\Desktop\temp_fae',
+                                                   relative_config_path=r'..\..\HyperParameters\Classifier')
     print(train_metric)
     print(val_metric)
