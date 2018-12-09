@@ -199,7 +199,6 @@ class VisualizationConnection(QWidget, Ui_Visualization):
             self.comboPlotX.addItem('Feature Number')
 
         self.comboPlotY.addItem('AUC')
-        self.comboPlotY.addItem('Accuracy')
 
         for index in self._fae.GetNormalizerList():
             self.comboPlotNormalizer.addItem(index.GetName())

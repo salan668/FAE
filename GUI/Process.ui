@@ -343,13 +343,6 @@
           <item row="0" column="0">
            <layout class="QHBoxLayout" name="horizontalLayout_7">
             <item>
-             <widget class="QRadioButton" name="radioLeaveOneOut">
-              <property name="text">
-               <string>LeaveOneOut</string>
-              </property>
-             </widget>
-            </item>
-            <item>
              <widget class="QRadioButton" name="radio5folder">
               <property name="text">
                <string>5-Folder</string>

@@ -94,7 +94,6 @@ class ProcessConnection(QWidget, Ui_Process):
         self.checkGaussianProcess.clicked.connect(self.UpdatePipelineText)
         self.checkClassifierAll.clicked.connect(self.SelectAllClassifier)
 
-        self.radioLeaveOneOut.clicked.connect(self.UpdatePipelineText)
         self.radio5folder.clicked.connect(self.UpdatePipelineText)
         self.radio10Folder.clicked.connect(self.UpdatePipelineText)
 
@@ -191,7 +190,6 @@ class ProcessConnection(QWidget, Ui_Process):
         self.checkGaussianProcess.setEnabled(state)
         self.checkClassifierAll.setEnabled(state)
 
-        self.radioLeaveOneOut.setEnabled(state)
         self.radio5folder.setEnabled(state)
         self.radio10Folder.setEnabled(state)
 
@@ -300,9 +298,7 @@ class ProcessConnection(QWidget, Ui_Process):
         if len(self.__process_classifier_list) == 0:
             return False
 
-        if self.radioLeaveOneOut.isChecked():
-            cv = CrossValidationLeaveOneOut()
-        elif self.radio5folder.isChecked():
+        if self.radio5folder.isChecked():
             cv = CrossValidation5Folder()
         elif self.radio10Folder.isChecked():
             cv = CrossValidation10Folder()
@@ -444,8 +440,7 @@ class ProcessConnection(QWidget, Ui_Process):
             cv_method += "5-Folder\n"
         elif self.radio10Folder.isChecked():
             cv_method += "10-folder\n"
-        elif self.radioLeaveOneOut.isChecked():
-            cv_method += 'Leave One Out\n'
+
         self.listOnePipeline.addItem(cv_method)
 
         self.listOnePipeline.addItem("Total number of pipelines is:\n{:d}"

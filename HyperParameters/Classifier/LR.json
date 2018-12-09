@@ -13,5 +13,5 @@ The 'newton-cg', 'sag', and 'lbfgs' solvers support only L2 regularization with 
 "C": [0.1, 1.0],
 "class_weight": ["balanced", "None"],
 "solver": ["lbfgs", "sag"],
-"max_iter": [60]}
+"max_iter": [100]}
 ]}
