@@ -282,7 +282,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
             index[1] = self.comboPlotDimensionReduction.currentIndex()
             index[2] = self.comboPlotFeatureSelector.currentIndex()
             index[4] = self.comboPlotClassifier.currentIndex()
-            index[3] = self.spinPlotFeatureNumber.value()
+            index[3] = self.spinPlotFeatureNumber.value() - 1
 
             if selected_index == 0:
                 self.comboPlotNormalizer.setEnabled(False)
