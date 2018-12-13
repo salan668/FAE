@@ -369,29 +369,6 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                         show_data.append(temp[index].tolist())
                         show_data_std.append(auc_std[index].tolist())
                     name_list.append('Test')
-        elif self.comboPlotY.currentText() == 'Accuracy':
-            if self.checkPlotTrain.isChecked():
-                temp = deepcopy(self._fae.GetAccuracyMetric()['train'])
-                if self.checkPlotMaximum.isChecked():
-                    show_data.append(np.max(temp, axis=max_axis).tolist())
-                else:
-                    show_data.append(temp[index].tolist())
-                name_list.append('Train')
-            if self.checkPlotValidation.isChecked():
-                temp = deepcopy(self._fae.GetAccuracyMetric()['val'])
-                if self.checkPlotMaximum.isChecked():
-                    show_data.append(np.max(temp, axis=max_axis).tolist())
-                else:
-                    show_data.append(temp[index].tolist())
-                name_list.append('validation')
-            if self.checkPlotTest.isChecked():
-                temp = deepcopy(self._fae.GetAccuracyMetric()['test'])
-                if temp.size > 0:
-                    if self.checkPlotMaximum.isChecked():
-                        show_data.append(np.max(temp, axis=max_axis).tolist())
-                    else:
-                        show_data.append(temp[index].tolist())
-                    name_list.append('Test')
 
         if len(show_data) > 0:
             if selected_index == 3:
