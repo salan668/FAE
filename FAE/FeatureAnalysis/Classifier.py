@@ -293,7 +293,10 @@ class NaiveBayes(Classifier):
 class LR(Classifier):
     def __init__(self, **kwargs):
         super(LR, self).__init__()
-        super(LR, self).SetModel(LogisticRegression(**kwargs))
+        if 'solver' in kwargs:
+            super(LR, self).SetModel(LogisticRegression(penalty='l2', **kwargs))
+        else:
+            super(LR, self).SetModel(LogisticRegression(penalty='l2', solver='liblinear', **kwargs))
 
     def GetName(self):
         return 'LR'
@@ -327,7 +330,10 @@ class LR(Classifier):
 class LRLasso(Classifier):
     def __init__(self, **kwargs):
         super(LRLasso, self).__init__()
-        super(LRLasso, self).SetModel(LogisticRegression(penalty='l1', **kwargs))
+        if 'solver' in kwargs:
+            super(LRLasso, self).SetModel(LogisticRegression(penalty='l1', **kwargs))
+        else:
+            super(LRLasso, self).SetModel(LogisticRegression(penalty='l1', solver='liblinear', **kwargs))
 
     def GetName(self):
         return 'LRLasso'

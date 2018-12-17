@@ -18,13 +18,14 @@ from copy import deepcopy
 
 class FeatureAnalysisPipelines:
     def __init__(self, normalizer_list=[], dimension_reduction_list=[], feature_selector_list=[],
-                 feature_selector_num_list=[], classifier_list=[], cross_validation=None):
+                 feature_selector_num_list=[], classifier_list=[], cross_validation=None, is_hyper_parameter=False):
         self.__normalizer_list = normalizer_list
         self._dimension_reduction_list = dimension_reduction_list
         self.__feature_selector_list = feature_selector_list
         self.__feature_selector_num_list = feature_selector_num_list
         self.__classifier_list = classifier_list
         self.__cross_validation = cross_validation
+        self.__is_hyper_parameter = is_hyper_parameter
 
         self.GenerateMetircDict()
 
@@ -165,7 +166,7 @@ class FeatureAnalysisPipelines:
     def GetAccuracyMetric(self):
         return self.__accuracy_matrix_dict
 
-    def Run(self, train_data_container, test_data_container=DataContainer(), store_folder=''):
+    def Run(self, train_data_container, test_data_container=DataContainer(), store_folder='', is_hyper_parameter=False):
         column_list = ['sample_number', 'positive_number', 'negative_number',
                        'auc', 'auc 95% CIs', 'auc std', 'accuracy',
                        'Youden Index', 'sensitivity', 'specificity',
@@ -207,7 +208,10 @@ class FeatureAnalysisPipelines:
                                                        cross_validation=self.__cross_validation)
                             case_name = one_pipeline.GetStoreName()
                             case_store_folder = os.path.join(store_folder, case_name)
-                            train_metric, val_metric, test_metric = one_pipeline.Run(train_data_container, test_data_container, case_store_folder)
+                            train_metric, val_metric, test_metric = one_pipeline.Run(train_data_container,
+                                                                                     test_data_container,
+                                                                                     case_store_folder,
+                                                                                     is_hyper_parameter)
                             
                             self.__auc_matrix_dict['train'][normalizer_index,
                                                      dimension_reductor_index, 
@@ -354,7 +358,7 @@ class OnePipeline:
                     self.__classifier.GetName()
         return case_name
 
-    def Run(self, train_data_container, test_data_container=DataContainer(), store_folder=''):
+    def Run(self, train_data_container, test_data_container=DataContainer(), store_folder='', is_hyper_parameter=False):
         raw_train_data_container = deepcopy(train_data_container)
         raw_test_data_conainer = deepcopy(test_data_container)
 
@@ -383,7 +387,10 @@ class OnePipeline:
                 raw_test_data_conainer = fs.SelectFeatureByName(raw_test_data_conainer, selected_feature_name)
 
         self.__cv.SetClassifier(self.__classifier)
-        train_metric, val_metric, test_metric = self.__cv.Run(raw_train_data_container, raw_test_data_conainer, store_folder)
+        train_metric, val_metric, test_metric = self.__cv.Run(raw_train_data_container,
+                                                              raw_test_data_conainer,
+                                                              store_folder,
+                                                              is_hyper_parameter)
 
         if store_folder:
             self.SavePipeline(len(raw_train_data_container.GetFeatureName()), os.path.join(store_folder, 'pipeline_info.csv'))

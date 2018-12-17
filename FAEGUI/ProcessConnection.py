@@ -32,8 +32,9 @@ class CVRun(QThread):
             current_feature_selector_name, curreent_feature_num, \
             current_classifier_name, num, total_num \
                 in self._process_connection.fae.Run(self._process_connection.training_data_container,
-                                                      self._process_connection.testing_data_container,
-                                                      self._store_folder):
+                                                    self._process_connection.testing_data_container,
+                                                    self._store_folder,
+                                                    self._process_connection.checkHyperParameters.isChecked()):
             text = self._process_connection.GenerateVerboseTest(current_normalizer_name,
                                                      current_dimension_reductor_name,
                                                      current_feature_selector_name,
@@ -189,6 +190,7 @@ class ProcessConnection(QWidget, Ui_Process):
         self.checkNaiveBayes.setEnabled(state)
         self.checkGaussianProcess.setEnabled(state)
         self.checkClassifierAll.setEnabled(state)
+        self.checkHyperParameters.setEnabled(state)
 
         self.radio5folder.setEnabled(state)
         self.radio10Folder.setEnabled(state)

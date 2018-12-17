@@ -208,7 +208,7 @@ class CrossValidation5Folder(CrossValidation):
 
         return text
 
-    def Run(self, data_container, test_data_container=DataContainer(), store_folder='', relative_config_path=r'FAE\HyperParameterConfig'):
+    def Run(self, data_container, test_data_container=DataContainer(), store_folder='', is_hyper_parameter=False):
         train_pred_list, train_label_list, val_pred_list, val_label_list = [], [], [], []
 
         data = data_container.GetArray()
@@ -223,8 +223,8 @@ class CrossValidation5Folder(CrossValidation):
         param_metric_val_auc = []
         param_all = []
 
-        if len(self.classifier_parameter_list) == 1:
-            self.AutoLoadClassifierParameterList(relative_path=relative_config_path)
+        if len(self.classifier_parameter_list) == 1 and is_hyper_parameter:
+            self.AutoLoadClassifierParameterList(relative_path=r'HyperParameters\Classifier')
 
         for parameter in self.classifier_parameter_list:
             self.SetDefaultClassifier()
