@@ -173,7 +173,10 @@ class LDA(Classifier):
 class RandomForest(Classifier):
     def __init__(self, **kwargs):
         super(RandomForest, self).__init__()
-        super(RandomForest, self).SetModel(RandomForestClassifier(random_state=42, **kwargs))
+        if 'n_estimators' not in kwargs.keys():
+            super(RandomForest, self).SetModel(RandomForestClassifier(random_state=42, n_estimators=200, **kwargs))
+        else:
+            super(RandomForest, self).SetModel(RandomForestClassifier(random_state=42, **kwargs))
 
     def GetName(self):
         return 'RF'
@@ -293,7 +296,7 @@ class NaiveBayes(Classifier):
 class LR(Classifier):
     def __init__(self, **kwargs):
         super(LR, self).__init__()
-        if 'solver' in kwargs:
+        if 'solver' in kwargs.keys():
             super(LR, self).SetModel(LogisticRegression(penalty='l2', **kwargs))
         else:
             super(LR, self).SetModel(LogisticRegression(penalty='l2', solver='liblinear', **kwargs))
@@ -330,7 +333,7 @@ class LR(Classifier):
 class LRLasso(Classifier):
     def __init__(self, **kwargs):
         super(LRLasso, self).__init__()
-        if 'solver' in kwargs:
+        if 'solver' in kwargs.keys():
             super(LRLasso, self).SetModel(LogisticRegression(penalty='l1', **kwargs))
         else:
             super(LRLasso, self).SetModel(LogisticRegression(penalty='l1', solver='liblinear', **kwargs))

@@ -482,10 +482,10 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                                       classifier_index]
                             one_se = max(sub_auc)-sub_auc_std[np.argmax(sub_auc)]
                             for feature_number_index in range(len(self._fae.GetFeatureNumberList())):
-                                if data[normalizer_index,dimension_reducer_index,
-                                        feature_selector_index,feature_number_index,classifier_index] >= one_se:
+                                if data[normalizer_index, dimension_reducer_index,
+                                        feature_selector_index, feature_number_index,classifier_index] >= one_se:
                                     name = normalizer.GetName() + '_' + dimension_reducer.GetName() + '_' + \
-                                    feature_selector.GetName() + '_' + str(feature_number_index+1)+ '_' + \
+                                    feature_selector.GetName() + '_' + str(self._fae.GetFeatureNumberList()[feature_number_index]) + '_' + \
                                     classifier.GetName()
                                     name_list.append(name)
                                     break
