@@ -1,0 +1,13 @@
+{"_commit": "Multi-layer Perceptron classifier.
+
+This model optimizes the log-loss function using LBFGS or stochastic gradient descent.
+",
+
+"setting":
+[
+{"hidden_layer_sizes": [[30], [100]],
+"solver": ["adam"],
+"alpha": [0.0001, 0.001],
+"learning_rate_init": [0.001, 0.01]}
+]
+}

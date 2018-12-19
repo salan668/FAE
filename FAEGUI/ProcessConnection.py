@@ -32,8 +32,9 @@ class CVRun(QThread):
             current_feature_selector_name, curreent_feature_num, \
             current_classifier_name, num, total_num \
                 in self._process_connection.fae.Run(self._process_connection.training_data_container,
-                                                      self._process_connection.testing_data_container,
-                                                      self._store_folder):
+                                                    self._process_connection.testing_data_container,
+                                                    self._store_folder,
+                                                    self._process_connection.checkHyperParameters.isChecked()):
             text = self._process_connection.GenerateVerboseTest(current_normalizer_name,
                                                      current_dimension_reductor_name,
                                                      current_feature_selector_name,
@@ -46,7 +47,6 @@ class CVRun(QThread):
 
         self.signal.emit(text + "\n DONE!")
         self._process_connection.SetStateAllButtonWhenRunning(True)
-
 
 class ProcessConnection(QWidget, Ui_Process):
     def __init__(self, parent=None):
@@ -95,7 +95,6 @@ class ProcessConnection(QWidget, Ui_Process):
         self.checkGaussianProcess.clicked.connect(self.UpdatePipelineText)
         self.checkClassifierAll.clicked.connect(self.SelectAllClassifier)
 
-        self.radioLeaveOneOut.clicked.connect(self.UpdatePipelineText)
         self.radio5folder.clicked.connect(self.UpdatePipelineText)
         self.radio10Folder.clicked.connect(self.UpdatePipelineText)
 
@@ -191,8 +190,8 @@ class ProcessConnection(QWidget, Ui_Process):
         self.checkNaiveBayes.setEnabled(state)
         self.checkGaussianProcess.setEnabled(state)
         self.checkClassifierAll.setEnabled(state)
+        self.checkHyperParameters.setEnabled(state)
 
-        self.radioLeaveOneOut.setEnabled(state)
         self.radio5folder.setEnabled(state)
         self.radio10Folder.setEnabled(state)
 
@@ -301,9 +300,7 @@ class ProcessConnection(QWidget, Ui_Process):
         if len(self.__process_classifier_list) == 0:
             return False
 
-        if self.radioLeaveOneOut.isChecked():
-            cv = CrossValidationLeaveOneOut()
-        elif self.radio5folder.isChecked():
+        if self.radio5folder.isChecked():
             cv = CrossValidation5Folder()
         elif self.radio10Folder.isChecked():
             cv = CrossValidation10Folder()
@@ -445,8 +442,7 @@ class ProcessConnection(QWidget, Ui_Process):
             cv_method += "5-Folder\n"
         elif self.radio10Folder.isChecked():
             cv_method += "10-folder\n"
-        elif self.radioLeaveOneOut.isChecked():
-            cv_method += 'Leave One Out\n'
+
         self.listOnePipeline.addItem(cv_method)
 
         self.listOnePipeline.addItem("Total number of pipelines is:\n{:d}"

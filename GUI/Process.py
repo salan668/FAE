@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'GUI\Process.ui'
+# Form implementation generated from reading ui file 'D:\MyCode\FAEGitHub\FAE\GUI\Process.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.11.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -174,6 +174,9 @@ class Ui_Process(object):
         self.checkClassifierAll = QtWidgets.QCheckBox(self.groupClassifier)
         self.checkClassifierAll.setObjectName("checkClassifierAll")
         self.gridLayout_5.addWidget(self.checkClassifierAll, 6, 0, 1, 1)
+        self.checkHyperParameters = QtWidgets.QCheckBox(self.groupClassifier)
+        self.checkHyperParameters.setObjectName("checkHyperParameters")
+        self.gridLayout_5.addWidget(self.checkHyperParameters, 6, 1, 1, 1)
         self.gridLayout_6.addLayout(self.gridLayout_5, 0, 0, 1, 1)
         self.verticalLayout.addWidget(self.groupClassifier)
         self.groupBox_2 = QtWidgets.QGroupBox(Process)
@@ -182,9 +185,6 @@ class Ui_Process(object):
         self.gridLayout_7.setObjectName("gridLayout_7")
         self.horizontalLayout_7 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_7.setObjectName("horizontalLayout_7")
-        self.radioLeaveOneOut = QtWidgets.QRadioButton(self.groupBox_2)
-        self.radioLeaveOneOut.setObjectName("radioLeaveOneOut")
-        self.horizontalLayout_7.addWidget(self.radioLeaveOneOut)
         self.radio5folder = QtWidgets.QRadioButton(self.groupBox_2)
         self.radio5folder.setChecked(True)
         self.radio5folder.setObjectName("radio5folder")
@@ -269,8 +269,8 @@ class Ui_Process(object):
         self.checkGaussianProcess.setText(_translate("Process", "Gaussian Process"))
         self.checkAdaboost.setText(_translate("Process", "Adaboost"))
         self.checkClassifierAll.setText(_translate("Process", "All Classifier"))
+        self.checkHyperParameters.setText(_translate("Process", "Hyper-Parameters?"))
         self.groupBox_2.setTitle(_translate("Process", "Cross Validation"))
-        self.radioLeaveOneOut.setText(_translate("Process", "LeaveOneOut"))
         self.radio5folder.setText(_translate("Process", "5-Folder"))
         self.radio10Folder.setText(_translate("Process", "10-Folder"))
         self.buttonRun.setText(_translate("Process", "Run and Save"))

@@ -199,7 +199,6 @@ class VisualizationConnection(QWidget, Ui_Visualization):
             self.comboPlotX.addItem('Feature Number')
 
         self.comboPlotY.addItem('AUC')
-        self.comboPlotY.addItem('Accuracy')
 
         for index in self._fae.GetNormalizerList():
             self.comboPlotNormalizer.addItem(index.GetName())
@@ -283,7 +282,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
             index[1] = self.comboPlotDimensionReduction.currentIndex()
             index[2] = self.comboPlotFeatureSelector.currentIndex()
             index[4] = self.comboPlotClassifier.currentIndex()
-            index[3] = self.spinPlotFeatureNumber.value()
+            index[3] = self.spinPlotFeatureNumber.value() - int(self._fae.GetFeatureNumberList()[0])
 
             if selected_index == 0:
                 self.comboPlotNormalizer.setEnabled(False)
@@ -369,29 +368,6 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                     else:
                         show_data.append(temp[index].tolist())
                         show_data_std.append(auc_std[index].tolist())
-                    name_list.append('Test')
-        elif self.comboPlotY.currentText() == 'Accuracy':
-            if self.checkPlotTrain.isChecked():
-                temp = deepcopy(self._fae.GetAccuracyMetric()['train'])
-                if self.checkPlotMaximum.isChecked():
-                    show_data.append(np.max(temp, axis=max_axis).tolist())
-                else:
-                    show_data.append(temp[index].tolist())
-                name_list.append('Train')
-            if self.checkPlotValidation.isChecked():
-                temp = deepcopy(self._fae.GetAccuracyMetric()['val'])
-                if self.checkPlotMaximum.isChecked():
-                    show_data.append(np.max(temp, axis=max_axis).tolist())
-                else:
-                    show_data.append(temp[index].tolist())
-                name_list.append('validation')
-            if self.checkPlotTest.isChecked():
-                temp = deepcopy(self._fae.GetAccuracyMetric()['test'])
-                if temp.size > 0:
-                    if self.checkPlotMaximum.isChecked():
-                        show_data.append(np.max(temp, axis=max_axis).tolist())
-                    else:
-                        show_data.append(temp[index].tolist())
                     name_list.append('Test')
 
         if len(show_data) > 0:
@@ -506,10 +482,10 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                                       classifier_index]
                             one_se = max(sub_auc)-sub_auc_std[np.argmax(sub_auc)]
                             for feature_number_index in range(len(self._fae.GetFeatureNumberList())):
-                                if data[normalizer_index,dimension_reducer_index,
-                                        feature_selector_index,feature_number_index,classifier_index] >= one_se:
+                                if data[normalizer_index, dimension_reducer_index,
+                                        feature_selector_index, feature_number_index,classifier_index] >= one_se:
                                     name = normalizer.GetName() + '_' + dimension_reducer.GetName() + '_' + \
-                                    feature_selector.GetName() + '_' + str(feature_number_index+1)+ '_' + \
+                                    feature_selector.GetName() + '_' + str(self._fae.GetFeatureNumberList()[feature_number_index]) + '_' + \
                                     classifier.GetName()
                                     name_list.append(name)
                                     break
