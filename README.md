@@ -13,6 +13,7 @@ Welcome any issues and PR.
 ## Release
 
 The Windows 64 version was release here https://drive.google.com/open?id=1htts7YsfaxKtN1NeDcNU4iksXfjr_XyK
+(Alternative link is: https://pan.baidu.com/s/1ha66TajeoT6dA-a4Qdt8fA)
 
 ## Getting Started
 
