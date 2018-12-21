@@ -329,6 +329,13 @@
               </property>
              </widget>
             </item>
+            <item row="6" column="1">
+             <widget class="QCheckBox" name="checkHyperParameters">
+              <property name="text">
+               <string>Hyper-Parameters?</string>
+              </property>
+             </widget>
+            </item>
            </layout>
           </item>
          </layout>
@@ -342,13 +349,6 @@
          <layout class="QGridLayout" name="gridLayout_7">
           <item row="0" column="0">
            <layout class="QHBoxLayout" name="horizontalLayout_7">
-            <item>
-             <widget class="QRadioButton" name="radioLeaveOneOut">
-              <property name="text">
-               <string>LeaveOneOut</string>
-              </property>
-             </widget>
-            </item>
             <item>
              <widget class="QRadioButton" name="radio5folder">
               <property name="text">

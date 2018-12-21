@@ -199,7 +199,6 @@ class VisualizationConnection(QWidget, Ui_Visualization):
             self.comboPlotX.addItem('Feature Number')
 
         self.comboPlotY.addItem('AUC')
-        self.comboPlotY.addItem('Accuracy')
 
         for index in self._fae.GetNormalizerList():
             self.comboPlotNormalizer.addItem(index.GetName())
@@ -220,7 +219,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
             self.comboContributionFeatureSelector.addItem(selector.GetName())
         for classifier in self._fae.GetClassifierList():
             specific_name = classifier.GetName() + '_coef.csv'
-            if self._SearchSpecificFile(specific_name, int(self._fae.GetFeatureNumberList()[0])):
+            if self._SearchSpecificFile(int(self._fae.GetFeatureNumberList()[0]), specific_name):
                 self.comboContributionClassifier.addItem(classifier.GetName())
 
     def UpdateROC(self):
@@ -283,7 +282,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
             index[1] = self.comboPlotDimensionReduction.currentIndex()
             index[2] = self.comboPlotFeatureSelector.currentIndex()
             index[4] = self.comboPlotClassifier.currentIndex()
-            index[3] = self.spinPlotFeatureNumber.value()
+            index[3] = self.spinPlotFeatureNumber.value() - int(self._fae.GetFeatureNumberList()[0])
 
             if selected_index == 0:
                 self.comboPlotNormalizer.setEnabled(False)
@@ -370,29 +369,6 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                         show_data.append(temp[index].tolist())
                         show_data_std.append(auc_std[index].tolist())
                     name_list.append('Test')
-        elif self.comboPlotY.currentText() == 'Accuracy':
-            if self.checkPlotTrain.isChecked():
-                temp = deepcopy(self._fae.GetAccuracyMetric()['train'])
-                if self.checkPlotMaximum.isChecked():
-                    show_data.append(np.max(temp, axis=max_axis).tolist())
-                else:
-                    show_data.append(temp[index].tolist())
-                name_list.append('Train')
-            if self.checkPlotValidation.isChecked():
-                temp = deepcopy(self._fae.GetAccuracyMetric()['val'])
-                if self.checkPlotMaximum.isChecked():
-                    show_data.append(np.max(temp, axis=max_axis).tolist())
-                else:
-                    show_data.append(temp[index].tolist())
-                name_list.append('validation')
-            if self.checkPlotTest.isChecked():
-                temp = deepcopy(self._fae.GetAccuracyMetric()['test'])
-                if temp.size > 0:
-                    if self.checkPlotMaximum.isChecked():
-                        show_data.append(np.max(temp, axis=max_axis).tolist())
-                    else:
-                        show_data.append(temp[index].tolist())
-                    name_list.append('Test')
 
         if len(show_data) > 0:
             if selected_index == 3:
@@ -410,7 +386,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
 
         if self.radioContributionFeatureSelector.isChecked():
             file_name = self.comboContributionFeatureSelector.currentText() + '_sort.csv'
-            file_path = self._SearchSpecificFile(file_name, int(self._fae.GetFeatureNumberList()[0]))
+            file_path = self._SearchSpecificFile(int(self._fae.GetFeatureNumberList()[0]), file_name)
             if file_path:
                 df = pd.read_csv(file_path, index_col=0)
 
@@ -421,7 +397,8 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                                    is_show=False, fig=self.canvasFeature.getFigure())
         elif self.radioContributionClassifier.isChecked():
             specific_name = self.comboContributionClassifier.currentText() + '_coef.csv'
-            file_path = self._SearchSpecificFile(specific_name, self.spinClassifierFeatureNumber.value())
+            feature_selector_name = self.comboContributionFeatureSelector.currentText()
+            file_path = self._SearchSpecificFile(self.spinClassifierFeatureNumber.value(), specific_name, feature_selector_name)
             if file_path:
                 df = pd.read_csv(file_path, index_col=0)
                 feature_name = list(df.index)
@@ -505,10 +482,10 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                                       classifier_index]
                             one_se = max(sub_auc)-sub_auc_std[np.argmax(sub_auc)]
                             for feature_number_index in range(len(self._fae.GetFeatureNumberList())):
-                                if data[normalizer_index,dimension_reducer_index,
-                                        feature_selector_index,feature_number_index,classifier_index] >= one_se:
+                                if data[normalizer_index, dimension_reducer_index,
+                                        feature_selector_index, feature_number_index,classifier_index] >= one_se:
                                     name = normalizer.GetName() + '_' + dimension_reducer.GetName() + '_' + \
-                                    feature_selector.GetName() + '_' + str(feature_number_index+1)+ '_' + \
+                                    feature_selector.GetName() + '_' + str(self._fae.GetFeatureNumberList()[feature_number_index]) + '_' + \
                                     classifier.GetName()
                                     name_list.append(name)
                                     break
@@ -550,11 +527,17 @@ class VisualizationConnection(QWidget, Ui_Visualization):
 
         self.UpdateSheet()
 
-    def _SearchSpecificFile(self, specific_file_name, feature_number):
+    def _SearchSpecificFile(self, feature_number, specific_file_name, specific_file_name2=''):
         for rt, folder, files in os.walk(self._root_folder):
             for file_name in files:
                 # print(file_name)
-                if (file_name.lower() == specific_file_name.lower()) and ('_{:d}_'.format(feature_number) in rt):
-                    return os.path.join(rt, file_name)
+                if specific_file_name2:
+                    if (file_name.lower() == specific_file_name.lower()) and \
+                            ('_{:d}_'.format(feature_number) in rt) and \
+                            (specific_file_name2 in rt):
+                        return os.path.join(rt, file_name)
+                else:
+                    if (file_name.lower() == specific_file_name.lower()) and ('_{:d}_'.format(feature_number) in rt):
+                        return os.path.join(rt, file_name)
 
         return ''

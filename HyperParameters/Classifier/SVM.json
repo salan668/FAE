@@ -1,0 +1,22 @@
+{"_commit": "C-Support Vector Classification.
+The implementation is based on libsvm. The fit time complexity is more than quadratic with the number of samples which makes it hard to scale to dataset with more than a couple of 10000 samples.
+C: float, optional (default=1.0)
+Penalty parameter C of the error term.
+
+kernel: string, optional (default='rbf')
+Specifies the kernel type to be used in the algorithm. It must be one of 'linear', 'poly', 'rbf', 'sigmoid', 'precomputed' or a callable.
+
+degree: int, optional (default=3)
+Degree of the polynomial kernel function ('poly'). Ignored by all other kernels.
+
+gamma: float, optional (default='auto')
+Kernel coefficient for 'rbf', 'poly' and 'sigmoid'.
+Current default is 'auto' which uses 1 / n_features, if gamma='scale' is passed then it uses 1 / (n_features * X.std()) as value of gamma. The current default of gamma, 'auto', will change to 'scale' in version 0.22. 'auto_deprecated', a deprecated version of 'auto' is used as a default indicating that no explicit value of gamma was passed.
+",
+
+"setting":
+[
+{"kernel": ["linear"], "C": [0.1, 0.3, 1.0, 3.0]},
+{"kernel": ["rbf"], "gamma": [0.1, 0.3, 1.0, 3.0]},
+{"kernel": ["poly"], "degree": [2, 3, 4]}
+]}
