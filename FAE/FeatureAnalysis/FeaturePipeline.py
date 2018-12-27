@@ -6,7 +6,7 @@ Yang SONG, songyangmri@gmail.com
 from FAE.DataContainer.DataContainer import DataContainer
 from FAE.FeatureAnalysis.IndexDict import Index2Dict
 from FAE.FeatureAnalysis.Normalizer import NormalizerNone
-from FAE.FeatureAnalysis.DimensionReduction import DimensionReductionByCos
+from FAE.FeatureAnalysis.DimensionReduction import DimensionReductionByPCC
 from FAE.FeatureAnalysis.FeatureSelector import FeatureSelector
 
 import os
@@ -179,7 +179,7 @@ class FeatureAnalysisPipelines:
             self.__normalizer_list = [NormalizerNone()]
 
         if self._dimension_reduction_list == []:
-            self._dimension_reduction_list = [DimensionReductionByCos()]
+            self._dimension_reduction_list = [DimensionReductionByPCC()]
 
         self.GenerateMetircDict()
         self.SavePipelineInfo(store_folder)

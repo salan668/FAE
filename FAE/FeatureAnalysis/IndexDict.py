@@ -21,8 +21,8 @@ class Index2Dict:
             return NormalizerZeroCenterAndUnit()
         elif name == DimensionReductionByPCA().GetName():
             return DimensionReductionByPCA()
-        elif name == DimensionReductionByCos().GetName():
-            return DimensionReductionByCos()
+        elif name == DimensionReductionByPCC().GetName():
+            return DimensionReductionByPCC()
         elif name == FeatureSelectByRelief().GetName():
             return FeatureSelectByRelief()
         elif name == FeatureSelectByANOVA().GetName():
