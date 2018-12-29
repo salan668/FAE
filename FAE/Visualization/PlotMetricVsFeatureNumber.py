@@ -82,7 +82,7 @@ def DrawBar(x_ticks, y_list, ylabel='', title='', name_list=[], store_path='', i
 
     fig.clear()
     axes = fig.add_subplot(1, 1, 1)
-    width = 0.3
+    width = 0.2
 
     x = np.arange(len(x_ticks))
     for index in range(len(y_list)):

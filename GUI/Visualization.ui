@@ -156,6 +156,13 @@
             </widget>
            </item>
            <item>
+            <widget class="QCheckBox" name="checkROCTrain">
+             <property name="text">
+              <string>Train</string>
+             </property>
+            </widget>
+           </item>
+           <item>
             <widget class="QCheckBox" name="checkROCTest">
              <property name="text">
               <string>Test</string>
@@ -217,6 +224,13 @@
             <widget class="QCheckBox" name="checkPlotCVValidation">
              <property name="text">
               <string>CV Validation</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="checkPlotTrain">
+             <property name="text">
+              <string>Train</string>
              </property>
             </widget>
            </item>

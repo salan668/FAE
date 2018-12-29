@@ -42,6 +42,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.spinBoxFeatureNumber.valueChanged.connect(self.UpdateROC)
         self.checkROCCVTrain.stateChanged.connect(self.UpdateROC)
         self.checkROCCVValidation.stateChanged.connect(self.UpdateROC)
+        self.checkROCTrain.stateChanged.connect(self.UpdateROC)
         self.checkROCTest.stateChanged.connect(self.UpdateROC)
 
         # Update Plot canvas
@@ -56,6 +57,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
 
         self.checkPlotCVTrain.stateChanged.connect(self.UpdatePlot)
         self.checkPlotCVValidation.stateChanged.connect(self.UpdatePlot)
+        self.checkPlotTrain.stateChanged.connect(self.UpdatePlot)
         self.checkPlotTest.stateChanged.connect(self.UpdatePlot)
 
         # Update Contribution canvas
@@ -103,11 +105,13 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.buttonClearResult.setEnabled(False)
 
         self.checkROCCVTrain.setChecked(False)
-        self.checkROCTest.setChecked(False)
         self.checkROCCVValidation.setChecked(False)
+        self.checkROCTrain.setChecked(False)
+        self.checkROCTest.setChecked(False)
         self.checkPlotCVTrain.setChecked(False)
-        self.checkPlotTest.setChecked(False)
         self.checkPlotCVValidation.setChecked(False)
+        self.checkPlotTrain.setChecked(False)
+        self.checkPlotTest.setChecked(False)
         self.checkPlotMaximum.setChecked(False)
         self.checkContributionShow.setChecked(False)
         self.radioContributionFeatureSelector.setChecked(True)
@@ -251,6 +255,12 @@ class VisualizationConnection(QWidget, Ui_Visualization):
             pred_list.append(val_pred)
             label_list.append(val_label)
             name_list.append('CV Validation')
+        if self.checkROCTrain.isChecked():
+            all_train_pred = np.load(os.path.join(case_folder, 'all_train_predict.npy'))
+            all_train_label = np.load(os.path.join(case_folder, 'all_train_label.npy'))
+            pred_list.append(all_train_pred)
+            label_list.append(all_train_label)
+            name_list.append('Train')
         if self.checkROCTest.isChecked():
             if os.path.exists(os.path.join(case_folder, 'test_label.npy')):
                 test_pred = np.load(os.path.join(case_folder, 'test_predict.npy'))
@@ -359,6 +369,15 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                     show_data.append(temp[tuple(index)].tolist())
                     show_data_std.append(auc_std[tuple(index)].tolist())
                 name_list.append('CV Validation')
+            if self.checkPlotTrain.isChecked():
+                temp = deepcopy(self._fae.GetAUCMetric()['all_train'])
+                auc_std = deepcopy(self._fae.GetAUCstdMetric()['all_train'])
+                if self.checkPlotMaximum.isChecked():
+                    show_data.append(np.max(temp, axis=max_axis).tolist())
+                else:
+                    show_data.append(temp[tuple(index)].tolist())
+                    show_data_std.append(auc_std[tuple(index)].tolist())
+                name_list.append('Train')
             if self.checkPlotTest.isChecked():
                 temp = deepcopy(self._fae.GetAUCMetric()['test'])
                 auc_std = deepcopy(self._fae.GetAUCstdMetric()['test'])
