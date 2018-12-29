@@ -94,16 +94,16 @@ class DimensionReductionByPCA(DimensionReduction):
 
         return new_data_container
 
-class DimensionReductionByCos(DimensionReduction):
+class DimensionReductionByPCC(DimensionReduction):
     def __init__(self, threshold=0.86):
-        super(DimensionReductionByCos, self).__init__()
+        super(DimensionReductionByPCC, self).__init__()
         self.__threshold = threshold
         self.__selected_index = []
 
     def GetName(self):
-        return 'Cos'
+        return 'PCC'
 
-    def __CosSimilarity(self, data1, data2):
+    def __PCCSimilarity(self, data1, data2):
         return np.abs(np.dot(data1, data2))
 
     def GetSelectedFeatureIndex(self, data_container):
@@ -113,7 +113,7 @@ class DimensionReductionByCos(DimensionReduction):
         for feature_index in range(data.shape[1]):
             is_similar = False
             for save_index in self.__selected_index:
-                if self.__CosSimilarity(data[:, save_index], data[:, feature_index]) > self.__threshold:
+                if self.__PCCSimilarity(data[:, save_index], data[:, feature_index]) > self.__threshold:
                     is_similar = True
                     break
             if not is_similar:
@@ -142,10 +142,10 @@ class DimensionReductionByCos(DimensionReduction):
         new_data_container.UpdateFrameByData()
 
         if store_folder and os.path.isdir(store_folder):
-            container_store_path = os.path.join(store_folder, 'cos_feature.csv')
+            container_store_path = os.path.join(store_folder, 'PCC_feature.csv')
             new_data_container.Save(container_store_path)
 
-            pca_sort_path = os.path.join(store_folder, 'cos_sort.csv')
+            pca_sort_path = os.path.join(store_folder, 'PCC_sort.csv')
             df = pd.DataFrame(data=new_feature)
             df.to_csv(pca_sort_path)
 
@@ -153,6 +153,6 @@ class DimensionReductionByCos(DimensionReduction):
 
     def GetDescription(self):
         text = "Since the dimension of feature space was high, we compared the similarity of each feature pair. " \
-               "If the cosine value of the feature pair was larger than 0.86, we removed one of them. After this " \
+               "If the PCC value of the feature pair was larger than 0.86, we removed one of them. After this " \
                "process, the dimension of the feature space was reduced and each feature was independent to each other. "
         return text

@@ -134,7 +134,7 @@
           <item row="1" column="0">
            <widget class="QCheckBox" name="checkRemoveSimilarFeatures">
             <property name="text">
-             <string>Remove Similar Features</string>
+             <string>PearsonCorrelationCoefficients</string>
             </property>
             <property name="checked">
              <bool>true</bool>
