@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'GUI\Visualization.ui'
+# Form implementation generated from reading ui file 'D:\MyCode\FAEGitHub\FAE\GUI\Visualization.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.11.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -80,12 +80,12 @@ class Ui_Visualization(object):
         self.verticalLayout_3.addWidget(self.canvasROC)
         self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
-        self.checkROCTrain = QtWidgets.QCheckBox(Visualization)
-        self.checkROCTrain.setObjectName("checkROCTrain")
-        self.horizontalLayout_3.addWidget(self.checkROCTrain)
-        self.checkROCValidation = QtWidgets.QCheckBox(Visualization)
-        self.checkROCValidation.setObjectName("checkROCValidation")
-        self.horizontalLayout_3.addWidget(self.checkROCValidation)
+        self.checkROCCVTrain = QtWidgets.QCheckBox(Visualization)
+        self.checkROCCVTrain.setObjectName("checkROCCVTrain")
+        self.horizontalLayout_3.addWidget(self.checkROCCVTrain)
+        self.checkROCCVValidation = QtWidgets.QCheckBox(Visualization)
+        self.checkROCCVValidation.setObjectName("checkROCCVValidation")
+        self.horizontalLayout_3.addWidget(self.checkROCCVValidation)
         self.checkROCTest = QtWidgets.QCheckBox(Visualization)
         self.checkROCTest.setObjectName("checkROCTest")
         self.horizontalLayout_3.addWidget(self.checkROCTest)
@@ -120,12 +120,12 @@ class Ui_Visualization(object):
         self.verticalLayout_4.addWidget(self.canvasPlot)
         self.horizontalLayout_4 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_4.setObjectName("horizontalLayout_4")
-        self.checkPlotTrain = QtWidgets.QCheckBox(Visualization)
-        self.checkPlotTrain.setObjectName("checkPlotTrain")
-        self.horizontalLayout_4.addWidget(self.checkPlotTrain)
-        self.checkPlotValidation = QtWidgets.QCheckBox(Visualization)
-        self.checkPlotValidation.setObjectName("checkPlotValidation")
-        self.horizontalLayout_4.addWidget(self.checkPlotValidation)
+        self.checkPlotCVTrain = QtWidgets.QCheckBox(Visualization)
+        self.checkPlotCVTrain.setObjectName("checkPlotCVTrain")
+        self.horizontalLayout_4.addWidget(self.checkPlotCVTrain)
+        self.checkPlotCVValidation = QtWidgets.QCheckBox(Visualization)
+        self.checkPlotCVValidation.setObjectName("checkPlotCVValidation")
+        self.horizontalLayout_4.addWidget(self.checkPlotCVValidation)
         self.checkPlotTest = QtWidgets.QCheckBox(Visualization)
         self.checkPlotTest.setObjectName("checkPlotTest")
         self.horizontalLayout_4.addWidget(self.checkPlotTest)
@@ -217,12 +217,12 @@ class Ui_Visualization(object):
         self.label.setText(_translate("Visualization", "Maximum AUC along:"))
         self.checkMaxFeatureNumber.setText(_translate("Visualization", "Feature Number"))
         self.label_2.setText(_translate("Visualization", "ROC Curve"))
-        self.checkROCTrain.setText(_translate("Visualization", "Train"))
-        self.checkROCValidation.setText(_translate("Visualization", "Validation"))
+        self.checkROCCVTrain.setText(_translate("Visualization", "CV Train"))
+        self.checkROCCVValidation.setText(_translate("Visualization", "CV Validation"))
         self.checkROCTest.setText(_translate("Visualization", "Test"))
         self.label_3.setText(_translate("Visualization", "Hyper Parameters Relationship"))
-        self.checkPlotTrain.setText(_translate("Visualization", "Train"))
-        self.checkPlotValidation.setText(_translate("Visualization", "Validation"))
+        self.checkPlotCVTrain.setText(_translate("Visualization", "CV Train"))
+        self.checkPlotCVValidation.setText(_translate("Visualization", "CV Validation"))
         self.checkPlotTest.setText(_translate("Visualization", "Test"))
         self.label_5.setText(_translate("Visualization", "Y-Label"))
         self.label_6.setText(_translate("Visualization", "X-Label"))
