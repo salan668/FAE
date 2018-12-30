@@ -11,6 +11,7 @@ class Index2Dict:
         pass
 
     def GetInstantByIndex(self, name):
+
         if name == NormalizerNone().GetName():
             return NormalizerNone()
         elif name == NormalizerUnit().GetName():
@@ -19,6 +20,8 @@ class Index2Dict:
             return NormalizerZeroCenter()
         elif name == NormalizerZeroCenterAndUnit().GetName():
             return NormalizerZeroCenterAndUnit()
+        elif name == 'Cos':
+            return DimensionReductionByPCA()
         elif name == DimensionReductionByPCA().GetName():
             return DimensionReductionByPCA()
         elif name == DimensionReductionByPCC().GetName():
