@@ -20,10 +20,10 @@ class Index2Dict:
             return NormalizerZeroCenter()
         elif name == NormalizerZeroCenterAndUnit().GetName():
             return NormalizerZeroCenterAndUnit()
-        elif name == 'Cos':
-            return DimensionReductionByPCA()
         elif name == DimensionReductionByPCA().GetName():
             return DimensionReductionByPCA()
+        elif name == 'Cos':
+            return DimensionReductionByPCC()
         elif name == DimensionReductionByPCC().GetName():
             return DimensionReductionByPCC()
         elif name == FeatureSelectByRelief().GetName():
