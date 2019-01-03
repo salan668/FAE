@@ -50,7 +50,7 @@ class Report:
                                      "predictive value (NPV) were also calculated at a cutoff value that maximum the " \
                                      "value of the Yorden index. We also boosted estimation 1000 times and applied paired " \
                                      "t-test to give the 95% confidence interval. All above processes were implemented with " \
-                                     "FeAture Explorer (FAE, v0.1.1, https://github.com/salan668/FAE) on Python (3.5.4, https://www.python.org/). \n"
+                                     "FeAture Explorer (FAE, v0.2.2, https://github.com/salan668/FAE) on Python (3.5.4, https://www.python.org/). \n"
 
         # Result Description
         result_folder = os.path.join(result_folder, pipeline.GetStoreName())

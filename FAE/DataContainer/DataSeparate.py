@@ -7,9 +7,8 @@ from FAE.DataContainer.DataContainer import DataContainer
 
 
 class DataSeparate:
-    def __init__(self, testing_percentage=0.3, training_index=[]):
-        self._testing_percentage = testing_percentage
-        self._training_index = training_index
+    def __init__(self):
+        pass
 
     def __SetNewData(self, data_container, case_index):
         array, label, feature_name, case_name = data_container.GetData()
@@ -22,50 +21,66 @@ class DataSeparate:
         new_data_container.UpdateFrameByData()
         return new_data_container
 
-    def Run(self, data_container, store_folder=''):
-        data = data_container.GetArray()
-        case_name = data_container.GetCaseName()
+    def RunByTestingPercentage(self, data_container, testing_data_percentage=0.3, store_folder=''):
         label = data_container.GetLabel()
 
-        if self._training_index == []:
-            self._training_index, testing_index_list = [], []
-            for group in range(int(np.max(label)) + 1):
-                index = np.where(label == group)[0]
+        training_index_list, testing_index_list = [], []
+        for group in range(int(np.max(label)) + 1):
+            index = np.where(label == group)[0]
 
-                shuffle(index)
-                testing_index = index[:round(len(index) * self._testing_percentage)]
-                training_index = index[round(len(index) * self._testing_percentage):]
+            shuffle(index)
+            testing_index = index[:round(len(index) * testing_data_percentage)]
+            training_index = index[round(len(index) * testing_data_percentage):]
 
-                self._training_index.extend(training_index)
-                testing_index_list.extend(testing_index)
-        else:
-            testing_index_list = [temp for temp in list(range(data.shape[0])) if temp not in self._training_index]
+            training_index_list.extend(training_index)
+            testing_index_list.extend(testing_index)
 
-        # self._training_index.sort()
-        # testing_index_list.sort()
 
-        train_data_container = self.__SetNewData(data_container, self._training_index)
+        train_data_container = self.__SetNewData(data_container, training_index_list)
         test_data_container = self.__SetNewData(data_container, testing_index_list)
 
         if store_folder:
             train_data_container.Save(os.path.join(store_folder, 'train_numeric_feature.csv'))
-            df_training = pd.DataFrame(data=self._training_index, columns=['training_index'],
-                                       index=[case_name[index] for index in self._training_index])
-
-            df_training.to_csv(os.path.join(store_folder, 'training_index.csv'), sep=',', quotechar='"')
-
             test_data_container.Save(os.path.join(store_folder, 'test_numeric_feature.csv'))
-            df_testing = pd.DataFrame(data=testing_index_list, columns=['training_index'],
-                                       index=[case_name[index] for index in testing_index_list])
-            df_testing.to_csv(os.path.join(store_folder, 'testing_index.csv'), sep=',', quotechar='"')
 
         return train_data_container, test_data_container
 
+    def RunByTestingReference(self, data_container, testing_ref_data_container, store_folder=''):
+        training_index_list, testing_index_list = [], []
+
+        # TODO: assert data_container include all cases which is in the training_ref_data_container.
+        all_name_list = data_container.GetCaseName()
+        testing_name_list = testing_ref_data_container.GetCaseName()
+        for training_name in testing_name_list:
+            if training_name not in all_name_list:
+                print('The data container and the training data container are not consistent.')
+                return DataContainer(), DataContainer()
+
+        for name, index in zip(all_name_list, range(len(all_name_list))):
+            if name in testing_name_list:
+                testing_index_list.append(index)
+            else:
+                training_index_list.append(index)
+
+        train_data_container = self.__SetNewData(data_container, training_index_list)
+        test_data_container = self.__SetNewData(data_container, testing_index_list)
+
+        if store_folder:
+            train_data_container.Save(os.path.join(store_folder, 'train_numeric_feature.csv'))
+            test_data_container.Save(os.path.join(store_folder, 'test_numeric_feature.csv'))
+
+        return train_data_container, test_data_container
 
 if __name__ == '__main__':
     data = DataContainer()
     data.Load(r'..\..\Example\numeric_feature.csv')
 
     data_separator = DataSeparate()
-    data_separator.Run(data, store_folder=r'..\..\Example')
+    data_separator.Run(data, store_folder=r'..\..\Example\separate_test')
+
+    ref_data_container = DataContainer()
+    ref_data_container.Load(r'..\..\Example\separate_test\train_numeric_feature.csv')
+
+    data_separator.training_ref_data_container = ref_data_container
+    data_separator.Run(data, store_folder=r'..\..\Example\separate_test\reload')
 

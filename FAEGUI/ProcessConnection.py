@@ -223,6 +223,7 @@ class ProcessConnection(QWidget, Ui_Process):
                 thread = CVRun()
                 thread.moveToThread(QThread())
                 thread.SetProcessConnectionAndStore_folder(self, store_folder)
+
                 thread.signal.connect(self.textEditVerbose.setPlainText)
                 thread.start()
                 self.SetStateAllButtonWhenRunning(False)
@@ -264,7 +265,7 @@ class ProcessConnection(QWidget, Ui_Process):
         if self.checkPCA.isChecked():
             self.__process_dimension_reduction_list.append(DimensionReductionByPCA())
         if self.checkRemoveSimilarFeatures.isChecked():
-            self.__process_dimension_reduction_list.append(DimensionReductionByCos())
+            self.__process_dimension_reduction_list.append(DimensionReductionByPCC())
 
         self.__process_feature_selector_list = []
         if self.checkANOVA.isChecked():

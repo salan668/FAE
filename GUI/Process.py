@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'D:\MyCode\FAEGitHub\FAE\GUI\Process.ui'
+# Form implementation generated from reading ui file 'Process.ui'
 #
-# Created by: PyQt5 UI code generator 5.11.3
+# Created by: PyQt5 UI code generator 5.11.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -247,7 +247,7 @@ class Ui_Process(object):
         self.checkNormalizeUnitWithZeroCenter.setText(_translate("Process", "Normalize to unit with 0-center"))
         self.checkNormalizationAll.setText(_translate("Process", "All Normalization"))
         self.groupPreprocess.setTitle(_translate("Process", "Preprocess"))
-        self.checkRemoveSimilarFeatures.setText(_translate("Process", "Remove Similar Features"))
+        self.checkRemoveSimilarFeatures.setText(_translate("Process", "PearsonCorrelationCoefficients"))
         self.checkPCA.setText(_translate("Process", "PCA"))
         self.checkPreprocessAll.setText(_translate("Process", "All Preprocess"))
         self.groupSelector.setTitle(_translate("Process", "Feature Selector"))
