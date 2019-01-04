@@ -127,16 +127,16 @@
              </widget>
             </item>
             <item>
-             <widget class="QPushButton" name="load_training_index">
+             <widget class="QPushButton" name="loadTestingReference">
               <property name="text">
-               <string>Load Training Index</string>
+               <string>Load Testing Dataset</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QPushButton" name="clear_training_index">
+             <widget class="QPushButton" name="clearTestingReference">
               <property name="text">
-               <string>Clear Training Index</string>
+               <string>Clear Testing Dataset</string>
               </property>
              </widget>
             </item>

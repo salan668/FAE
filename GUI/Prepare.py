@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'Prepare.ui'
+# Form implementation generated from reading ui file 'D:\MyCode\FAEGitHub\FAE\GUI\Prepare.ui'
 #
-# Created by: PyQt5 UI code generator 5.11.2
+# Created by: PyQt5 UI code generator 5.11.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -70,12 +70,12 @@ class Ui_Prepare(object):
         self.label = QtWidgets.QLabel(self.groupSeparate)
         self.label.setObjectName("label")
         self.verticalLayout_3.addWidget(self.label)
-        self.load_training_index = QtWidgets.QPushButton(self.groupSeparate)
-        self.load_training_index.setObjectName("load_training_index")
-        self.verticalLayout_3.addWidget(self.load_training_index)
-        self.clear_training_index = QtWidgets.QPushButton(self.groupSeparate)
-        self.clear_training_index.setObjectName("clear_training_index")
-        self.verticalLayout_3.addWidget(self.clear_training_index)
+        self.loadTestingReference = QtWidgets.QPushButton(self.groupSeparate)
+        self.loadTestingReference.setObjectName("loadTestingReference")
+        self.verticalLayout_3.addWidget(self.loadTestingReference)
+        self.clearTestingReference = QtWidgets.QPushButton(self.groupSeparate)
+        self.clearTestingReference.setObjectName("clearTestingReference")
+        self.verticalLayout_3.addWidget(self.clearTestingReference)
         self.spinBoxSeparate = QtWidgets.QDoubleSpinBox(self.groupSeparate)
         self.spinBoxSeparate.setDecimals(1)
         self.spinBoxSeparate.setMaximum(1.0)
@@ -135,8 +135,8 @@ class Ui_Prepare(object):
         self.buttonRemove.setText(_translate("Prepare", "Remove"))
         self.groupSeparate.setTitle(_translate("Prepare", "Separate Train and Test"))
         self.label.setText(_translate("Prepare", "Percentage of Testing data"))
-        self.load_training_index.setText(_translate("Prepare", "Load Training Index"))
-        self.clear_training_index.setText(_translate("Prepare", "Clear Training Index"))
+        self.loadTestingReference.setText(_translate("Prepare", "Load Testing Dataset"))
+        self.clearTestingReference.setText(_translate("Prepare", "Clear Testing Dataset"))
         self.checkSeparate.setText(_translate("Prepare", "Separate Train And Test"))
         self.groupBox_3.setTitle(_translate("Prepare", "Balance Data"))
         self.radioNoneBalance.setText(_translate("Prepare", "None Balance"))
