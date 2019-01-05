@@ -1,9 +1,11 @@
 import numpy as np
 import csv
+import os
 from copy import deepcopy
 
 from PyQt5.QtWidgets import *
 from GUI.Prepare import Ui_Prepare
+from Utility.EcLog import eclog
 
 from FAE.DataContainer.DataContainer import DataContainer
 from FAE.DataContainer import DataSeparate
@@ -25,7 +27,7 @@ class PrepareConnection(QWidget, Ui_Prepare):
         self.train_index = []
         self.checkSeparate.clicked.connect(self.SetSeparateStatus)
         self.spinBoxSeparate.setEnabled(False)
-
+        self.logger = eclog(os.path.split(__file__)[-1]).GetLogger()
         self.buttonSave.clicked.connect(self.CheckAndSave)
 
     def UpdateTable(self):
@@ -63,8 +65,15 @@ class PrepareConnection(QWidget, Ui_Prepare):
         file_name, _ = dlg.getOpenFileName(self, 'Open SCV file', filter="csv files (*.csv)")
         try:
             self.data_container.Load(file_name)
-        except:
-            print('Error')
+            self.logger.info('Open the file ' + file_name + ' Succeed.')
+        except OSError as reason:
+            self.logger.log('Open SCV file Error, The reason is ' + str(reason))
+            print('出错啦！' + str(reason))
+        except ValueError:
+            self.logger.error('Open SCV file ' + file_name + ' Failed. because of value error.')
+            QMessageBox.information(self, 'Error',
+                                    'The selected data file mismatch.')
+
 
         self.UpdateTable()
 
@@ -75,11 +84,22 @@ class PrepareConnection(QWidget, Ui_Prepare):
         dlg = QFileDialog()
         file_name, _ = dlg.getOpenFileName(self, 'Open SCV file', filter="csv files (*.csv)")
         if file_name:
-            with open(file_name, 'r', newline='') as train_file:
-                train_csv = csv.reader(train_file)
-                for index in train_csv:
-                    if index[1] != 'training_index':
-                        self.train_index.append(int(index[1]))
+            try:
+                with open(file_name, 'r', newline='') as train_file:
+                    train_csv = csv.reader(train_file)
+                    for index in train_csv:
+                        if index[1] != 'training_index':
+                            self.train_index.append(int(index[1]))
+            except OSError as reason:
+                self.logger.log('Open SCV file Error, The reason is ' + str(reason))
+                print('出错啦！' + str(reason))
+            except ValueError:
+                self.logger.error('Open SCV file ' + file_name + ' Failed. because of value error.')
+                QMessageBox.information(self, 'Error',
+                                        'The selected test index data mismatch.')
+
+
+
 
     def ClearTrainingIndex(self):
         self.train_index = []
@@ -131,6 +151,7 @@ class PrepareConnection(QWidget, Ui_Prepare):
                     except:
                         QMessageBox.information(self, 'Error',
                             'The train index mismatch, please check the train index really exists in current data')
+                        self.logger.error('The train index mismatch.')
 
             else:
                 file_name,_ = QFileDialog.getSaveFileName(self, "Save data", filter="csv files (*.csv)")
