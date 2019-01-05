@@ -110,3 +110,5 @@ Example/
 .idea/workspace.xml
 .idea/modules.xml
 .idea/FAE.iml
+
+\.idea/

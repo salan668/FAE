@@ -6,7 +6,7 @@ Yang SONG, songyangmri@gmail.com
 from FAE.DataContainer.DataContainer import DataContainer
 from FAE.FeatureAnalysis.IndexDict import Index2Dict
 from FAE.FeatureAnalysis.Normalizer import NormalizerNone
-from FAE.FeatureAnalysis.DimensionReduction import DimensionReductionByCos
+from FAE.FeatureAnalysis.DimensionReduction import DimensionReductionByPCC
 from FAE.FeatureAnalysis.FeatureSelector import FeatureSelector
 
 import os
@@ -18,13 +18,14 @@ from copy import deepcopy
 
 class FeatureAnalysisPipelines:
     def __init__(self, normalizer_list=[], dimension_reduction_list=[], feature_selector_list=[],
-                 feature_selector_num_list=[], classifier_list=[], cross_validation=None):
+                 feature_selector_num_list=[], classifier_list=[], cross_validation=None, is_hyper_parameter=False):
         self.__normalizer_list = normalizer_list
         self._dimension_reduction_list = dimension_reduction_list
         self.__feature_selector_list = feature_selector_list
         self.__feature_selector_num_list = feature_selector_num_list
         self.__classifier_list = classifier_list
         self.__cross_validation = cross_validation
+        self.__is_hyper_parameter = is_hyper_parameter
 
         self.GenerateMetircDict()
 
@@ -69,9 +70,9 @@ class FeatureAnalysisPipelines:
         except:
             matrix = np.zeros(())
 
-        self.__auc_matrix_dict = {'train': deepcopy(matrix), 'val': deepcopy(matrix), 'test': deepcopy(matrix)}
-        self.__auc_std_matrix_dict = {'train': deepcopy(matrix), 'val': deepcopy(matrix), 'test': deepcopy(matrix)}
-        self.__accuracy_matrix_dict = {'train': deepcopy(matrix), 'val': deepcopy(matrix), 'test': deepcopy(matrix)}
+        self.__auc_matrix_dict = {'train': deepcopy(matrix), 'val': deepcopy(matrix), 'test': deepcopy(matrix), 'all_train': deepcopy(matrix)}
+        self.__auc_std_matrix_dict = {'train': deepcopy(matrix), 'val': deepcopy(matrix), 'test': deepcopy(matrix), 'all_train': deepcopy(matrix)}
+        self.__accuracy_matrix_dict = {'train': deepcopy(matrix), 'val': deepcopy(matrix), 'test': deepcopy(matrix), 'all_train': deepcopy(matrix)}
 
     def SavePipelineInfo(self, store_folder):
         with open(os.path.join(store_folder, 'pipeline_info.csv'), 'w', newline='') as csvfile:
@@ -165,7 +166,7 @@ class FeatureAnalysisPipelines:
     def GetAccuracyMetric(self):
         return self.__accuracy_matrix_dict
 
-    def Run(self, train_data_container, test_data_container=DataContainer(), store_folder=''):
+    def Run(self, train_data_container, test_data_container=DataContainer(), store_folder='', is_hyper_parameter=False):
         column_list = ['sample_number', 'positive_number', 'negative_number',
                        'auc', 'auc 95% CIs', 'auc std', 'accuracy',
                        'Youden Index', 'sensitivity', 'specificity',
@@ -178,7 +179,7 @@ class FeatureAnalysisPipelines:
             self.__normalizer_list = [NormalizerNone()]
 
         if self._dimension_reduction_list == []:
-            self._dimension_reduction_list = [DimensionReductionByCos()]
+            self._dimension_reduction_list = [DimensionReductionByPCC()]
 
         self.GenerateMetircDict()
         self.SavePipelineInfo(store_folder)
@@ -207,48 +208,56 @@ class FeatureAnalysisPipelines:
                                                        cross_validation=self.__cross_validation)
                             case_name = one_pipeline.GetStoreName()
                             case_store_folder = os.path.join(store_folder, case_name)
-                            train_metric, val_metric, test_metric = one_pipeline.Run(train_data_container, test_data_container, case_store_folder)
+                            train_cv_metric, val_cv_metric, test_metric, all_train_metric = one_pipeline.Run(train_data_container,
+                                                                                     test_data_container,
+                                                                                     case_store_folder,
+                                                                                     is_hyper_parameter)
                             
                             self.__auc_matrix_dict['train'][normalizer_index,
                                                      dimension_reductor_index, 
                                                      feature_selector_index, 
                                                      feature_num_index, 
-                                                     classifier_index] = train_metric['train_auc']
+                                                     classifier_index] = train_cv_metric['train_auc']
                             self.__auc_std_matrix_dict['train'][normalizer_index,
                                                      dimension_reductor_index,
                                                      feature_selector_index,
                                                      feature_num_index,
-                                                     classifier_index] = train_metric['train_auc std']
+                                                     classifier_index] = train_cv_metric['train_auc std']
+                            self.__auc_matrix_dict['all_train'][normalizer_index,
+                                                            dimension_reductor_index,
+                                                            feature_selector_index,
+                                                            feature_num_index,
+                                                            classifier_index] = all_train_metric['all_train_auc']
+                            self.__auc_std_matrix_dict['all_train'][normalizer_index,
+                                                                dimension_reductor_index,
+                                                                feature_selector_index,
+                                                                feature_num_index,
+                                                                classifier_index] = all_train_metric['all_train_auc std']
                             self.__auc_matrix_dict['val'][normalizer_index,
                                                      dimension_reductor_index,
                                                      feature_selector_index,
                                                      feature_num_index,
-                                                     classifier_index] = val_metric['val_auc']
+                                                     classifier_index] = val_cv_metric['val_auc']
                             self.__auc_std_matrix_dict['val'][normalizer_index,
                                                      dimension_reductor_index,
                                                      feature_selector_index,
                                                      feature_num_index,
-                                                     classifier_index] = val_metric['val_auc std']
+                                                     classifier_index] = val_cv_metric['val_auc std']
 
-                            self.__accuracy_matrix_dict['train'][normalizer_index,
-                                                     dimension_reductor_index,
-                                                     feature_selector_index,
-                                                     feature_num_index,
-                                                     classifier_index] = train_metric['train_accuracy']
-                            self.__accuracy_matrix_dict['val'][normalizer_index,
-                                                   dimension_reductor_index,
-                                                   feature_selector_index,
-                                                   feature_num_index,
-                                                   classifier_index] = val_metric['val_accuracy']
 
                             if store_folder and os.path.isdir(store_folder):
                                 store_path = os.path.join(store_folder, 'train_result.csv')
-                                save_info = [train_metric['train_' + index] for index in column_list]
+                                save_info = [train_cv_metric['train_' + index] for index in column_list]
+                                train_df.loc[case_name] = save_info
+                                train_df.to_csv(store_path)
+
+                                store_path = os.path.join(store_folder, 'all_train_result.csv')
+                                save_info = [all_train_metric['all_train_' + index] for index in column_list]
                                 train_df.loc[case_name] = save_info
                                 train_df.to_csv(store_path)
 
                                 store_path = os.path.join(store_folder, 'val_result.csv')
-                                save_info = [val_metric['val_' + index] for index in column_list]
+                                save_info = [val_cv_metric['val_' + index] for index in column_list]
                                 val_df.loc[case_name] = save_info
                                 val_df.to_csv(store_path)
 
@@ -263,11 +272,6 @@ class FeatureAnalysisPipelines:
                                                                    feature_selector_index,
                                                                    feature_num_index,
                                                                    classifier_index] = test_metric['test_auc std']
-                                    self.__accuracy_matrix_dict['test'][normalizer_index,
-                                                                        dimension_reductor_index,
-                                                                        feature_selector_index,
-                                                                        feature_num_index,
-                                                                        classifier_index] = test_metric['test_accuracy']
 
                                     store_path = os.path.join(store_folder, 'test_result.csv')
                                     save_info = [test_metric['test_' + index] for index in column_list]
@@ -354,7 +358,7 @@ class OnePipeline:
                     self.__classifier.GetName()
         return case_name
 
-    def Run(self, train_data_container, test_data_container=DataContainer(), store_folder=''):
+    def Run(self, train_data_container, test_data_container=DataContainer(), store_folder='', is_hyper_parameter=False):
         raw_train_data_container = deepcopy(train_data_container)
         raw_test_data_conainer = deepcopy(test_data_container)
 
@@ -383,12 +387,15 @@ class OnePipeline:
                 raw_test_data_conainer = fs.SelectFeatureByName(raw_test_data_conainer, selected_feature_name)
 
         self.__cv.SetClassifier(self.__classifier)
-        train_metric, val_metric, test_metric = self.__cv.Run(raw_train_data_container, raw_test_data_conainer, store_folder)
+        train_cv_metric, val_cv_metric, test_metric, all_train_metric = self.__cv.Run(raw_train_data_container,
+                                                              raw_test_data_conainer,
+                                                              store_folder,
+                                                              is_hyper_parameter)
 
         if store_folder:
             self.SavePipeline(len(raw_train_data_container.GetFeatureName()), os.path.join(store_folder, 'pipeline_info.csv'))
 
-        return train_metric, val_metric, test_metric
+        return train_cv_metric, val_cv_metric, test_metric, all_train_metric
 
 if __name__ == '__main__':
     print(os.getcwd())
@@ -397,22 +404,6 @@ if __name__ == '__main__':
     file_path = os.path.abspath(r'..\..\Example\numeric_feature.csv')
     print(file_path)
     data_container.Load(file_path)
-
-    # Set Feature Selector List
-    # feature_selector_list = []
-    # feature_selector_list.append(FeatureSelectPipeline([RemoveSameFeatures(), RemoveCosSimilarityFeatures(), FeatureSelectByANOVA()]))
-    # feature_selector_list.append(FeatureSelectPipeline([RemoveSameFeatures(), RemoveCosSimilarityFeatures(), FeatureSelectByRelief()]))
-    # feature_selector_list.append(FeatureSelectPipeline([RemoveSameFeatures(), RemoveCosSimilarityFeatures(), FeatureSelectByRFE()]))
-    #
-    # # Set Classifier List
-    # classifier_list = []
-    # classifier_list.append(SVM())
-    # classifier_list.append(AE(max_iter=1000))
-    # classifier_list.append(RandomForest())
-    # classifier_list.append(LDA())
-    #
-    # fae = FeatureAnalysisExplore(feature_selector_list=feature_selector_list, classifier_list=classifier_list, max_feature_number=20)
-    # fae.Run(data_container, store_folder=r'..\tempResult')
 
     temp = OnePipeline(normalizer=NormalizerZeroCenterAndUnit(), feature_selector=FeatureSelectPipeline([RemoveCosSimilarityFeatures(), FeatureSelectByANOVA(10)]),
                        classifier=SVM(), cross_validation=CrossValidation('5-folder'))

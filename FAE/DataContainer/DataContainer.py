@@ -9,6 +9,7 @@ import pandas as pd
 
 import copy
 import math
+from MeDIT.SaveAndLoad import LoadCSVwithChineseInPandas
 
 
 class DataContainer:
@@ -82,7 +83,7 @@ class DataContainer:
             self.__df = pd.read_csv(file_path, header=0)
             self.UpdateDataByFrame()
         except:
-            print('Check the CSV file path. ')
+            print('Check the CSV file path: LoadWithoutCase')
 
 
     def LoadwithNonNumeric(self, file_path):
@@ -90,7 +91,7 @@ class DataContainer:
         try:
             self.__df = pd.read_csv(file_path, header=0, index_col=0)
         except:
-            print('Check the CSV file path. ')
+            print('Check the CSV file path: LoadwithNonNumeric')
 
 
     def Load(self, file_path):
@@ -98,8 +99,15 @@ class DataContainer:
         try:
             self.__df = pd.read_csv(file_path, header=0, index_col=0)
             self.UpdateDataByFrame()
+            return
         except:
-            print('Check the CSV file path. ')
+            print('Check the CSV file path: Load')
+
+        try:
+            self.__df = LoadCSVwithChineseInPandas(file_path, header=0, index_col=0)
+            self.UpdateDataByFrame()
+        except:
+            print('Check the CSV file including Chinese!')
 
     def ShowInformation(self):
         print('The number of cases is ', str(len(self.__case_name)))
