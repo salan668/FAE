@@ -5,7 +5,7 @@ from GUI.Visualization import Ui_Visualization
 
 from FAE.FeatureAnalysis.Classifier import *
 from FAE.FeatureAnalysis.FeaturePipeline import FeatureAnalysisPipelines
-from FAE.Report.Report import Report
+#from FAE.Report.Report import Report
 
 from FAE.Visualization.DrawROCList import DrawROCList
 from FAE.Visualization.PlotMetricVsFeatureNumber import DrawCurve, DrawBar
@@ -91,6 +91,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                 self.InitialUi()
             except Exception as ex:
                 QMessageBox.about(self, "Load Error", ex.__str__())
+                self.logger.log('Load Error, The reason is ' + str(ex))
                 self.ClearAll()
                 return
 
