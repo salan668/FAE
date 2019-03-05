@@ -134,6 +134,14 @@ class SVM(Classifier):
         except:
             print("Not support Coef.")
 
+        #Save the intercept_
+        try:
+            intercept_path = os.path.join(store_path, 'svm_intercept.csv')
+            intercept_df = pd.DataFrame(data=(self.GetModel().intercept_).reshape(1, 1), index=['intercept'], columns=['value'])
+            intercept_df.to_csv(intercept_path)
+        except:
+            print("Not support intercept.")
+
         super(SVM, self).Save(store_path)
 
 class LDA(Classifier):
@@ -328,6 +336,13 @@ class LR(Classifier):
         except:
             print("Not support Coef.")
 
+        try:
+            intercept_path = os.path.join(store_path, 'lr_intercept.csv')
+            intercept_df = pd.DataFrame(data=(self.GetModel().intercept_).reshape(1, 1), index=['intercept'], columns=['value'])
+            intercept_df.to_csv(intercept_path)
+        except:
+            print("Not support intercept.")
+
         super(LR, self).Save(store_path)
 
 class LRLasso(Classifier):
@@ -365,6 +380,13 @@ class LRLasso(Classifier):
             df.to_csv(coef_path)
         except:
             print("Not support Coef.")
+
+        try:
+            intercept_path = os.path.join(store_path, 'lr_intercept.csv')
+            intercept_df = pd.DataFrame(data=(self.GetModel().intercept_).reshape(1, 1), index=['intercept'], columns=['value'])
+            intercept_df.to_csv(intercept_path)
+        except:
+            print("Not support intercept.")
 
         super(LRLasso, self).Save(store_path)
 
