@@ -418,9 +418,9 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                 original_value = list(df.iloc[:, 0])
                 for index in range(len(original_value)):
                     if original_value[index] > 0:
-                        processed_feature_name[index] = processed_feature_name[index] + '+'
+                        processed_feature_name[index] = processed_feature_name[index] + 'P'
                     else:
-                        processed_feature_name[index] = processed_feature_name[index] + '-'
+                        processed_feature_name[index] = processed_feature_name[index] + 'N'
 
 
                 GeneralFeatureSort(processed_feature_name, value, max_num=self.spinFeatureSelectorFeatureNumber.value(),
