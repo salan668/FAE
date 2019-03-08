@@ -5,7 +5,7 @@ from GUI.Visualization import Ui_Visualization
 
 from FAE.FeatureAnalysis.Classifier import *
 from FAE.FeatureAnalysis.FeaturePipeline import FeatureAnalysisPipelines
-from FAE.Report.Report import Report
+#from FAE.Report.Report import Report
 
 from FAE.Visualization.DrawROCList import DrawROCList
 from FAE.Visualization.PlotMetricVsFeatureNumber import DrawCurve, DrawBar
@@ -91,6 +91,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                 self.InitialUi()
             except Exception as ex:
                 QMessageBox.about(self, "Load Error", ex.__str__())
+                self.logger.log('Load Error, The reason is ' + str(ex))
                 self.ClearAll()
                 return
 
@@ -412,7 +413,17 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                 feature_name = list(df.index)
                 value = list(np.abs(df.iloc[:, 0]))
 
-                GeneralFeatureSort(feature_name, value, max_num=self.spinFeatureSelectorFeatureNumber.value(),
+                #add positive and negatiove info for coef
+                processed_feature_name = list(df.index)
+                original_value = list(df.iloc[:, 0])
+                for index in range(len(original_value)):
+                    if original_value[index] > 0:
+                        processed_feature_name[index] = processed_feature_name[index] + 'P'
+                    else:
+                        processed_feature_name[index] = processed_feature_name[index] + 'N'
+
+
+                GeneralFeatureSort(processed_feature_name, value, max_num=self.spinFeatureSelectorFeatureNumber.value(),
                                    is_show=False, fig=self.canvasFeature.getFigure())
         elif self.radioContributionClassifier.isChecked():
             specific_name = self.comboContributionClassifier.currentText() + '_coef.csv'
@@ -422,10 +433,20 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                 df = pd.read_csv(file_path, index_col=0)
                 feature_name = list(df.index)
                 value = list(np.abs(df.iloc[:, 0]))
+
+                #add positive and negatiove info for coef
+                processed_feature_name = list(df.index)
+                original_value = list(df.iloc[:, 0])
+                for index in range(len(original_value)):
+                    if original_value[index] > 0:
+                        processed_feature_name[index] = processed_feature_name[index] + ' P'
+                    else:
+                        processed_feature_name[index] = processed_feature_name[index] + ' N'
+
                 try:
-                    SortRadiomicsFeature(feature_name, value, is_show=False, fig=self.canvasFeature.getFigure())
+                    SortRadiomicsFeature(processed_feature_name, value, is_show=False, fig=self.canvasFeature.getFigure())
                 except:
-                    GeneralFeatureSort(feature_name, value,
+                    GeneralFeatureSort(processed_feature_name, value,
                                        is_show=False, fig=self.canvasFeature.getFigure())
 
 

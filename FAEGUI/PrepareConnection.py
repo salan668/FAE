@@ -1,9 +1,11 @@
 import numpy as np
 import csv
+import os
 from copy import deepcopy
 
 from PyQt5.QtWidgets import *
 from GUI.Prepare import Ui_Prepare
+from Utility.EcLog import eclog
 
 from FAE.DataContainer.DataContainer import DataContainer
 from FAE.DataContainer import DataSeparate
@@ -27,6 +29,8 @@ class PrepareConnection(QWidget, Ui_Prepare):
         self.checkSeparate.clicked.connect(self.SetSeparateStatus)
 
         self.spinBoxSeparate.setEnabled(False)
+        self.logger = eclog(os.path.split(__file__)[-1]).GetLogger()
+
         self.loadTestingReference.setEnabled(False)
         self.clearTestingReference.setEnabled(False)
 
@@ -67,8 +71,15 @@ class PrepareConnection(QWidget, Ui_Prepare):
         file_name, _ = dlg.getOpenFileName(self, 'Open SCV file', filter="csv files (*.csv)")
         try:
             self.data_container.Load(file_name)
-        except:
-            print('Error')
+            self.logger.info('Open the file ' + file_name + ' Succeed.')
+        except OSError as reason:
+            self.logger.log('Open SCV file Error, The reason is ' + str(reason))
+            print('Error！' + str(reason))
+        except ValueError:
+            self.logger.error('Open SCV file ' + file_name + ' Failed. because of value error.')
+            QMessageBox.information(self, 'Error',
+                                    'The selected data file mismatch.')
+
 
         self.UpdateTable()
 
@@ -83,8 +94,13 @@ class PrepareConnection(QWidget, Ui_Prepare):
             self.loadTestingReference.setEnabled(False)
             self.clearTestingReference.setEnabled(True)
             self.spinBoxSeparate.setEnabled(False)
-        except:
-            print('Load Testing Reference Error: ', file_name)
+        except OSError as reason:
+            self.logger.log('Load Testing Reference Error: ' + str(reason))
+            print('Error！' + str(reason))
+        except ValueError:
+            self.logger.error('Open SCV file ' + file_name + ' Failed. because of value error.')
+            QMessageBox.information(self, 'Error',
+                                    'The selected data file mismatch.')
 
     def ClearTestingReferenceDataContainer(self):
         del self.__testing_ref_data_container
@@ -156,6 +172,7 @@ class PrepareConnection(QWidget, Ui_Prepare):
                     except:
                         QMessageBox.information(self, 'Error',
                             'The separation does not work.')
+                        self.logger.error('The separation does not work.')
 
             else:
                 file_name, _ = QFileDialog.getSaveFileName(self, "Save data", filter="csv files (*.csv)")

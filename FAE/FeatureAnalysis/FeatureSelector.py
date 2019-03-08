@@ -2,7 +2,7 @@ from abc import ABCMeta,abstractmethod
 import numpy as np
 from copy import deepcopy
 import pandas as pd
-from random import randrange
+from random import randrange,seed
 import os
 import numbers
 import csv
@@ -230,7 +230,7 @@ class FeatureSelectByANOVA(FeatureSelectByAnalysis):
         return new_data_container
 
 class FeatureSelectByRelief(FeatureSelectByAnalysis):
-    def __init__(self, selected_feature_number=1, iter_ratio=0.7):
+    def __init__(self, selected_feature_number=1, iter_ratio=1):
         super(FeatureSelectByRelief, self).__init__(selected_feature_number)
         self.__iter_radio = iter_ratio
         self._weight = None
@@ -243,7 +243,7 @@ class FeatureSelectByRelief(FeatureSelectByAnalysis):
             feature_list_unit.append(feature_score[feature_index])
             feature_list_unit.append(feature_index)
             feature_list.append(feature_list_unit)
-        sorted_feature_list = sorted(feature_list, key=lambda x: x[0], reverse=True)
+        sorted_feature_list = sorted(feature_list, key=lambda x: abs(x[0]), reverse=True)
         for feature_index in range(len(sorted_feature_list)):
             sorted_feature_number_list.append(sorted_feature_list[feature_index][1])
 
@@ -289,6 +289,7 @@ class FeatureSelectByRelief(FeatureSelectByAnalysis):
             pass
 
             # start iteration
+
         for iter_num in range(int(self.__iter_radio * n_samples)):
             # print iter_num;
             # initialization
@@ -297,7 +298,7 @@ class FeatureSelectByRelief(FeatureSelectByAnalysis):
             distance_sort = list()
 
             # random extract a sample
-            index_i = randrange(0, n_samples, 1)
+            index_i = iter_num
             self_features = data[index_i]
 
             # search for nearHit and nearMiss

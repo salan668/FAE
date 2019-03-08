@@ -64,6 +64,8 @@ class ReportConnection(QWidget, Ui_Report):
                 os.system("explorer.exe {:s}".format(os.path.normpath(store_folder)))
             except Exception as ex:
                 QMessageBox.about(self, 'Report Generate Error: ', ex.__str__())
+                self.logger.log('Report Generate Error:  ' + str(ex))
+
 
     def LoadTrainingData(self):
         dlg = QFileDialog()
@@ -75,6 +77,11 @@ class ReportConnection(QWidget, Ui_Report):
             self.UpdateDataDescription()
         except Exception as ex:
             QMessageBox.about(self, "Load Error", ex.__str__())
+            self.logger.log('Open SCV file Error, The reason is ' + str(ex))
+        except ValueError:
+            self.logger.error('Open SCV file ' + file_name + ' Failed. because of value error.')
+            QMessageBox.information(self, 'Error',
+                                    'The selected training data mismatch.')
 
     def ClearTrainingData(self):
         self._training_data_container = DataContainer()
@@ -91,6 +98,11 @@ class ReportConnection(QWidget, Ui_Report):
             self.UpdateDataDescription()
         except Exception as ex:
             QMessageBox.about(self, "Load Error", ex.__str__())
+            self.logger.log('Open SCV file Error, The reason is ' + str(ex))
+        except ValueError:
+            self.logger.error('Open SCV file ' + file_name + ' Failed. because of value error.')
+            QMessageBox.information(self, 'Error',
+                                    'The selected testing data mismatch.')
 
     def ClearTestingData(self):
         self._testing_data_container = DataContainer()
@@ -146,6 +158,7 @@ class ReportConnection(QWidget, Ui_Report):
                 self.InitialUi()
             except Exception as ex:
                 QMessageBox.about(self, "Load Error", ex.__str__())
+                self.logger.log('Load Error, The reason is ' + str(ex))
                 self.ClearAll()
                 return
 
@@ -252,6 +265,8 @@ class ReportConnection(QWidget, Ui_Report):
             self._current_pipeline.LoadPipeline(os.path.join(case_folder, 'pipeline_info.csv'))
         except Exception as ex:
             QMessageBox.about(self, "Load Error", ex.__str__())
+            self.logger.log('Load Pipeline Error, The reason is ' + str(ex))
+
 
         pred_list, label_list, name_list = [], [], []
         if self.checkROCTrain.isChecked():
