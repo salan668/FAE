@@ -9,8 +9,12 @@ import pandas as pd
 
 import copy
 import math
-from MeDIT.SaveAndLoad import LoadCSVwithChineseInPandas
 
+def LoadCSVwithChineseInPandas(file_path, **kwargs):
+    if 'encoding' not in kwargs.keys():
+        return pd.read_csv(file_path, encoding="gbk", **kwargs)
+    else:
+        return pd.read_csv(file_path, **kwargs)
 
 class DataContainer:
     '''

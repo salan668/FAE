@@ -1,9 +1,11 @@
 import numpy as np
 import csv
+import os
 from copy import deepcopy
 
 from PyQt5.QtWidgets import *
 from GUI.Prepare import Ui_Prepare
+from Utility.EcLog import eclog
 
 from FAE.DataContainer.DataContainer import DataContainer
 from FAE.DataContainer import DataSeparate
@@ -11,20 +13,26 @@ from FAE.FeatureAnalysis.FeatureSelector import RemoveSameFeatures
 from FAE.DataContainer.DataBalance import UpSampling, DownSampling, SmoteSampling, DataBalance
 
 from PyQt5.QtCore import QItemSelectionModel,QModelIndex
+
+
 class PrepareConnection(QWidget, Ui_Prepare):
     def __init__(self, parent=None):
         super(PrepareConnection, self).__init__(parent)
         self.setupUi(self)
         self.data_container = DataContainer()
 
-
         self.buttonLoad.clicked.connect(self.LoadData)
         self.buttonRemove.clicked.connect(self.RemoveNonValidValue)
-        self.load_training_index.clicked.connect(self.LoadTrainingIndex)
-        self.clear_training_index.clicked.connect(self.ClearTrainingIndex)
-        self.train_index = []
+        self.loadTestingReference.clicked.connect(self.LoadTestingReferenceDataContainer)
+        self.clearTestingReference.clicked.connect(self.ClearTestingReferenceDataContainer)
+        self.__testing_ref_data_container = DataContainer()
         self.checkSeparate.clicked.connect(self.SetSeparateStatus)
+
         self.spinBoxSeparate.setEnabled(False)
+        self.logger = eclog(os.path.split(__file__)[-1]).GetLogger()
+
+        self.loadTestingReference.setEnabled(False)
+        self.clearTestingReference.setEnabled(False)
 
         self.buttonSave.clicked.connect(self.CheckAndSave)
 
@@ -63,26 +71,43 @@ class PrepareConnection(QWidget, Ui_Prepare):
         file_name, _ = dlg.getOpenFileName(self, 'Open SCV file', filter="csv files (*.csv)")
         try:
             self.data_container.Load(file_name)
-        except:
-            print('Error')
+            self.logger.info('Open the file ' + file_name + ' Succeed.')
+        except OSError as reason:
+            self.logger.log('Open SCV file Error, The reason is ' + str(reason))
+            print('Error！' + str(reason))
+        except ValueError:
+            self.logger.error('Open SCV file ' + file_name + ' Failed. because of value error.')
+            QMessageBox.information(self, 'Error',
+                                    'The selected data file mismatch.')
+
 
         self.UpdateTable()
 
         self.buttonRemove.setEnabled(True)
         self.buttonSave.setEnabled(True)
 
-    def LoadTrainingIndex(self):
+    def LoadTestingReferenceDataContainer(self):
         dlg = QFileDialog()
         file_name, _ = dlg.getOpenFileName(self, 'Open SCV file', filter="csv files (*.csv)")
-        if file_name:
-            with open(file_name, 'r', newline='') as train_file:
-                train_csv = csv.reader(train_file)
-                for index in train_csv:
-                    if index[1] != 'training_index':
-                        self.train_index.append(int(index[1]))
+        try:
+            self.__testing_ref_data_container.Load(file_name)
+            self.loadTestingReference.setEnabled(False)
+            self.clearTestingReference.setEnabled(True)
+            self.spinBoxSeparate.setEnabled(False)
+        except OSError as reason:
+            self.logger.log('Load Testing Reference Error: ' + str(reason))
+            print('Error！' + str(reason))
+        except ValueError:
+            self.logger.error('Open SCV file ' + file_name + ' Failed. because of value error.')
+            QMessageBox.information(self, 'Error',
+                                    'The selected data file mismatch.')
 
-    def ClearTrainingIndex(self):
-        self.train_index = []
+    def ClearTestingReferenceDataContainer(self):
+        del self.__testing_ref_data_container
+        self.__testing_ref_data_container = DataContainer()
+        self.loadTestingReference.setEnabled(True)
+        self.clearTestingReference.setEnabled(False)
+        self.spinBoxSeparate.setEnabled(False)
 
     def RemoveNonValidValue(self):
         if self.radioRemoveNonvalidCases.isChecked():
@@ -95,8 +120,12 @@ class PrepareConnection(QWidget, Ui_Prepare):
     def SetSeparateStatus(self):
         if self.checkSeparate.isChecked():
             self.spinBoxSeparate.setEnabled(True)
+            self.loadTestingReference.setEnabled(True)
+            self.clearTestingReference.setEnabled(False)
         else:
             self.spinBoxSeparate.setEnabled(False)
+            self.loadTestingReference.setEnabled(False)
+            self.clearTestingReference.setEnabled(False)
 
     def CheckAndSave(self):
         if self.data_container.IsEmpty():
@@ -106,7 +135,7 @@ class PrepareConnection(QWidget, Ui_Prepare):
             non_valid_number_Index = self.data_container.FindNonValidNumberIndex()
             old_edit_triggers = self.tableFeature.editTriggers()
             self.tableFeature.setEditTriggers(QAbstractItemView.CurrentChanged)
-            self.tableFeature.setCurrentCell(non_valid_number_Index[0],non_valid_number_Index[1]+1)
+            self.tableFeature.setCurrentCell(non_valid_number_Index[0], non_valid_number_Index[1]+1)
             self.tableFeature.setEditTriggers(old_edit_triggers)
         else:
             remove_features_with_same_value = RemoveSameFeatures()
@@ -121,18 +150,31 @@ class PrepareConnection(QWidget, Ui_Prepare):
                 data_balance = SmoteSampling()
 
             if self.checkSeparate.isChecked():
-                percentage_testing_data = self.spinBoxSeparate.value()
                 folder_name = QFileDialog.getExistingDirectory(self, "Save data")
                 if folder_name != '':
-                    data_seperate = DataSeparate.DataSeparate(percentage_testing_data, training_index=self.train_index)
+                    data_separate = DataSeparate.DataSeparate()
                     try:
-                        training_data_container, _, = data_seperate.Run(self.data_container, folder_name)
+                        if self.__testing_ref_data_container.IsEmpty():
+                            testing_data_percentage = self.spinBoxSeparate.value()
+                            training_data_container, _, = data_separate.RunByTestingPercentage(self.data_container,
+                                                                                               testing_data_percentage,
+                                                                                               folder_name)
+                        else:
+                            training_data_container, _, = data_separate.RunByTestingReference(self.data_container,
+                                                                                              self.__testing_ref_data_container,
+                                                                                              folder_name)
+                            if training_data_container.IsEmpty():
+                                QMessageBox.information(self, 'Error',
+                                                        'The testing data does not mismatch, please check the testing data '
+                                                        'really exists in current data')
+                                return None
                         data_balance.Run(training_data_container, store_path=folder_name)
                     except:
                         QMessageBox.information(self, 'Error',
-                            'The train index mismatch, please check the train index really exists in current data')
+                            'The separation does not work.')
+                        self.logger.error('The separation does not work.')
 
             else:
-                file_name,_ = QFileDialog.getSaveFileName(self, "Save data", filter="csv files (*.csv)")
+                file_name, _ = QFileDialog.getSaveFileName(self, "Save data", filter="csv files (*.csv)")
                 if file_name != '':
                     data_balance.Run(self.data_container, store_path=file_name)

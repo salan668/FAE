@@ -5,7 +5,7 @@ from GUI.Visualization import Ui_Visualization
 
 from FAE.FeatureAnalysis.Classifier import *
 from FAE.FeatureAnalysis.FeaturePipeline import FeatureAnalysisPipelines
-from FAE.Report.Report import Report
+#from FAE.Report.Report import Report
 
 from FAE.Visualization.DrawROCList import DrawROCList
 from FAE.Visualization.PlotMetricVsFeatureNumber import DrawCurve, DrawBar
@@ -40,8 +40,9 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.comboFeatureSelector.currentIndexChanged.connect(self.UpdateROC)
         self.comboClassifier.currentIndexChanged.connect(self.UpdateROC)
         self.spinBoxFeatureNumber.valueChanged.connect(self.UpdateROC)
+        self.checkROCCVTrain.stateChanged.connect(self.UpdateROC)
+        self.checkROCCVValidation.stateChanged.connect(self.UpdateROC)
         self.checkROCTrain.stateChanged.connect(self.UpdateROC)
-        self.checkROCValidation.stateChanged.connect(self.UpdateROC)
         self.checkROCTest.stateChanged.connect(self.UpdateROC)
 
         # Update Plot canvas
@@ -54,8 +55,9 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.comboPlotClassifier.currentIndexChanged.connect(self.UpdatePlot)
         self.spinPlotFeatureNumber.valueChanged.connect(self.UpdatePlot)
 
+        self.checkPlotCVTrain.stateChanged.connect(self.UpdatePlot)
+        self.checkPlotCVValidation.stateChanged.connect(self.UpdatePlot)
         self.checkPlotTrain.stateChanged.connect(self.UpdatePlot)
-        self.checkPlotValidation.stateChanged.connect(self.UpdatePlot)
         self.checkPlotTest.stateChanged.connect(self.UpdatePlot)
 
         # Update Contribution canvas
@@ -89,6 +91,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                 self.InitialUi()
             except Exception as ex:
                 QMessageBox.about(self, "Load Error", ex.__str__())
+                self.logger.log('Load Error, The reason is ' + str(ex))
                 self.ClearAll()
                 return
 
@@ -102,12 +105,14 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.buttonSave.setEnabled(False)
         self.buttonClearResult.setEnabled(False)
 
+        self.checkROCCVTrain.setChecked(False)
+        self.checkROCCVValidation.setChecked(False)
         self.checkROCTrain.setChecked(False)
         self.checkROCTest.setChecked(False)
-        self.checkROCValidation.setChecked(False)
+        self.checkPlotCVTrain.setChecked(False)
+        self.checkPlotCVValidation.setChecked(False)
         self.checkPlotTrain.setChecked(False)
         self.checkPlotTest.setChecked(False)
-        self.checkPlotValidation.setChecked(False)
         self.checkPlotMaximum.setChecked(False)
         self.checkContributionShow.setChecked(False)
         self.radioContributionFeatureSelector.setChecked(True)
@@ -239,18 +244,24 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         case_folder = os.path.join(self._root_folder, case_name)
 
         pred_list, label_list, name_list = [], [], []
-        if self.checkROCTrain.isChecked():
+        if self.checkROCCVTrain.isChecked():
             train_pred = np.load(os.path.join(case_folder, 'train_predict.npy'))
             train_label = np.load(os.path.join(case_folder, 'train_label.npy'))
             pred_list.append(train_pred)
             label_list.append(train_label)
-            name_list.append('Train')
-        if self.checkROCValidation.isChecked():
+            name_list.append('CV Train')
+        if self.checkROCCVValidation.isChecked():
             val_pred = np.load(os.path.join(case_folder, 'val_predict.npy'))
             val_label = np.load(os.path.join(case_folder, 'val_label.npy'))
             pred_list.append(val_pred)
             label_list.append(val_label)
-            name_list.append('Validation')
+            name_list.append('CV Validation')
+        if self.checkROCTrain.isChecked():
+            all_train_pred = np.load(os.path.join(case_folder, 'all_train_predict.npy'))
+            all_train_label = np.load(os.path.join(case_folder, 'all_train_label.npy'))
+            pred_list.append(all_train_pred)
+            label_list.append(all_train_label)
+            name_list.append('Train')
         if self.checkROCTest.isChecked():
             if os.path.exists(os.path.join(case_folder, 'test_label.npy')):
                 test_pred = np.load(os.path.join(case_folder, 'test_predict.npy'))
@@ -341,24 +352,33 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         name_list = []
 
         if self.comboPlotY.currentText() == 'AUC':
-            if self.checkPlotTrain.isChecked():
+            if self.checkPlotCVTrain.isChecked():
                 temp = deepcopy(self._fae.GetAUCMetric()['train'])
                 auc_std = deepcopy(self._fae.GetAUCstdMetric()['train'])
                 if self.checkPlotMaximum.isChecked():
                     show_data.append(np.max(temp, axis=max_axis).tolist())
                 else:
-                    show_data.append(temp[index].tolist())
-                    show_data_std.append(auc_std[index].tolist())
-                name_list.append('Train')
-            if self.checkPlotValidation.isChecked():
+                    show_data.append(temp[tuple(index)].tolist())
+                    show_data_std.append(auc_std[tuple(index)].tolist())
+                name_list.append('CV Train')
+            if self.checkPlotCVValidation.isChecked():
                 temp = deepcopy(self._fae.GetAUCMetric()['val'])
                 auc_std = deepcopy(self._fae.GetAUCstdMetric()['val'])
                 if self.checkPlotMaximum.isChecked():
                     show_data.append(np.max(temp, axis=max_axis).tolist())
                 else:
-                    show_data.append(temp[index].tolist())
-                    show_data_std.append(auc_std[index].tolist())
-                name_list.append('Validation')
+                    show_data.append(temp[tuple(index)].tolist())
+                    show_data_std.append(auc_std[tuple(index)].tolist())
+                name_list.append('CV Validation')
+            if self.checkPlotTrain.isChecked():
+                temp = deepcopy(self._fae.GetAUCMetric()['all_train'])
+                auc_std = deepcopy(self._fae.GetAUCstdMetric()['all_train'])
+                if self.checkPlotMaximum.isChecked():
+                    show_data.append(np.max(temp, axis=max_axis).tolist())
+                else:
+                    show_data.append(temp[tuple(index)].tolist())
+                    show_data_std.append(auc_std[tuple(index)].tolist())
+                name_list.append('Train')
             if self.checkPlotTest.isChecked():
                 temp = deepcopy(self._fae.GetAUCMetric()['test'])
                 auc_std = deepcopy(self._fae.GetAUCstdMetric()['test'])
@@ -366,8 +386,8 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                     if self.checkPlotMaximum.isChecked():
                         show_data.append(np.max(temp, axis=max_axis).tolist())
                     else:
-                        show_data.append(temp[index].tolist())
-                        show_data_std.append(auc_std[index].tolist())
+                        show_data.append(temp[tuple(index)].tolist())
+                        show_data_std.append(auc_std[tuple(index)].tolist())
                     name_list.append('Test')
 
         if len(show_data) > 0:
@@ -393,7 +413,17 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                 feature_name = list(df.index)
                 value = list(np.abs(df.iloc[:, 0]))
 
-                GeneralFeatureSort(feature_name, value, max_num=self.spinFeatureSelectorFeatureNumber.value(),
+                #add positive and negatiove info for coef
+                processed_feature_name = list(df.index)
+                original_value = list(df.iloc[:, 0])
+                for index in range(len(original_value)):
+                    if original_value[index] > 0:
+                        processed_feature_name[index] = processed_feature_name[index] + 'P'
+                    else:
+                        processed_feature_name[index] = processed_feature_name[index] + 'N'
+
+
+                GeneralFeatureSort(processed_feature_name, value, max_num=self.spinFeatureSelectorFeatureNumber.value(),
                                    is_show=False, fig=self.canvasFeature.getFigure())
         elif self.radioContributionClassifier.isChecked():
             specific_name = self.comboContributionClassifier.currentText() + '_coef.csv'
@@ -403,10 +433,20 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                 df = pd.read_csv(file_path, index_col=0)
                 feature_name = list(df.index)
                 value = list(np.abs(df.iloc[:, 0]))
+
+                #add positive and negatiove info for coef
+                processed_feature_name = list(df.index)
+                original_value = list(df.iloc[:, 0])
+                for index in range(len(original_value)):
+                    if original_value[index] > 0:
+                        processed_feature_name[index] = processed_feature_name[index] + ' P'
+                    else:
+                        processed_feature_name[index] = processed_feature_name[index] + ' N'
+
                 try:
-                    SortRadiomicsFeature(feature_name, value, is_show=False, fig=self.canvasFeature.getFigure())
+                    SortRadiomicsFeature(processed_feature_name, value, is_show=False, fig=self.canvasFeature.getFigure())
                 except:
-                    GeneralFeatureSort(feature_name, value,
+                    GeneralFeatureSort(processed_feature_name, value,
                                        is_show=False, fig=self.canvasFeature.getFigure())
 
 
@@ -501,8 +541,6 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         headerlabels.insert(0, 'models name')
         self.tableClinicalStatistic.setHorizontalHeaderLabels(headerlabels)
         # self.tableClinicalStatistic.setVerticalHeaderLabels(list(df.index))
-
-
 
         for row_index in range(df.shape[0]):
             for col_index in range(df.shape[1]+1):
