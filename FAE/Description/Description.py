@@ -8,7 +8,7 @@ import csv
 from FAE.FeatureAnalysis.FeaturePipeline import OnePipeline
 from FAE.DataContainer.DataContainer import DataContainer
 
-class Report:
+class Description:
     def __init__(self):
         self.__paragraph_list = []
         self.__current_paragraph = ''
@@ -140,7 +140,7 @@ class Report:
         figure_title = "Figure 1. The ROC curve. "
 
         # Build PDF
-        pdf = PDFDocument(os.path.join(store_folder, 'report.pdf'))
+        pdf = PDFDocument(os.path.join(store_folder, 'description.pdf'))
         pdf.init_report()
         pdf.h1("Materials and Methods")
         pdf.p(data_description_text)
@@ -157,19 +157,19 @@ class Report:
         pdf.image(os.path.join(store_folder, 'ROC.jpg'))
         pdf.table_header(figure_title)
 
-        pdf.end_connect("Thanks for using FAE v.0.2. If you need a specific report, please connect to Yang Song (songyangmri@gmail.com) or Guang Yang "
+        pdf.end_connect("Thanks for using FAE v.0.2. If you need a specific description, please connect to Yang Song (songyangmri@gmail.com) or Guang Yang "
               "(gyang@phy.ecnu.edu.cn). Welcome any co-operation and discussion. ")
         pdf.generate()
 
-def GenerateReport():
+def GenerateDescription():
     training_data_container = DataContainer()
     training_data_container.Load(r'..\..\Example\numeric_feature.csv')
 
     one_pipeline = OnePipeline()
     one_pipeline.LoadPipeline(r'C:\MyCode\FAEGitHub\FAE\Example\report_temp\NormUnit_Cos_ANOVA_5_SVM\pipeline_info.csv')
 
-    report = Report()
-    report.Run(training_data_container, one_pipeline, r'..\..\Example\report_temp', r'..\..\Example\report')
+    description = Description()
+    description.Run(training_data_container, one_pipeline, r'..\..\Example\report_temp', r'..\..\Example\report')
 
 if __name__ == '__main__':
-    GenerateReport()
+    GenerateDescription()

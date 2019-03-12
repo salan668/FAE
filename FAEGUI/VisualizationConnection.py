@@ -5,7 +5,7 @@ from GUI.Visualization import Ui_Visualization
 
 from FAE.FeatureAnalysis.Classifier import *
 from FAE.FeatureAnalysis.FeaturePipeline import FeatureAnalysisPipelines
-#from FAE.Report.Report import Report
+#from FAE.Description.Description import Description
 
 from FAE.Visualization.DrawROCList import DrawROCList
 from FAE.Visualization.PlotMetricVsFeatureNumber import DrawCurve, DrawBar

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Report</class>
- <widget class="QWidget" name="Report">
+ <class>Description</class>
+ <widget class="QWidget" name="Description">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Report</string>
+   <string>Description</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
    <item row="0" column="0">
@@ -168,7 +168,7 @@
           </font>
          </property>
          <property name="text">
-          <string>Generate Report</string>
+          <string>Generate Description</string>
          </property>
         </widget>
        </item>
