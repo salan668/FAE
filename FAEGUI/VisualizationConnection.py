@@ -32,10 +32,12 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.__contribution = self.canvasFeature.getFigure().add_subplot(111)
 
         # Update Sheet
-        self.tableClinicalStatistic.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
+        self.tableClinicalStatistic.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.tableClinicalStatistic.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.comboSheet.currentIndexChanged.connect(self.UpdateSheet)
         self.checkMaxFeatureNumber.stateChanged.connect(self.UpdateSheet)
-        self.tableClinicalStatistic.doubleClicked.connect(self.ShowOneResult)
+        # self.tableClinicalStatistic.doubleClicked.connect(self.ShowOneResult)
+        self.tableClinicalStatistic.itemSelectionChanged.connect(self.ShowOneResult)
 
         # Update ROC canvas
         self.comboNormalizer.currentIndexChanged.connect(self.UpdateROC)
@@ -568,25 +570,39 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         return ''
 
     def ShowOneResult(self):
-        for item in self.tableClinicalStatistic.selectedItems():
-            text = str(item.text())
-            try:
+        try:
+            for index in self.tableClinicalStatistic.selectedIndexes():
+                row = index.row()
+                one_item = self.tableClinicalStatistic.item(row, 0)
+                text = str(one_item.text())
                 current_normalizer, current_dimension_reducer, current_feature_selector, current_feature_number, current_classifier = \
-                text.split('_')
-            except:
-                return None
-            break
+                    text.split('_')
 
-        self.comboNormalizer.setCurrentText(current_normalizer)
-        self.comboDimensionReduction.setCurrentText(current_dimension_reducer)
-        self.comboFeatureSelector.setCurrentText(current_feature_selector)
-        self.comboClassifier.setCurrentText(current_classifier)
-        self.spinBoxFeatureNumber.setValue(int(current_feature_number))
+            self.comboNormalizer.setCurrentText(current_normalizer)
+            self.comboDimensionReduction.setCurrentText(current_dimension_reducer)
+            self.comboFeatureSelector.setCurrentText(current_feature_selector)
+            self.comboClassifier.setCurrentText(current_classifier)
+            self.spinBoxFeatureNumber.setValue(int(current_feature_number))
 
-        if not (self.checkROCTrain.isChecked() or self.checkROCCVTrain.isChecked() or
-                self.checkROCCVValidation.isChecked() or self.checkROCTrain.isChecked()):
-            self.checkROCCVTrain.setCheckState(True)
+            if not (self.checkROCTrain.isChecked() or self.checkROCCVTrain.isChecked() or
+                    self.checkROCCVValidation.isChecked() or self.checkROCTrain.isChecked()):
+                self.checkROCCVTrain.setCheckState(True)
 
-        self.UpdateROC()
+            self.UpdateROC()
+
+        except Exception as e:
+            print(e)
+            return
+
+        #
+        # for item in self.tableClinicalStatistic.selectedItems():
+        #     text = str(item.text())
+        #     try:
+        #         current_normalizer, current_dimension_reducer, current_feature_selector, current_feature_number, current_classifier = \
+        #         text.split('_')
+        #     except:
+        #         return None
+        #     break
+
 
 
