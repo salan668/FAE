@@ -143,6 +143,8 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.comboPlotX.clear()
         self.comboPlotY.clear()
 
+        self.comboContributionNormalization.clear()
+        self.comboContributionDimension.clear()
         self.comboContributionClassifier.clear()
         self.comboContributionFeatureSelector.clear()
 
@@ -475,10 +477,6 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.textEditDescription.setPlainText(text)
 
     def UpdateSheet(self):
-        data = np.array([])
-        df = pd.DataFrame()
-        data = self._fae.GetAUCMetric()
-        std_data = self._fae.GetAUCstdMetric()
         self.tableClinicalStatistic.clear()
         self.tableClinicalStatistic.setSortingEnabled(False)
         if self.comboSheet.currentText() == 'Train':
@@ -490,17 +488,12 @@ class VisualizationConnection(QWidget, Ui_Visualization):
             std_data = self._fae.GetAUCstdMetric()['val']
             df = self.sheet_dict['val']
         elif self.comboSheet.currentText() == 'Test':
-            data = self._fae.GetAUCMetric()['test']
-            std_data = self._fae.GetAUCstdMetric()['test']
-            df = self.sheet_dict['test']
-        elif self.comboSheet.currentText() == 'Test On Val':
+            # Sort according to the AUC of validation data set
             data = self._fae.GetAUCMetric()['val']
             std_data = self._fae.GetAUCstdMetric()['val']
             df = self.sheet_dict['test']
-
         else:
             return
-
 
         if self.checkMaxFeatureNumber.isChecked():
             name_list = []
@@ -524,11 +517,8 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                                     classifier.GetName()
                                     name_list.append(name)
                                     break
-
-
             df = df.loc[name_list]
         df.sort_index(inplace=True)
-
 
         self.tableClinicalStatistic.setRowCount(df.shape[0])
         self.tableClinicalStatistic.setColumnCount(df.shape[1]+1)
@@ -556,7 +546,6 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         if os.path.exists(os.path.join(self._root_folder, 'test_result.csv')):
             self.sheet_dict['test'] = pd.read_csv(os.path.join(self._root_folder, 'test_result.csv'), index_col=0)
             self.comboSheet.addItem('Test')
-            self.comboSheet.addItem('Test On Val')
 
         self.UpdateSheet()
 
