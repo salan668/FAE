@@ -1,15 +1,15 @@
 from PyQt5.QtWidgets import *
-from GUI.Report import Ui_Report
+from GUI.Description import Ui_Description
 
 from FAE.FeatureAnalysis.Classifier import *
 from FAE.FeatureAnalysis.FeaturePipeline import FeatureAnalysisPipelines, OnePipeline
-from FAE.Report.Report import Report
+from FAE.Description.Description import Description
 
 from FAE.Visualization.DrawROCList import DrawROCList
 from FAE.Visualization.PlotMetricVsFeatureNumber import DrawCurve, DrawBar
 import os
 
-class ReportConnection(QWidget, Ui_Report):
+class DescriptionConnection(QWidget, Ui_Description):
     def __init__(self, parent=None):
         self._root_folder = ''
         self._fae = FeatureAnalysisPipelines()
@@ -17,7 +17,7 @@ class ReportConnection(QWidget, Ui_Report):
         self._testing_data_container = DataContainer()
         self._current_pipeline = OnePipeline()
         
-        super(ReportConnection, self).__init__(parent)
+        super(DescriptionConnection, self).__init__(parent)
         self.setupUi(self)
 
         self.buttonLoadTrainingData.clicked.connect(self.LoadTrainingData)
@@ -58,12 +58,14 @@ class ReportConnection(QWidget, Ui_Report):
             roc_path = os.path.join(store_folder, 'ROC.jpg')
             self.canvasROC.getFigure().savefig(roc_path, dpi=300)
 
-            report = Report()
+            report = Description()
             try:
                 report.Run(self._training_data_container, self._current_pipeline, self._root_folder, store_folder, self._testing_data_container)
                 os.system("explorer.exe {:s}".format(os.path.normpath(store_folder)))
             except Exception as ex:
-                QMessageBox.about(self, 'Report Generate Error: ', ex.__str__())
+                QMessageBox.about(self, 'Description Generate Error: ', ex.__str__())
+                self.logger.log('Description Generate Error:  ' + str(ex))
+
 
     def LoadTrainingData(self):
         dlg = QFileDialog()
@@ -75,6 +77,11 @@ class ReportConnection(QWidget, Ui_Report):
             self.UpdateDataDescription()
         except Exception as ex:
             QMessageBox.about(self, "Load Error", ex.__str__())
+            self.logger.log('Open SCV file Error, The reason is ' + str(ex))
+        except ValueError:
+            self.logger.error('Open SCV file ' + file_name + ' Failed. because of value error.')
+            QMessageBox.information(self, 'Error',
+                                    'The selected training data mismatch.')
 
     def ClearTrainingData(self):
         self._training_data_container = DataContainer()
@@ -91,6 +98,11 @@ class ReportConnection(QWidget, Ui_Report):
             self.UpdateDataDescription()
         except Exception as ex:
             QMessageBox.about(self, "Load Error", ex.__str__())
+            self.logger.log('Open SCV file Error, The reason is ' + str(ex))
+        except ValueError:
+            self.logger.error('Open SCV file ' + file_name + ' Failed. because of value error.')
+            QMessageBox.information(self, 'Error',
+                                    'The selected testing data mismatch.')
 
     def ClearTestingData(self):
         self._testing_data_container = DataContainer()
@@ -146,6 +158,7 @@ class ReportConnection(QWidget, Ui_Report):
                 self.InitialUi()
             except Exception as ex:
                 QMessageBox.about(self, "Load Error", ex.__str__())
+                self.logger.log('Load Error, The reason is ' + str(ex))
                 self.ClearAll()
                 return
 
@@ -252,6 +265,8 @@ class ReportConnection(QWidget, Ui_Report):
             self._current_pipeline.LoadPipeline(os.path.join(case_folder, 'pipeline_info.csv'))
         except Exception as ex:
             QMessageBox.about(self, "Load Error", ex.__str__())
+            self.logger.log('Load Pipeline Error, The reason is ' + str(ex))
+
 
         pred_list, label_list, name_list = [], [], []
         if self.checkROCTrain.isChecked():

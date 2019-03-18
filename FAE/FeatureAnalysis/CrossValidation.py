@@ -214,10 +214,6 @@ class CrossValidation5Folder(CrossValidation):
         data = data_container.GetArray()
         label = data_container.GetLabel()
         case_name = data_container.GetCaseName()
-        group_index = 0
-
-        train_cv_info = [['CaseName', 'Group', 'Pred', 'Label']]
-        val_cv_info = [['CaseName', 'Group', 'Pred', 'Label']]
 
         param_metric_train_auc = []
         param_metric_val_auc = []
@@ -229,6 +225,10 @@ class CrossValidation5Folder(CrossValidation):
         for parameter in self.classifier_parameter_list:
             self.SetDefaultClassifier()
             self.classifier.SetModelParameter(parameter)
+
+            train_cv_info = [['CaseName', 'Group', 'Pred', 'Label']]
+            val_cv_info = [['CaseName', 'Group', 'Pred', 'Label']]
+            group_index = 0
 
             for train_index, val_index in self.__cv.split(data, label):
                 group_index += 1
@@ -267,11 +267,11 @@ class CrossValidation5Folder(CrossValidation):
             param_all.append({'total_train_label': total_train_label,
                               'total_train_pred': total_train_pred,
                               'train_metric': train_cv_metric,
-                              'train_cv_info': train_cv_info,
+                              'train_cv_info': deepcopy(train_cv_info),
                               'total_val_label': total_val_label,
                               'total_val_pred': total_val_pred,
                               'val_metric': val_cv_metric,
-                              'val_cv_info': val_cv_info
+                              'val_cv_info': deepcopy(val_cv_info)
                               })
 
         # find the best parameter

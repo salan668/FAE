@@ -5,7 +5,7 @@ from copy import deepcopy
 from PyQt5.QtWidgets import *
 from GUI.Process import Ui_Process
 from PyQt5.QtCore import *
-
+from Utility.EcLog import eclog
 from FAE.FeatureAnalysis.Normalizer import *
 from FAE.FeatureAnalysis.DimensionReduction import *
 from FAE.FeatureAnalysis.FeatureSelector import *
@@ -21,6 +21,7 @@ class CVRun(QThread):
 
     def __init__(self):
         super().__init__()
+
         pass
 
     def SetProcessConnectionAndStore_folder(self, process_connection, store_folder):
@@ -53,7 +54,7 @@ class ProcessConnection(QWidget, Ui_Process):
         self.training_data_container = DataContainer()
         self.testing_data_container = DataContainer()
         self.fae = FeatureAnalysisPipelines()
-
+        self.logger = eclog(os.path.split(__file__)[-1]).GetLogger()
         self.__process_normalizer_list = []
         self.__process_dimension_reduction_list = []
         self.__process_feature_selector_list = []
@@ -111,8 +112,15 @@ class ProcessConnection(QWidget, Ui_Process):
             self.SetStateButtonBeforeLoading(True)
             self.lineEditTrainingData.setText(file_name)
             self.UpdateDataDescription()
-        except:
-            print('Loading Training Data Error')
+            self.logger.info('Open CSV file ' + file_name + ' succeed.')
+        except OSError as reason:
+            self.logger.log('Open SCV file Error, The reason is ' + str(reason))
+            print('出错啦！' + str(reason))
+        except ValueError:
+            self.logger.error('Open SCV file ' + file_name + ' Failed. because of value error.')
+            QMessageBox.information(self, 'Error',
+                                    'The selected training data mismatch.')
+
 
     def LoadTestingData(self):
         dlg = QFileDialog()
@@ -121,8 +129,14 @@ class ProcessConnection(QWidget, Ui_Process):
             self.testing_data_container.Load(file_name)
             self.lineEditTestingData.setText(file_name)
             self.UpdateDataDescription()
-        except:
-            print('Loading Testing Data Error')
+            self.logger.info('Loading testing data ' + file_name + ' succeed.' )
+        except OSError as reason:
+            self.logger.log('Open SCV file Error, The reason is ' + str(reason))
+            print('出错啦！' + str(reason))
+        except ValueError:
+            self.logger.error('Open SCV file ' + file_name + ' Failed. because of value error.')
+            QMessageBox.information(self, 'Error',
+                                    'The selected testing data mismatch.')
 
     def GenerateVerboseTest(self, normalizer_name, dimension_reduction_name, feature_selector_name, classifier_name, feature_num,
                        current_num, total_num):
@@ -198,6 +212,7 @@ class ProcessConnection(QWidget, Ui_Process):
     def Run(self):
         if self.training_data_container.IsEmpty():
             QMessageBox.about(self, '', 'Training data is empty.')
+            self.logger.info('Training data is empty.');
             return
 
         dlg = QFileDialog()
@@ -236,6 +251,7 @@ class ProcessConnection(QWidget, Ui_Process):
 
             else:
                 QMessageBox.about(self, 'Pipeline Error', 'Pipeline must include Classifier and CV method')
+                self.logger.error('Make pipeline failed. Pipeline must include Classfier and CV method.')
 
     def MinFeatureNumberChange(self):
         if self.spinBoxMinFeatureNumber.value() > self.spinBoxMaxFeatureNumber.value():
@@ -299,6 +315,7 @@ class ProcessConnection(QWidget, Ui_Process):
         if self.checkNaiveBayes.isChecked():
             self.__process_classifier_list.append(NaiveBayes())
         if len(self.__process_classifier_list) == 0:
+            self.logger.error('Process classifier list length is zero.')
             return False
 
         if self.radio5folder.isChecked():
