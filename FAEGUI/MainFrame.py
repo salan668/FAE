@@ -12,7 +12,7 @@ from FAEGUI.PrepareConnection import PrepareConnection
 from FAEGUI.ProcessConnection import ProcessConnection
 from FAEGUI.VisualizationConnection import VisualizationConnection
 from FAEGUI.AboutConnection import AboutConnection
-from FAEGUI.ReportConnection import ReportConnection
+from FAEGUI.DescriptionConnection import DescriptionConnection
 
 class Ui_TabWidget(object):
     def setupUi(self, TabWidget):
@@ -20,7 +20,7 @@ class Ui_TabWidget(object):
         self.prepare = PrepareConnection()
         self.process = ProcessConnection()
         self.visualization = VisualizationConnection()
-        self.report = ReportConnection()
+        self.report = DescriptionConnection()
         self.about = AboutConnection()
 
         TabWidget.setObjectName("TabWidget")
@@ -53,5 +53,5 @@ class Ui_TabWidget(object):
         TabWidget.setTabText(TabWidget.indexOf(self.tabPrepare), _translate("TabWidget", "Prepare"))
         TabWidget.setTabText(TabWidget.indexOf(self.tabProcess), _translate("TabWidget", "Process"))
         TabWidget.setTabText(TabWidget.indexOf(self.tabVisualization), _translate("TabWidget", "Visualization"))
-        TabWidget.setTabText(TabWidget.indexOf(self.tabReport), _translate("TabWidget", "Report"))
+        TabWidget.setTabText(TabWidget.indexOf(self.tabReport), _translate("TabWidget", "Description"))
         TabWidget.setTabText(TabWidget.indexOf(self.tabAbout), _translate("TabWidget", "About"))
