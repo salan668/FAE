@@ -119,13 +119,13 @@
       </layout>
      </item>
      <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_5">
+      <layout class="QHBoxLayout" name="horizontalLayout_6">
        <item>
         <layout class="QVBoxLayout" name="verticalLayout_3">
          <item>
           <widget class="QLabel" name="label_2">
            <property name="text">
-            <string>ROC Curve</string>
+            <string>ROC Curve / Result</string>
            </property>
           </widget>
          </item>
@@ -173,20 +173,23 @@
          </item>
          <item>
           <layout class="QGridLayout" name="gridLayout">
-           <item row="0" column="0">
-            <widget class="QComboBox" name="comboNormalizer"/>
-           </item>
-           <item row="0" column="1">
-            <widget class="QComboBox" name="comboDimensionReduction"/>
-           </item>
-           <item row="0" column="2">
-            <widget class="QComboBox" name="comboClassifier"/>
-           </item>
-           <item row="1" column="0">
-            <widget class="QComboBox" name="comboFeatureSelector"/>
+           <item row="1" column="2">
+            <widget class="QSpinBox" name="spinBoxFeatureNumber"/>
            </item>
            <item row="1" column="1">
-            <widget class="QSpinBox" name="spinBoxFeatureNumber"/>
+            <widget class="QComboBox" name="comboFeatureSelector"/>
+           </item>
+           <item row="1" column="0">
+            <widget class="QComboBox" name="comboClassifier"/>
+           </item>
+           <item row="0" column="2">
+            <widget class="QComboBox" name="comboDimensionReduction"/>
+           </item>
+           <item row="0" column="1">
+            <widget class="QComboBox" name="comboNormalizer"/>
+           </item>
+           <item row="0" column="0">
+            <widget class="QComboBox" name="comboShowType"/>
            </item>
           </layout>
          </item>
@@ -265,13 +268,6 @@
            <item row="0" column="5" colspan="2">
             <widget class="QComboBox" name="comboPlotX"/>
            </item>
-           <item row="0" column="7" colspan="2">
-            <widget class="QCheckBox" name="checkPlotMaximum">
-             <property name="text">
-              <string>Maximum</string>
-             </property>
-            </widget>
-           </item>
            <item row="1" column="0" colspan="2">
             <widget class="QComboBox" name="comboPlotNormalizer"/>
            </item>
@@ -311,15 +307,15 @@
           </widget>
          </item>
          <item>
-          <widget class="QCheckBox" name="checkContributionShow">
-           <property name="text">
-            <string>Show</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <layout class="QGridLayout" name="gridLayout_3">
-           <item row="1" column="0">
+          <layout class="QHBoxLayout" name="horizontalLayout_5">
+           <item>
+            <widget class="QCheckBox" name="checkContributionShow">
+             <property name="text">
+              <string>Show</string>
+             </property>
+            </widget>
+           </item>
+           <item>
             <widget class="QRadioButton" name="radioContributionFeatureSelector">
              <property name="text">
               <string>Feature Selector</string>
@@ -329,32 +325,35 @@
              </property>
             </widget>
            </item>
-           <item row="1" column="1">
-            <widget class="QComboBox" name="comboContributionFeatureSelector"/>
-           </item>
-           <item row="2" column="0">
+           <item>
             <widget class="QRadioButton" name="radioContributionClassifier">
              <property name="text">
               <string>Classifier</string>
              </property>
             </widget>
            </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QGridLayout" name="gridLayout_3">
+           <item row="1" column="1">
+            <widget class="QComboBox" name="comboContributionFeatureSelector"/>
+           </item>
            <item row="2" column="1">
             <widget class="QComboBox" name="comboContributionClassifier"/>
            </item>
            <item row="1" column="2">
-            <widget class="QSpinBox" name="spinFeatureSelectorFeatureNumber">
+            <widget class="QSpinBox" name="spinContributeFeatureNumber">
              <property name="minimum">
               <number>1</number>
              </property>
             </widget>
            </item>
-           <item row="2" column="2">
-            <widget class="QSpinBox" name="spinClassifierFeatureNumber">
-             <property name="minimum">
-              <number>1</number>
-             </property>
-            </widget>
+           <item row="1" column="0">
+            <widget class="QComboBox" name="comboContributionNormalization"/>
+           </item>
+           <item row="2" column="0">
+            <widget class="QComboBox" name="comboContributionDimension"/>
            </item>
           </layout>
          </item>

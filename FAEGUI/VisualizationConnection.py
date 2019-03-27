@@ -1,6 +1,7 @@
 from copy import deepcopy
 
 from PyQt5.QtWidgets import *
+from PyQt5 import QtCore, QtGui
 from GUI.Visualization import Ui_Visualization
 
 from FAE.FeatureAnalysis.Classifier import *
@@ -31,8 +32,12 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.__contribution = self.canvasFeature.getFigure().add_subplot(111)
 
         # Update Sheet
+        self.tableClinicalStatistic.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.tableClinicalStatistic.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.comboSheet.currentIndexChanged.connect(self.UpdateSheet)
         self.checkMaxFeatureNumber.stateChanged.connect(self.UpdateSheet)
+        # self.tableClinicalStatistic.doubleClicked.connect(self.ShowOneResult)
+        self.tableClinicalStatistic.itemSelectionChanged.connect(self.ShowOneResult)
 
         # Update ROC canvas
         self.comboNormalizer.currentIndexChanged.connect(self.UpdateROC)
@@ -48,7 +53,6 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         # Update Plot canvas
         self.comboPlotX.currentIndexChanged.connect(self.UpdatePlot)
         self.comboPlotY.currentIndexChanged.connect(self.UpdatePlot)
-        self.checkPlotMaximum.stateChanged.connect(self.UpdatePlot)
         self.comboPlotNormalizer.currentIndexChanged.connect(self.UpdatePlot)
         self.comboPlotDimensionReduction.currentIndexChanged.connect(self.UpdatePlot)
         self.comboPlotFeatureSelector.currentIndexChanged.connect(self.UpdatePlot)
@@ -64,10 +68,11 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.checkContributionShow.stateChanged.connect(self.UpdateContribution)
         self.radioContributionFeatureSelector.toggled.connect(self.UpdateContribution)
         self.radioContributionClassifier.toggled.connect(self.UpdateContribution)
+        self.comboContributionNormalization.currentIndexChanged.connect(self.UpdateContribution)
+        self.comboContributionDimension.currentIndexChanged.connect(self.UpdateContribution)
         self.comboContributionFeatureSelector.currentIndexChanged.connect(self.UpdateContribution)
         self.comboContributionClassifier.currentIndexChanged.connect(self.UpdateContribution)
-        self.spinFeatureSelectorFeatureNumber.valueChanged.connect(self.UpdateContribution)
-        self.spinClassifierFeatureNumber.valueChanged.connect(self.UpdateContribution)
+        self.spinContributeFeatureNumber.valueChanged.connect(self.UpdateContribution)
 
     def LoadAll(self):
         dlg = QFileDialog()
@@ -113,7 +118,6 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.checkPlotCVValidation.setChecked(False)
         self.checkPlotTrain.setChecked(False)
         self.checkPlotTest.setChecked(False)
-        self.checkPlotMaximum.setChecked(False)
         self.checkContributionShow.setChecked(False)
         self.radioContributionFeatureSelector.setChecked(True)
         self.radioContributionFeatureSelector.setChecked(False)
@@ -144,14 +148,15 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.comboPlotX.clear()
         self.comboPlotY.clear()
 
+        self.comboContributionNormalization.clear()
+        self.comboContributionDimension.clear()
         self.comboContributionClassifier.clear()
         self.comboContributionFeatureSelector.clear()
 
         self.spinBoxFeatureNumber.setValue(0)
         self.spinPlotFeatureNumber.setValue(0)
         self.spinPlotFeatureNumber.setEnabled(False)
-        self.spinFeatureSelectorFeatureNumber.setValue(1)
-        self.spinClassifierFeatureNumber.setValue(1)
+        self.spinContributeFeatureNumber.setValue(1)
 
         self.tableClinicalStatistic.clear()
 
@@ -217,15 +222,18 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.spinPlotFeatureNumber.setMaximum(int(self._fae.GetFeatureNumberList()[-1]))
 
         # Update Contribution canvas
-        # self.spinFeatureSelectorFeatureNumber.setMaximum(int(self._fae.GetFeatureNumberList()[-1]))
-        self.spinClassifierFeatureNumber.setMinimum(int(self._fae.GetFeatureNumberList()[0]))
-        self.spinClassifierFeatureNumber.setMaximum(int(self._fae.GetFeatureNumberList()[-1]))
+        for index in self._fae.GetNormalizerList():
+            self.comboContributionNormalization.addItem(index.GetName())
+        for index in self._fae.GetDimensionReductionList():
+            self.comboContributionDimension.addItem(index.GetName())
         for selector in self._fae.GetFeatureSelectorList():
             self.comboContributionFeatureSelector.addItem(selector.GetName())
         for classifier in self._fae.GetClassifierList():
             specific_name = classifier.GetName() + '_coef.csv'
             if self._SearchSpecificFile(int(self._fae.GetFeatureNumberList()[0]), specific_name):
                 self.comboContributionClassifier.addItem(classifier.GetName())
+        self.spinContributeFeatureNumber.setMinimum(int(self._fae.GetFeatureNumberList()[0]))
+        self.spinContributeFeatureNumber.setMaximum(int(self._fae.GetFeatureNumberList()[-1]))
 
     def UpdateROC(self):
         if (self.comboNormalizer.count() == 0) or \
@@ -277,39 +285,33 @@ class VisualizationConnection(QWidget, Ui_Visualization):
 
     def _UpdatePlotButtons(self, selected_index):
         index = [0, 0, 0, 0, 0]
-        if self.checkPlotMaximum.isChecked():
-            self.comboPlotNormalizer.setEnabled(False)
-            self.comboPlotDimensionReduction.setEnabled(False)
-            self.comboPlotFeatureSelector.setEnabled(False)
-            self.comboPlotClassifier.setEnabled(False)
-            self.spinPlotFeatureNumber.setEnabled(False)
-        else:
-            self.comboPlotNormalizer.setEnabled(True)
-            self.comboPlotDimensionReduction.setEnabled(True)
-            self.comboPlotFeatureSelector.setEnabled(True)
-            self.comboPlotClassifier.setEnabled(True)
-            self.spinPlotFeatureNumber.setEnabled(True)
-            index[0] = self.comboPlotNormalizer.currentIndex()
-            index[1] = self.comboPlotDimensionReduction.currentIndex()
-            index[2] = self.comboPlotFeatureSelector.currentIndex()
-            index[4] = self.comboPlotClassifier.currentIndex()
-            index[3] = self.spinPlotFeatureNumber.value() - int(self._fae.GetFeatureNumberList()[0])
 
-            if selected_index == 0:
-                self.comboPlotNormalizer.setEnabled(False)
-                index[0] = [temp for temp in range(len(self._fae.GetNormalizerList()))]
-            elif selected_index == 1:
-                self.comboPlotDimensionReduction.setEnabled(False)
-                index[1] = [temp for temp in range(len(self._fae.GetDimensionReductionList()))]
-            elif selected_index == 2:
-                self.comboPlotFeatureSelector.setEnabled(False)
-                index[2] = [temp for temp in range(len(self._fae.GetFeatureSelectorList()))]
-            elif selected_index == 4:
-                self.comboPlotClassifier.setEnabled(False)
-                index[4] = [temp for temp in range(len(self._fae.GetClassifierList()))]
-            elif selected_index == 3:
-                self.spinPlotFeatureNumber.setEnabled(False)
-                index[3] = [temp for temp in range(len(self._fae.GetFeatureNumberList()))]
+        self.comboPlotNormalizer.setEnabled(True)
+        self.comboPlotDimensionReduction.setEnabled(True)
+        self.comboPlotFeatureSelector.setEnabled(True)
+        self.comboPlotClassifier.setEnabled(True)
+        self.spinPlotFeatureNumber.setEnabled(True)
+        index[0] = self.comboPlotNormalizer.currentIndex()
+        index[1] = self.comboPlotDimensionReduction.currentIndex()
+        index[2] = self.comboPlotFeatureSelector.currentIndex()
+        index[4] = self.comboPlotClassifier.currentIndex()
+        index[3] = self.spinPlotFeatureNumber.value() - int(self._fae.GetFeatureNumberList()[0])
+
+        if selected_index == 0:
+            self.comboPlotNormalizer.setEnabled(False)
+            index[0] = [temp for temp in range(len(self._fae.GetNormalizerList()))]
+        elif selected_index == 1:
+            self.comboPlotDimensionReduction.setEnabled(False)
+            index[1] = [temp for temp in range(len(self._fae.GetDimensionReductionList()))]
+        elif selected_index == 2:
+            self.comboPlotFeatureSelector.setEnabled(False)
+            index[2] = [temp for temp in range(len(self._fae.GetFeatureSelectorList()))]
+        elif selected_index == 4:
+            self.comboPlotClassifier.setEnabled(False)
+            index[4] = [temp for temp in range(len(self._fae.GetClassifierList()))]
+        elif selected_index == 3:
+            self.spinPlotFeatureNumber.setEnabled(False)
+            index[3] = [temp for temp in range(len(self._fae.GetFeatureNumberList()))]
 
         return index
 
@@ -355,39 +357,27 @@ class VisualizationConnection(QWidget, Ui_Visualization):
             if self.checkPlotCVTrain.isChecked():
                 temp = deepcopy(self._fae.GetAUCMetric()['train'])
                 auc_std = deepcopy(self._fae.GetAUCstdMetric()['train'])
-                if self.checkPlotMaximum.isChecked():
-                    show_data.append(np.max(temp, axis=max_axis).tolist())
-                else:
-                    show_data.append(temp[tuple(index)].tolist())
-                    show_data_std.append(auc_std[tuple(index)].tolist())
+                show_data.append(temp[tuple(index)].tolist())
+                show_data_std.append(auc_std[tuple(index)].tolist())
                 name_list.append('CV Train')
             if self.checkPlotCVValidation.isChecked():
                 temp = deepcopy(self._fae.GetAUCMetric()['val'])
                 auc_std = deepcopy(self._fae.GetAUCstdMetric()['val'])
-                if self.checkPlotMaximum.isChecked():
-                    show_data.append(np.max(temp, axis=max_axis).tolist())
-                else:
-                    show_data.append(temp[tuple(index)].tolist())
-                    show_data_std.append(auc_std[tuple(index)].tolist())
+                show_data.append(temp[tuple(index)].tolist())
+                show_data_std.append(auc_std[tuple(index)].tolist())
                 name_list.append('CV Validation')
             if self.checkPlotTrain.isChecked():
                 temp = deepcopy(self._fae.GetAUCMetric()['all_train'])
                 auc_std = deepcopy(self._fae.GetAUCstdMetric()['all_train'])
-                if self.checkPlotMaximum.isChecked():
-                    show_data.append(np.max(temp, axis=max_axis).tolist())
-                else:
-                    show_data.append(temp[tuple(index)].tolist())
-                    show_data_std.append(auc_std[tuple(index)].tolist())
+                show_data.append(temp[tuple(index)].tolist())
+                show_data_std.append(auc_std[tuple(index)].tolist())
                 name_list.append('Train')
             if self.checkPlotTest.isChecked():
                 temp = deepcopy(self._fae.GetAUCMetric()['test'])
                 auc_std = deepcopy(self._fae.GetAUCstdMetric()['test'])
                 if temp.size > 0:
-                    if self.checkPlotMaximum.isChecked():
-                        show_data.append(np.max(temp, axis=max_axis).tolist())
-                    else:
-                        show_data.append(temp[tuple(index)].tolist())
-                        show_data_std.append(auc_std[tuple(index)].tolist())
+                    show_data.append(temp[tuple(index)].tolist())
+                    show_data_std.append(auc_std[tuple(index)].tolist())
                     name_list.append('Test')
 
         if len(show_data) > 0:
@@ -404,13 +394,26 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         if not self.checkContributionShow.isChecked():
             return
 
+        one_result_folder_name = self.comboContributionNormalization.currentText() + '_' + \
+                            self.comboContributionDimension.currentText() + '_' + \
+                            self.comboContributionFeatureSelector.currentText() + '_' + \
+                            str(self.spinContributeFeatureNumber.value()) + '_' + \
+                            self.comboContributionClassifier.currentText()
+        one_result_folder = os.path.join(self._root_folder, one_result_folder_name)
+        # This is compatible witht the previous version
+        if not os.path.exists(one_result_folder):
+            one_result_folder_name = self.comboContributionNormalization.currentText() + '_Cos_' + \
+                                     self.comboContributionFeatureSelector.currentText() + '_' + \
+                                     str(self.spinContributeFeatureNumber.value()) + '_' + \
+                                     self.comboContributionClassifier.currentText()
+            one_result_folder = os.path.join(self._root_folder, one_result_folder_name)
+
         if self.radioContributionFeatureSelector.isChecked():
             file_name = self.comboContributionFeatureSelector.currentText() + '_sort.csv'
-            file_path = self._SearchSpecificFile(int(self._fae.GetFeatureNumberList()[0]), file_name)
+            file_path = os.path.join(one_result_folder, file_name)
+
             if file_path:
                 df = pd.read_csv(file_path, index_col=0)
-
-                feature_name = list(df.index)
                 value = list(np.abs(df.iloc[:, 0]))
 
                 #add positive and negatiove info for coef
@@ -422,13 +425,12 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                     else:
                         processed_feature_name[index] = processed_feature_name[index] + 'N'
 
-
-                GeneralFeatureSort(processed_feature_name, value, max_num=self.spinFeatureSelectorFeatureNumber.value(),
+                GeneralFeatureSort(processed_feature_name, value, max_num=self.spinContributeFeatureNumber.value(),
                                    is_show=False, fig=self.canvasFeature.getFigure())
+
         elif self.radioContributionClassifier.isChecked():
             specific_name = self.comboContributionClassifier.currentText() + '_coef.csv'
-            feature_selector_name = self.comboContributionFeatureSelector.currentText()
-            file_path = self._SearchSpecificFile(self.spinClassifierFeatureNumber.value(), specific_name, feature_selector_name)
+            file_path = os.path.join(one_result_folder, specific_name)
             if file_path:
                 df = pd.read_csv(file_path, index_col=0)
                 feature_name = list(df.index)
@@ -480,10 +482,6 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.textEditDescription.setPlainText(text)
 
     def UpdateSheet(self):
-        data = np.array([])
-        df = pd.DataFrame()
-        data = self._fae.GetAUCMetric()
-        std_data = self._fae.GetAUCstdMetric()
         self.tableClinicalStatistic.clear()
         self.tableClinicalStatistic.setSortingEnabled(False)
         if self.comboSheet.currentText() == 'Train':
@@ -495,17 +493,12 @@ class VisualizationConnection(QWidget, Ui_Visualization):
             std_data = self._fae.GetAUCstdMetric()['val']
             df = self.sheet_dict['val']
         elif self.comboSheet.currentText() == 'Test':
-            data = self._fae.GetAUCMetric()['test']
-            std_data = self._fae.GetAUCstdMetric()['test']
-            df = self.sheet_dict['test']
-        elif self.comboSheet.currentText() == 'Test On Val':
+            # Sort according to the AUC of validation data set
             data = self._fae.GetAUCMetric()['val']
             std_data = self._fae.GetAUCstdMetric()['val']
             df = self.sheet_dict['test']
-
         else:
             return
-
 
         if self.checkMaxFeatureNumber.isChecked():
             name_list = []
@@ -529,11 +522,8 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                                     classifier.GetName()
                                     name_list.append(name)
                                     break
-
-
             df = df.loc[name_list]
         df.sort_index(inplace=True)
-
 
         self.tableClinicalStatistic.setRowCount(df.shape[0])
         self.tableClinicalStatistic.setColumnCount(df.shape[1]+1)
@@ -561,7 +551,6 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         if os.path.exists(os.path.join(self._root_folder, 'test_result.csv')):
             self.sheet_dict['test'] = pd.read_csv(os.path.join(self._root_folder, 'test_result.csv'), index_col=0)
             self.comboSheet.addItem('Test')
-            self.comboSheet.addItem('Test On Val')
 
         self.UpdateSheet()
 
@@ -579,3 +568,41 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                         return os.path.join(rt, file_name)
 
         return ''
+
+    def ShowOneResult(self):
+        try:
+            for index in self.tableClinicalStatistic.selectedIndexes():
+                row = index.row()
+                one_item = self.tableClinicalStatistic.item(row, 0)
+                text = str(one_item.text())
+                current_normalizer, current_dimension_reducer, current_feature_selector, current_feature_number, current_classifier = \
+                    text.split('_')
+
+            self.comboNormalizer.setCurrentText(current_normalizer)
+            self.comboDimensionReduction.setCurrentText(current_dimension_reducer)
+            self.comboFeatureSelector.setCurrentText(current_feature_selector)
+            self.comboClassifier.setCurrentText(current_classifier)
+            self.spinBoxFeatureNumber.setValue(int(current_feature_number))
+
+            if not (self.checkROCTrain.isChecked() or self.checkROCCVTrain.isChecked() or
+                    self.checkROCCVValidation.isChecked() or self.checkROCTrain.isChecked()):
+                self.checkROCCVTrain.setCheckState(True)
+
+            self.UpdateROC()
+
+        except Exception as e:
+            print(e)
+            return
+
+        #
+        # for item in self.tableClinicalStatistic.selectedItems():
+        #     text = str(item.text())
+        #     try:
+        #         current_normalizer, current_dimension_reducer, current_feature_selector, current_feature_number, current_classifier = \
+        #         text.split('_')
+        #     except:
+        #         return None
+        #     break
+
+
+
