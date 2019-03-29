@@ -204,7 +204,7 @@ class CrossValidation5Folder(CrossValidation):
                    "with 5-folder on the training data set. The hyper-parameters were set according to the model performance " \
                    "on the validation data set. "
         else:
-            text = "To prove the performance of the model, we applied corss validation with 5-folder on the data set. "
+            text = "To prove the performance of the model, we applied cross validation with 5-folder on the data set. "
 
         return text
 
