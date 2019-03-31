@@ -8,7 +8,7 @@ import SimpleITK as sitk
 import glob
 
 class RadiomicsFeatureExtractor:
-    def __init__(self, radiomics_parameter_file, has_label=True, ignore_tolerence=False):
+    def __init__(self, radiomics_parameter_file, has_label=True, ignore_tolerence=False, ignore_diagnostic=True):
         self.feature_values = []
         self.case_list = []
         self.feature_name_list = []
@@ -18,6 +18,7 @@ class RadiomicsFeatureExtractor:
 
         self.__has_label = has_label
         self.__is_ignore_tolerence = ignore_tolerence
+        self.__is_ignore_diagnostic = ignore_diagnostic
 
     def __GetFeatureValuesEachModality(self, data_path, roi_path, key_name):
         if self.__is_ignore_tolerence:
@@ -29,9 +30,12 @@ class RadiomicsFeatureExtractor:
             result = self.extractor.execute(data_path, roi_path)
 
         feature_names = []
-        feature_values = list(result.values())
-        for feature_name in list(result.keys()):
+        feature_values = []
+        for feature_name, feature_value in zip(list(result.keys()), list(result.values())):
+            if self.__is_ignore_diagnostic and 'diagnostics' in feature_name:
+                continue
             feature_names.append(key_name + '_' + feature_name)
+            feature_values.append(feature_value)
         return feature_names, feature_values
 
     def __GetFeatureValues(self, case_folder, key_name_list, show_key_name_list, roi_key):
