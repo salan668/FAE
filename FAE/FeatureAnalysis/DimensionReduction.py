@@ -95,7 +95,7 @@ class DimensionReductionByPCA(DimensionReduction):
         return new_data_container
 
 class DimensionReductionByPCC(DimensionReduction):
-    def __init__(self, threshold=0.86):
+    def __init__(self, threshold=0.999):
         super(DimensionReductionByPCC, self).__init__()
         self.__threshold = threshold
         self.__selected_index = []

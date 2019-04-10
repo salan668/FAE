@@ -113,7 +113,7 @@ class NormalizerZeroCenter(Normalizer):
 
     def GetDescription(self):
         text = "We applied the normalization on the feature matrix. For each feature vector, we calculated the mean " \
-               "value and the standard deviation. Each feature vector was subtracted by the mean value and the divided " \
+               "value and the standard deviation. Each feature vector was subtracted by the mean value and was divided " \
                "by the standard deviation. After normalization process, each vector has zero center and unit standard " \
                "deviation. "
         return text
@@ -144,7 +144,7 @@ class NormalizerZeroCenterAndUnit(Normalizer):
 
     def GetDescription(self):
         text = "We applied the normalization on the feature matrix.  Each feature vector was subtracted by the mean " \
-               "value of the vector and the divided by the length of it. "
+               "value of the vector and was divided by the length of it. "
         return text
 
 if __name__ == '__main__':

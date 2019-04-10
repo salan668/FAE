@@ -81,5 +81,6 @@ This project is licensed under the GPL 3.0 License - see the [LICENSE.md](https:
     - Yi-lai Pei
     - Jing Zhang
     - [**jmtaysom**](https://github.com/jmtaysom)
+	- Zhiyong Zhao
 - Demo data support. 
     - Yu-dong Zhang, Xu Yan. 
