@@ -58,9 +58,9 @@ def FeatureSort(feature_name, group=np.array(()), group_name=[], value=[], store
     if store_path:
         fig.set_tight_layout(True)
         if store_path[-3:] == 'jpg':
-            plt.savefig(store_path, dpi=300, format='jpeg')
+            fig.savefig(store_path, dpi=300, format='jpeg')
         elif store_path[-3:] == 'eps':
-            plt.savefig(store_path, dpi=1200, format='eps')
+            fig.savefig(store_path, dpi=1200, format='eps')
 
     if is_show:
         fig.show()
@@ -161,12 +161,19 @@ def GeneralFeatureSort(feature_name, value=[], store_path='', is_sort=True, max_
         feature_name = feature_name[:max_num]
 
     fig.clear()
-    ax = fig.add_subplot(111)
+    # margin = 0.2
 
+    left, bottom, width, height = 0.7, 0.1, 0.2, 0.8
+
+    ax = fig.add_axes([left, bottom, width, height])
+    # ax = fig.add_subplot(111)
     ax.barh(range(len(feature_name)), value, color=color[0])
     ax.set_yticks(range(len(feature_name)))
     ax.set_yticklabels(feature_name)
+
     ax.set_xticks([])
+
+
 
     if store_path:
         fig.set_tight_layout(True)
@@ -182,14 +189,22 @@ def GeneralFeatureSort(feature_name, value=[], store_path='', is_sort=True, max_
 
 if __name__ == '__main__':
     # feature_name = ['DE', 'SAE', 'SZNUM', 'JE', 'Id']
+    feature_name = ['10Per', 'Autoc', 'IR', 'GLV']
+    value = [72.9, 45.4, 45.2, 41]
+    group = np.array([1, 3, 2, 0])
+    group_name = ['ADC--firstorder', 'DWI--firstorder', 'DWI--glcm', 'DWI--glszm']
     # group = [0, 1, 1, 0, 0]
     # group_name = ['GLCM', 'GLSZM']
     # value = 0.1, 0.5, 0.9, 0.2, 0.1
-    # FeatureSort(feature_name, group, group_name, value)
+    FeatureSort(feature_name, group, group_name, value, is_show=True)
 
-    import pandas as pd
-    df = pd.read_csv(r'..\..\Example\pipeline\Norm0CenterUnit_Cos_ANOVA_5_LDA\anova_sort.csv', index_col=0)
-    feature_name = list(df.index)
-    value = list(df['F'])
-    new_feature_name = [ShortFeatureFullName(index) for index in feature_name]
-    GeneralFeatureSort(new_feature_name, value, max_num=10, is_show=True)
+    # import pandas as pd
+    # df = pd.read_csv(r'C:\Users\yangs\Desktop\anova_sort.csv', index_col=0)
+    # feature_name = list(df.index)
+    # value = list(df['F'])
+    # new_feature_name = [ShortFeatureFullName(index) for index in feature_name]
+    # GeneralFeatureSort(new_feature_name, value, max_num=4, is_show=True, store_path=r'D:\MyDocs\Document\研究生\毕业\毕业论文\图\组学\ANOVA_sort.jpg')
+    # SortRadiomicsFeature(new_feature_name, value, is_show=True)
+
+
+
