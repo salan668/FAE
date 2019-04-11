@@ -42,15 +42,15 @@ def DrawCurve(x, y_list, std_list=[], xlabel='', ylabel='', title='', name_list=
             line = np.ones((1, len(x))) * sub_one_se
             if name_list[index] == 'CV Validation':
                 axes.errorbar(x, sub_y_list, yerr=sub_std_list, fmt='-o',
-                          color=color_list[index], elinewidth=2, capsize=4, alpha=0.7, marker='.')
+                          color=color_list[index], elinewidth=2, capsize=4, alpha=0.7, marker='.', label='CV Validation')
             else:
-                axes.plot(x, y_list[index], color=color_list[index])
+                axes.plot(x, y_list[index], color=color_list[index], label=name_list[index])
 
         axes.set_xlabel(xlabel)
         axes.set_ylabel(ylabel)
         axes.set_title(title)
         if name_list != []:
-            axes.legend(name_list, loc=4)
+            axes.legend(loc=4)
         for index in range(len(y_list)):
             if name_list[index] == 'CV Validation':
                 sub_y_list = y_list[index]

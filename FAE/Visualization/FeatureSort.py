@@ -163,7 +163,7 @@ def GeneralFeatureSort(feature_name, value=[], store_path='', is_sort=True, max_
     fig.clear()
     # margin = 0.2
 
-    left, bottom, width, height = 0.7, 0.1, 0.2, 0.8
+    left, bottom, width, height = 0.75, 0.1, 0.2, 0.8
 
     ax = fig.add_axes([left, bottom, width, height])
     # ax = fig.add_subplot(111)

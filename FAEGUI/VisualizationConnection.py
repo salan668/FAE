@@ -412,7 +412,14 @@ class VisualizationConnection(QWidget, Ui_Visualization):
             file_name = self.comboContributionFeatureSelector.currentText() + '_sort.csv'
             file_path = os.path.join(one_result_folder, file_name)
 
+            if not os.path.exists(file_path):
+                file_name = self.comboContributionFeatureSelector.currentText().lower() + '_sort.csv'
+                file_path = os.path.join(one_result_folder, file_name)
+
+
+
             if file_path:
+
                 df = pd.read_csv(file_path, index_col=0)
                 value = list(np.abs(df.iloc[:, 0]))
 
@@ -431,6 +438,11 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         elif self.radioContributionClassifier.isChecked():
             specific_name = self.comboContributionClassifier.currentText() + '_coef.csv'
             file_path = os.path.join(one_result_folder, specific_name)
+
+            if not os.path.exists(file_path):
+                specific_name = self.comboContributionClassifier.currentText().lower() + '_coef.csv'
+                file_path = os.path.join(one_result_folder, specific_name)
+
             if file_path:
                 df = pd.read_csv(file_path, index_col=0)
                 feature_name = list(df.index)
