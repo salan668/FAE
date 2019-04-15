@@ -412,7 +412,14 @@ class VisualizationConnection(QWidget, Ui_Visualization):
             file_name = self.comboContributionFeatureSelector.currentText() + '_sort.csv'
             file_path = os.path.join(one_result_folder, file_name)
 
+            if not os.path.exists(file_path):
+                file_name = self.comboContributionFeatureSelector.currentText().lower() + '_sort.csv'
+                file_path = os.path.join(one_result_folder, file_name)
+
+
+
             if file_path:
+
                 df = pd.read_csv(file_path, index_col=0)
                 value = list(np.abs(df.iloc[:, 0]))
 
@@ -421,9 +428,9 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                 original_value = list(df.iloc[:, 0])
                 for index in range(len(original_value)):
                     if original_value[index] > 0:
-                        processed_feature_name[index] = processed_feature_name[index] + 'P'
+                        processed_feature_name[index] = processed_feature_name[index] + ' P'
                     else:
-                        processed_feature_name[index] = processed_feature_name[index] + 'N'
+                        processed_feature_name[index] = processed_feature_name[index] + ' N'
 
                 GeneralFeatureSort(processed_feature_name, value, max_num=self.spinContributeFeatureNumber.value(),
                                    is_show=False, fig=self.canvasFeature.getFigure())
@@ -431,6 +438,11 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         elif self.radioContributionClassifier.isChecked():
             specific_name = self.comboContributionClassifier.currentText() + '_coef.csv'
             file_path = os.path.join(one_result_folder, specific_name)
+
+            if not os.path.exists(file_path):
+                specific_name = self.comboContributionClassifier.currentText().lower() + '_coef.csv'
+                file_path = os.path.join(one_result_folder, specific_name)
+
             if file_path:
                 df = pd.read_csv(file_path, index_col=0)
                 feature_name = list(df.index)
@@ -479,7 +491,10 @@ class VisualizationConnection(QWidget, Ui_Visualization):
             text += (index.GetName() + '\n')
         text += '\n'
 
+        text += 'Cross Validation: ' + self._fae.GetCrossValidation().GetName()
+
         self.textEditDescription.setPlainText(text)
+
 
     def UpdateSheet(self):
         self.tableClinicalStatistic.clear()

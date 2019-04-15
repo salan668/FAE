@@ -20,6 +20,7 @@ class RadiomicsFeatureExtractor:
         self.__is_ignore_tolerence = ignore_tolerence
         self.__is_ignore_diagnostic = ignore_diagnostic
 
+
     def __GetFeatureValuesEachModality(self, data_path, roi_path, key_name):
         if self.__is_ignore_tolerence:
             image = sitk.ReadImage(data_path)

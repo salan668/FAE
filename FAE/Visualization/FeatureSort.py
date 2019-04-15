@@ -161,12 +161,19 @@ def GeneralFeatureSort(feature_name, value=[], store_path='', is_sort=True, max_
         feature_name = feature_name[:max_num]
 
     fig.clear()
-    ax = fig.add_subplot(111)
+    # margin = 0.2
 
+    left, bottom, width, height = 0.75, 0.1, 0.2, 0.8
+
+    ax = fig.add_axes([left, bottom, width, height])
+    # ax = fig.add_subplot(111)
     ax.barh(range(len(feature_name)), value, color=color[0])
     ax.set_yticks(range(len(feature_name)))
     ax.set_yticklabels(feature_name)
+
     ax.set_xticks([])
+
+
 
     if store_path:
         fig.set_tight_layout(True)

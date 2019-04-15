@@ -370,31 +370,31 @@ class CrossValidation10Folder(CrossValidation):
                    "with 10-folder on the training data set. The hyper-parameters were set according to the model performance " \
                    "on the validation data set. "
         else:
-            text = "To prove the performance of the model, we applied corss validation with 10-folder on the data set. "
+            text = "To prove the performance of the model, we applied cross validation with 5-folder on the data set. "
 
         return text
 
-    def Run(self, data_container, test_data_container=DataContainer(), store_folder='', relative_config_path=r'FAE\HyperParameterConfig'):
+    def Run(self, data_container, test_data_container=DataContainer(), store_folder='', is_hyper_parameter=False):
         train_pred_list, train_label_list, val_pred_list, val_label_list = [], [], [], []
 
         data = data_container.GetArray()
         label = data_container.GetLabel()
         case_name = data_container.GetCaseName()
-        group_index = 0
-
-        train_cv_info = [['CaseName', 'Group', 'Pred', 'Label']]
-        val_cv_info = [['CaseName', 'Group', 'Pred', 'Label']]
 
         param_metric_train_auc = []
         param_metric_val_auc = []
         param_all = []
 
-        if len(self.classifier_parameter_list) == 1:
-            self.AutoLoadClassifierParameterList(relative_path=relative_config_path)
+        if len(self.classifier_parameter_list) == 1 and is_hyper_parameter:
+            self.AutoLoadClassifierParameterList(relative_path=r'HyperParameters\Classifier')
 
         for parameter in self.classifier_parameter_list:
             self.SetDefaultClassifier()
             self.classifier.SetModelParameter(parameter)
+
+            train_cv_info = [['CaseName', 'Group', 'Pred', 'Label']]
+            val_cv_info = [['CaseName', 'Group', 'Pred', 'Label']]
+            group_index = 0
 
             for train_index, val_index in self.__cv.split(data, label):
                 group_index += 1
@@ -433,11 +433,11 @@ class CrossValidation10Folder(CrossValidation):
             param_all.append({'total_train_label': total_train_label,
                               'total_train_pred': total_train_pred,
                               'train_metric': train_cv_metric,
-                              'train_cv_info': train_cv_info,
+                              'train_cv_info': deepcopy(train_cv_info),
                               'total_val_label': total_val_label,
                               'total_val_pred': total_val_pred,
                               'val_metric': val_cv_metric,
-                              'val_cv_info': val_cv_info
+                              'val_cv_info': deepcopy(val_cv_info)
                               })
 
         # find the best parameter
@@ -518,6 +518,7 @@ class CrossValidation10Folder(CrossValidation):
             self.SaveResult(info, store_folder)
 
         return train_cv_metric, val_cv_metric, test_metric, all_train_metric
+
 
 if __name__ == '__main__':
     from FAE.DataContainer.DataContainer import DataContainer
