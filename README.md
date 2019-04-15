@@ -71,16 +71,16 @@ TODO
 
 ## Author
 - [**Yang Song**](https://github.com/salan668)
+- [**Jing Zhang**](https://github.com/zhangjingcode)
+- [**Guang Yang**](https://github.com/yg88)
 
 ## License 
 This project is licensed under the GPL 3.0 License - see the [LICENSE.md](https://github.com/salan668/FAE/blob/master/LICENSE) file for details
 
 ## Acknowledge
 - Contributor:
-    - [**Guang Yang**](https://github.com/yg88)
     - Yi-lai Pei
-    - Jing Zhang
     - [**jmtaysom**](https://github.com/jmtaysom)
-	- Zhiyong Zhao
+    - Zhiyong Zhao
 - Demo data support. 
     - Yu-dong Zhang, Xu Yan. 
