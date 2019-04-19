@@ -207,7 +207,7 @@ class FeatureSelectByANOVA(FeatureSelectByAnalysis):
         return 'ANOVA'
 
     def GetDescription(self):
-        text = "Before build the model, we used analysis of variance (ANOVA) to select features. ANOVA was a commen method " \
+        text = "Before build the model, we used analysis of variance (ANOVA) to select features. ANOVA was a common method " \
                "to explore the significant features corresponding to the labels. F-value was calculated to evaluate the relationship " \
                "between features and the label. We sorted features according to the corresponding F-value and selected sepcific " \
                "number of features to build the model. "

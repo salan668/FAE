@@ -24,10 +24,9 @@ class Description:
             np.where(training_data_container.GetLabel() == np.max(training_data_container.GetLabel()))[0])
         negative_number = len(training_data_container.GetLabel()) - positive_number
 
-        data_description_text += "We selected {:d} cases as the training data set. {:d} of them were marked as positive and the left {:d} " \
-               "were marked as negative. ".format(len(training_data_container.GetCaseName()), positive_number, negative_number)
+        data_description_text += "We selected {:d} cases as the training data set ({:d}/{:d} = positive/negative)). ".format(len(training_data_container.GetCaseName()), positive_number, negative_number)
         if testing_data_container.IsEmpty():
-            data_description_text += "Since the number of the samples were limited, there were no independent testing data. "
+            data_description_text += "Since the number of the samples were limited, there was no independent testing data. "
         else:
             positive_number = len(
                 np.where(testing_data_container.GetLabel() == np.max(testing_data_container.GetLabel()))[0])
@@ -47,7 +46,7 @@ class Description:
         statistic_description_text = "    The performance of the model was evaluated using receiver operating characteristic " \
                                      "(ROC) curve analysis. The area under the ROC curve (AUC) was calculated for quantification. " \
                                      "The accuracy, sensitivity, specificity, positive predictive value (PPV), and negative " \
-                                     "predictive value (NPV) were also calculated at a cutoff value that maximum the " \
+                                     "predictive value (NPV) were also calculated at a cutoff value that maximized the " \
                                      "value of the Yorden index. We also boosted estimation 1000 times and applied paired " \
                                      "t-test to give the 95% confidence interval. All above processes were implemented with " \
                                      "FeAture Explorer (FAE, v0.2.2, https://github.com/salan668/FAE) on Python (3.5.4, https://www.python.org/). \n"

@@ -128,7 +128,7 @@ class SVM(Classifier):
 
         # Save the coefficients
         try:
-            coef_path = os.path.join(store_path, 'svm_coef.csv')
+            coef_path = os.path.join(store_path, 'SVM_coef.csv')
             df = pd.DataFrame(data=np.transpose(self.GetModel().coef_), index=self._data_container.GetFeatureName(), columns=['Coef'])
             df.to_csv(coef_path)
         except:
@@ -136,7 +136,7 @@ class SVM(Classifier):
 
         #Save the intercept_
         try:
-            intercept_path = os.path.join(store_path, 'svm_intercept.csv')
+            intercept_path = os.path.join(store_path, 'SVM_intercept.csv')
             intercept_df = pd.DataFrame(data=(self.GetModel().intercept_).reshape(1, 1), index=['intercept'], columns=['value'])
             intercept_df.to_csv(intercept_path)
         except:
@@ -170,7 +170,7 @@ class LDA(Classifier):
 
         # Save the coefficients
         try:
-            coef_path = os.path.join(store_path, 'lda_coef.csv')
+            coef_path = os.path.join(store_path, 'LDA_coef.csv')
             df = pd.DataFrame(data=np.transpose(self.GetModel().coef_), index=self._data_container.GetFeatureName(), columns=['Coef'])
             df.to_csv(coef_path)
         except:
@@ -330,14 +330,14 @@ class LR(Classifier):
 
         # Save the coefficients
         try:
-            coef_path = os.path.join(store_path, 'lr_coef.csv')
+            coef_path = os.path.join(store_path, 'LR_coef.csv')
             df = pd.DataFrame(data=np.transpose(self.GetModel().coef_), index=self._data_container.GetFeatureName(), columns=['Coef'])
             df.to_csv(coef_path)
         except:
             print("Not support Coef.")
 
         try:
-            intercept_path = os.path.join(store_path, 'lr_intercept.csv')
+            intercept_path = os.path.join(store_path, 'LR_intercept.csv')
             intercept_df = pd.DataFrame(data=(self.GetModel().intercept_).reshape(1, 1), index=['intercept'], columns=['value'])
             intercept_df.to_csv(intercept_path)
         except:
@@ -375,14 +375,14 @@ class LRLasso(Classifier):
 
         # Save the coefficients
         try:
-            coef_path = os.path.join(store_path, 'lrlasso_coef.csv')
+            coef_path = os.path.join(store_path, 'LRLasso_coef.csv')
             df = pd.DataFrame(data=np.transpose(self.GetModel().coef_), index=self._data_container.GetFeatureName(), columns=['Coef'])
             df.to_csv(coef_path)
         except:
             print("Not support Coef.")
 
         try:
-            intercept_path = os.path.join(store_path, 'lr_intercept.csv')
+            intercept_path = os.path.join(store_path, 'LRLasso_intercept.csv')
             intercept_df = pd.DataFrame(data=(self.GetModel().intercept_).reshape(1, 1), index=['intercept'], columns=['value'])
             intercept_df.to_csv(intercept_path)
         except:
