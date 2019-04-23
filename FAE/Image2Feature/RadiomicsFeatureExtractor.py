@@ -231,3 +231,4 @@ if __name__ == '__main__':
                       key_name_list=['arterial'],
                       roi_key=['arterial', 'label'],
                       store_path=r'C:\Users\yangs\Desktop\LiuWei\artery.csv')
+
