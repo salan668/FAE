@@ -21,9 +21,11 @@ def AUC_Confidence_Interval(y_true, y_pred, CI_index=0.95):
 
     rng = np.random.RandomState(rng_seed)
     for i in range(n_bootstraps):
+        index_list = list(np.arange(0, len(y_pred), 1))
         # bootstrap by sampling with replacement on the prediction indices
-        indices = rng.random_integers(0, len(y_pred) - 1, len(y_pred))
-        if len(np.unique(y_true[indices])) < 2:
+        index_list.pop(int(rng.random_integers(0, len(y_pred) - 1, 1)))
+
+        if len(np.unique(y_true[index_list])) < 2:
             # We need at least one positive and one negative sample for ROC AUC
             # to be defined: reject the sample
             continue
