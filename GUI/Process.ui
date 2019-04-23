@@ -366,6 +366,13 @@
               </property>
              </widget>
             </item>
+            <item>
+             <widget class="QRadioButton" name="radioLOO">
+              <property name="text">
+               <string>LeaveOneOut</string>
+              </property>
+             </widget>
+            </item>
            </layout>
           </item>
          </layout>

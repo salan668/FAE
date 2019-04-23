@@ -41,7 +41,14 @@ class RadiomicsFeatureExtractor:
 
     def __GetFeatureValues(self, case_folder, key_name_list, show_key_name_list, roi_key):
         feature_dict = {}
-        roi_candidate = glob.glob(os.path.join(case_folder, '*{}*'.format(roi_key)))
+
+        if isinstance(roi_key, str):
+            roi_key = [roi_key]
+        roi_key_path = '*'
+        for one_roi_key in roi_key:
+            roi_key_path += '{}*'.format(one_roi_key)
+
+        roi_candidate = glob.glob(os.path.join(case_folder, roi_key_path))
         if len(roi_candidate) != 1:
             self.logger.error('Check the ROI file path of case: ' + case_folder)
             return None
@@ -99,7 +106,14 @@ class RadiomicsFeatureExtractor:
 
     def __InitialFeatureValues(self, case_folder, key_name_list, show_key_name_list, roi_key):
         feature_dict = {}
-        roi_candidate = glob.glob(os.path.join(case_folder, '*{}*'.format(roi_key)))
+
+        if isinstance(roi_key, str):
+            roi_key = [roi_key]
+        roi_key_path = '*'
+        for one_roi_key in roi_key:
+            roi_key_path += '{}*'.format(one_roi_key)
+        roi_candidate = glob.glob(os.path.join(case_folder, roi_key_path))
+
         if len(roi_candidate) != 1:
             self.logger.error('Check the ROI file path of case: ' + case_folder)
             return None
@@ -213,8 +227,8 @@ class RadiomicsFeatureExtractor:
 if __name__ == '__main__':
     extractor = RadiomicsFeatureExtractor(r'OnlyIntensityRadiomicsParams.yaml',
                                           has_label=False)
-    extractor.Execute(r'result',
-                      key_name_list=['K.nii', 'DKI.nii', 'DWI.nii'],
-                      show_key_name_list=['K', 'DKI', 'DWI'],
-                      roi_key='K-label',
-                      store_path=r'temp.csv')
+    extractor.Execute(r'C:\Users\yangs\Desktop\LiuWei',
+                      key_name_list=['arterial'],
+                      roi_key=['arterial', 'label'],
+                      store_path=r'C:\Users\yangs\Desktop\LiuWei\artery.csv')
+
