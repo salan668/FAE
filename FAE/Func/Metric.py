@@ -30,7 +30,7 @@ def AUC_Confidence_Interval(y_true, y_pred, CI_index=0.95):
             # to be defined: reject the sample
             continue
 
-        score = roc_auc_score(y_true[indices], y_pred[indices])
+        score = roc_auc_score(y_true[index_list], y_pred[index_list])
         bootstrapped_scores.append(score)
         # print("Bootstrap #{} ROC area: {:0.3f}".format(i + 1, score))
 

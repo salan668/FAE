@@ -19,6 +19,7 @@ class RadiomicsFeatureExtractor:
         self.__has_label = has_label
         self.__is_ignore_tolerence = ignore_tolerence
         self.__is_ignore_diagnostic = ignore_diagnostic
+        self.error_list = []
 
 
     def __GetFeatureValuesEachModality(self, data_path, roi_path, key_name):
