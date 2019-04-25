@@ -13,6 +13,7 @@ class RadiomicsFeatureExtractor:
         self.case_list = []
         self.feature_name_list = []
         self.extractor = featureextractor.RadiomicsFeaturesExtractor(radiomics_parameter_file)
+        self.error_list = []
 
         self.logger = logging.getLogger(__name__)
 
@@ -188,6 +189,10 @@ class RadiomicsFeatureExtractor:
                     self.Save(store_path)
             except:
                 self.error_list.append(case_name)
+
+        with open(os.path.join(store_path + '_error.csv'), 'w', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(self.error_list)
 
     def Save(self, store_path):
         header = copy.deepcopy(self.feature_name_list)
