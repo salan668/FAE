@@ -64,9 +64,15 @@ class RadiomicsFeatureExtractor:
                     feature_dict['Quality_' + row[0]] = row[1]
 
         for sequence_key, show_key in zip(key_name_list, show_key_name_list):
-            sequence_candidate = glob.glob(os.path.join(case_folder, '*{}*'.format(sequence_key)))
+            if isinstance(sequence_key, str):
+                sequence_key = [sequence_key]
+            sequence_key_path = '*'
+            for one_sequence_key in sequence_key:
+                sequence_key_path += '{}*'.format(one_sequence_key)
+
+            sequence_candidate = glob.glob(os.path.join(case_folder, sequence_key_path))
             if len(sequence_candidate) != 1:
-                self.logger.error('Check the ROI file path of case: ' + case_folder)
+                self.logger.error('Check the data file path of case: ' + sequence_key_path)
                 return None
             sequence_file_path = sequence_candidate[0]
 
@@ -102,9 +108,13 @@ class RadiomicsFeatureExtractor:
             print('The case exists!')
             return False
         else:
-            self.case_list.append(case_name)
-            self.feature_values.append(feature_values)
-            return True
+            if isinstance(feature_values, list) and len(feature_values) == len(self.feature_values[0]):
+                self.case_list.append(case_name)
+                self.feature_values.append(feature_values)
+                return True
+            else:
+                print('Not extract valid features')
+                return False
 
     def __InitialFeatureValues(self, case_folder, key_name_list, show_key_name_list, roi_key):
         feature_dict = {}
@@ -131,9 +141,15 @@ class RadiomicsFeatureExtractor:
 
         # Add Radiomics features
         for sequence_key, show_key in zip(key_name_list, show_key_name_list):
-            sequence_candidate = glob.glob(os.path.join(case_folder, '*{}*'.format(sequence_key)))
+            if isinstance(sequence_key, str):
+                sequence_key = [sequence_key]
+            sequence_key_path = '*'
+            for one_sequence_key in sequence_key:
+                sequence_key_path += '{}*'.format(one_sequence_key)
+
+            sequence_candidate = glob.glob(os.path.join(case_folder, sequence_key_path))
             if len(sequence_candidate) != 1:
-                self.logger.error('Check the data file path of case: ' + case_folder)
+                self.logger.error('Check the data file path of case: ' + sequence_key_path)
                 return None
             sequence_file_path = sequence_candidate[0]
 
@@ -181,19 +197,23 @@ class RadiomicsFeatureExtractor:
             try:
                 if self.feature_name_list != [] and self.feature_values != []:
                     feature_values = self.__GetFeatureValues(case_path, key_name_list, show_key_name_list, roi_key)
-                    self.__MergeCase(case_name, feature_values)
+                    if not self.__MergeCase(case_name, feature_values):
+                        self.error_list.append(case_name)
                 else:
                     self.__InitialFeatureValues(case_path, key_name_list, show_key_name_list, roi_key)
                     self.case_list.append(case_name)
 
-                if store_path:
-                    self.Save(store_path)
-            except:
+            except Exception as e:
+                print(e)
                 self.error_list.append(case_name)
+
+        if store_path:
+            self.Save(store_path)
 
         with open(os.path.join(store_path + '_error.csv'), 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
-            writer.writerow(self.error_list)
+            for error_case in self.error_list:
+                writer.writerow([error_case])
 
     def Save(self, store_path):
         header = copy.deepcopy(self.feature_name_list)
