@@ -3,6 +3,7 @@ import numpy as np
 import os
 from copy import deepcopy
 import pandas as pd
+from scipy.stats import pearsonr
 
 from FAE.DataContainer.DataContainer import DataContainer
 from sklearn.decomposition import PCA
@@ -104,7 +105,7 @@ class DimensionReductionByPCC(DimensionReduction):
         return 'PCC'
 
     def __PCCSimilarity(self, data1, data2):
-        return np.abs(np.dot(data1, data2))
+        return np.abs(pearsonr(data1, data2)[0])
 
     def GetSelectedFeatureIndex(self, data_container):
         data = data_container.GetArray()

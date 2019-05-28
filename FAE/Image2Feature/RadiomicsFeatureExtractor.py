@@ -13,12 +13,14 @@ class RadiomicsFeatureExtractor:
         self.case_list = []
         self.feature_name_list = []
         self.extractor = featureextractor.RadiomicsFeaturesExtractor(radiomics_parameter_file)
+        self.error_list = []
 
         self.logger = logging.getLogger(__name__)
 
         self.__has_label = has_label
         self.__is_ignore_tolerence = ignore_tolerence
         self.__is_ignore_diagnostic = ignore_diagnostic
+        self.error_list = []
 
 
     def __GetFeatureValuesEachModality(self, data_path, roi_path, key_name):
@@ -41,7 +43,14 @@ class RadiomicsFeatureExtractor:
 
     def __GetFeatureValues(self, case_folder, key_name_list, show_key_name_list, roi_key):
         feature_dict = {}
-        roi_candidate = glob.glob(os.path.join(case_folder, '*{}*'.format(roi_key)))
+
+        if isinstance(roi_key, str):
+            roi_key = [roi_key]
+        roi_key_path = '*'
+        for one_roi_key in roi_key:
+            roi_key_path += '{}*'.format(one_roi_key)
+
+        roi_candidate = glob.glob(os.path.join(case_folder, roi_key_path))
         if len(roi_candidate) != 1:
             self.logger.error('Check the ROI file path of case: ' + case_folder)
             return None
@@ -55,9 +64,15 @@ class RadiomicsFeatureExtractor:
                     feature_dict['Quality_' + row[0]] = row[1]
 
         for sequence_key, show_key in zip(key_name_list, show_key_name_list):
-            sequence_candidate = glob.glob(os.path.join(case_folder, '*{}*'.format(sequence_key)))
+            if isinstance(sequence_key, str):
+                sequence_key = [sequence_key]
+            sequence_key_path = '*'
+            for one_sequence_key in sequence_key:
+                sequence_key_path += '{}*'.format(one_sequence_key)
+
+            sequence_candidate = glob.glob(os.path.join(case_folder, sequence_key_path))
             if len(sequence_candidate) != 1:
-                self.logger.error('Check the ROI file path of case: ' + case_folder)
+                self.logger.error('Check the data file path of case: ' + sequence_key_path)
                 return None
             sequence_file_path = sequence_candidate[0]
 
@@ -93,13 +108,24 @@ class RadiomicsFeatureExtractor:
             print('The case exists!')
             return False
         else:
-            self.case_list.append(case_name)
-            self.feature_values.append(feature_values)
-            return True
+            if isinstance(feature_values, list) and len(feature_values) == len(self.feature_values[0]):
+                self.case_list.append(case_name)
+                self.feature_values.append(feature_values)
+                return True
+            else:
+                print('Not extract valid features')
+                return False
 
     def __InitialFeatureValues(self, case_folder, key_name_list, show_key_name_list, roi_key):
         feature_dict = {}
-        roi_candidate = glob.glob(os.path.join(case_folder, '*{}*'.format(roi_key)))
+
+        if isinstance(roi_key, str):
+            roi_key = [roi_key]
+        roi_key_path = '*'
+        for one_roi_key in roi_key:
+            roi_key_path += '{}*'.format(one_roi_key)
+        roi_candidate = glob.glob(os.path.join(case_folder, roi_key_path))
+
         if len(roi_candidate) != 1:
             self.logger.error('Check the ROI file path of case: ' + case_folder)
             return None
@@ -115,9 +141,15 @@ class RadiomicsFeatureExtractor:
 
         # Add Radiomics features
         for sequence_key, show_key in zip(key_name_list, show_key_name_list):
-            sequence_candidate = glob.glob(os.path.join(case_folder, '*{}*'.format(sequence_key)))
+            if isinstance(sequence_key, str):
+                sequence_key = [sequence_key]
+            sequence_key_path = '*'
+            for one_sequence_key in sequence_key:
+                sequence_key_path += '{}*'.format(one_sequence_key)
+
+            sequence_candidate = glob.glob(os.path.join(case_folder, sequence_key_path))
             if len(sequence_candidate) != 1:
-                self.logger.error('Check the data file path of case: ' + case_folder)
+                self.logger.error('Check the data file path of case: ' + sequence_key_path)
                 return None
             sequence_file_path = sequence_candidate[0]
 
@@ -165,15 +197,23 @@ class RadiomicsFeatureExtractor:
             try:
                 if self.feature_name_list != [] and self.feature_values != []:
                     feature_values = self.__GetFeatureValues(case_path, key_name_list, show_key_name_list, roi_key)
-                    self.__MergeCase(case_name, feature_values)
+                    if not self.__MergeCase(case_name, feature_values):
+                        self.error_list.append(case_name)
                 else:
                     self.__InitialFeatureValues(case_path, key_name_list, show_key_name_list, roi_key)
                     self.case_list.append(case_name)
 
-                if store_path:
-                    self.Save(store_path)
-            except:
+            except Exception as e:
+                print(e)
                 self.error_list.append(case_name)
+
+        if store_path:
+            self.Save(store_path)
+
+        with open(os.path.join(store_path + '_error.csv'), 'w', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            for error_case in self.error_list:
+                writer.writerow([error_case])
 
     def Save(self, store_path):
         header = copy.deepcopy(self.feature_name_list)
@@ -213,8 +253,8 @@ class RadiomicsFeatureExtractor:
 if __name__ == '__main__':
     extractor = RadiomicsFeatureExtractor(r'OnlyIntensityRadiomicsParams.yaml',
                                           has_label=False)
-    extractor.Execute(r'result',
-                      key_name_list=['K.nii', 'DKI.nii', 'DWI.nii'],
-                      show_key_name_list=['K', 'DKI', 'DWI'],
-                      roi_key='K-label',
-                      store_path=r'temp.csv')
+    extractor.Execute(r'C:\Users\yangs\Desktop\LiuWei',
+                      key_name_list=['arterial'],
+                      roi_key=['arterial', 'label'],
+                      store_path=r'C:\Users\yangs\Desktop\LiuWei\artery.csv')
+

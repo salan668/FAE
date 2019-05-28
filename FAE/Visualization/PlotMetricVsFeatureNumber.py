@@ -1,5 +1,4 @@
 import matplotlib.pyplot as plt
-from matplotlib.ticker import MultipleLocator
 import seaborn as sns
 import numpy as np
 
@@ -34,15 +33,12 @@ def DrawCurve(x, y_list, std_list=[], xlabel='', ylabel='', title='', name_list=
         if name_list != []:
             axes.legend(name_list, loc=4)
     else:
-
         for index in range(len(y_list)):
             sub_y_list = y_list[index]
             sub_std_list = std_list[index]
-            sub_one_se = max(sub_y_list) - sub_std_list[sub_y_list.index(max(sub_y_list))]
-            line = np.ones((1, len(x))) * sub_one_se
             if name_list[index] == 'CV Validation':
                 axes.errorbar(x, sub_y_list, yerr=sub_std_list, fmt='-o',
-                          color=color_list[index], elinewidth=2, capsize=4, alpha=0.7, marker='.', label='CV Validation')
+                              color=color_list[index], elinewidth=2, capsize=4, alpha=0.7, marker='.', label='CV Validation')
             else:
                 axes.plot(x, y_list[index], color=color_list[index], label=name_list[index])
 
@@ -64,7 +60,6 @@ def DrawCurve(x, y_list, std_list=[], xlabel='', ylabel='', title='', name_list=
                         best_auc_value = sub_y_list[index]
                         best_auc_feature_number = index+1
 
-
                         axes.plot(x, line_list[0], color='orange', linewidth=1, linestyle="--")
                         axes.plot(best_auc_feature_number, best_auc_value, 'H', linewidth=20, color='black')
                         break
@@ -76,9 +71,7 @@ def DrawCurve(x, y_list, std_list=[], xlabel='', ylabel='', title='', name_list=
             sub_ticks_list.append(best_auc_feature_number)
             axes.set_xticks(sorted(sub_ticks_list))
 
-        # axes.set_major_locator(MultipleLocator(2))
     if store_path:
-        # plt.tight_layout()
         fig.set_tight_layout(True)
         if store_path[-3:] == 'jpg':
             fig.savefig(store_path, dpi=300, format='jpeg')
@@ -87,7 +80,6 @@ def DrawCurve(x, y_list, std_list=[], xlabel='', ylabel='', title='', name_list=
     if is_show:
         axes.show()
 
-    # plt.close(fig)
     return axes
 
 def DrawBar(x_ticks, y_list, ylabel='', title='', name_list=[], store_path='', is_show=True, fig=plt.figure()):
@@ -120,5 +112,4 @@ def DrawBar(x_ticks, y_list, ylabel='', title='', name_list=[], store_path='', i
     if is_show:
         axes.show()
 
-    # plt.close(fig)
     return axes
