@@ -60,10 +60,13 @@ def TestNewData(NewDataCsv, model_folder, result_save_path):
     #Normlization
 
     new_data_container.Load(NewDataCsv)
-    new_data_container = train_info['normalizer'].Transform(new_data_container)
 
     feature_selector = FeatureSelector()
     feature_selector.SelectFeatureByName(new_data_container, train_info['selected_features'], is_replace=True)
+
+    new_data_container = train_info['normalizer'].Transform(new_data_container)
+
+
     # data_frame = new_data_container.GetFrame()
     # data_frame = data_frame[train_info['selected_features']]
     # new_data_container.SetFrame(data_frame)

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1312</width>
-    <height>808</height>
+    <width>1272</width>
+    <height>755</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -85,14 +85,14 @@
            <item>
             <widget class="QLabel" name="label">
              <property name="text">
-              <string>Maximum AUC along:</string>
+              <string>Test result on :</string>
              </property>
             </widget>
            </item>
            <item>
             <widget class="QCheckBox" name="checkMaxFeatureNumber">
              <property name="text">
-              <string>Feature Number</string>
+              <string>Validation</string>
              </property>
             </widget>
            </item>
@@ -234,13 +234,6 @@
             <widget class="QCheckBox" name="checkPlotTrain">
              <property name="text">
               <string>Train</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QCheckBox" name="checkPlotTest">
-             <property name="text">
-              <string>Test</string>
              </property>
             </widget>
            </item>
