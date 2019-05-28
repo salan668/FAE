@@ -13,6 +13,7 @@ from FAE.Visualization.PlotMetricVsFeatureNumber import DrawCurve, DrawBar
 from FAE.Visualization.FeatureSort import GeneralFeatureSort, SortRadiomicsFeature
 
 import os
+import re
 
 class VisualizationConnection(QWidget, Ui_Visualization):
     def __init__(self, parent=None):
@@ -457,10 +458,10 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                     else:
                         processed_feature_name[index] = processed_feature_name[index] + ' N'
 
-                try:
-                    SortRadiomicsFeature(processed_feature_name, value, is_show=False, fig=self.canvasFeature.getFigure())
-                except:
-                    GeneralFeatureSort(processed_feature_name, value,
+                # try:
+                #     SortRadiomicsFeature(processed_feature_name, value, is_show=False, fig=self.canvasFeature.getFigure())
+                # except:
+                GeneralFeatureSort(processed_feature_name, value,
                                        is_show=False, fig=self.canvasFeature.getFigure())
 
 
@@ -542,10 +543,15 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                                     name_list.append(name)
                                     break
             df = df.loc[name_list]
-            index = df['auc'].idxmax()
-            sub_serise = df.loc[index]
-            array = sub_serise.get_values().reshape(1,-1)
-            df = pd.DataFrame(data=array, columns=sub_serise.index.tolist(), index=[index])
+            max_index = df['auc'].idxmax()
+            sub_serise = df.loc[max_index]
+            max_array = sub_serise.get_values().reshape(1,-1)
+            max_auc_df = pd.DataFrame(data=max_array, columns=sub_serise.index.tolist(), index=[max_index])
+            max_auc_95ci = max_auc_df.at[max_index,'auc 95% CIs']
+
+            max_auc_95ci = re.findall(r"\d+\.?\d*", max_auc_95ci)
+            df = df[(df['auc'] > float(max_auc_95ci[0])) & (df['auc'] < float(max_auc_95ci[1]))]
+
         df.sort_index(inplace=True)
 
 
