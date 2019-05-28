@@ -62,7 +62,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.checkPlotCVTrain.stateChanged.connect(self.UpdatePlot)
         self.checkPlotCVValidation.stateChanged.connect(self.UpdatePlot)
         self.checkPlotTrain.stateChanged.connect(self.UpdatePlot)
-        self.checkPlotTest.stateChanged.connect(self.UpdatePlot)
+        # self.checkPlotTest.stateChanged.connect(self.UpdatePlot)
 
         # Update Contribution canvas
         self.checkContributionShow.stateChanged.connect(self.UpdateContribution)
@@ -117,7 +117,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.checkPlotCVTrain.setChecked(False)
         self.checkPlotCVValidation.setChecked(False)
         self.checkPlotTrain.setChecked(False)
-        self.checkPlotTest.setChecked(False)
+        # self.checkPlotTest.setChecked(False)
         self.checkContributionShow.setChecked(False)
         self.radioContributionFeatureSelector.setChecked(True)
         self.radioContributionFeatureSelector.setChecked(False)
@@ -372,13 +372,13 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                 show_data.append(temp[tuple(index)].tolist())
                 show_data_std.append(auc_std[tuple(index)].tolist())
                 name_list.append('Train')
-            if self.checkPlotTest.isChecked():
-                temp = deepcopy(self._fae.GetAUCMetric()['test'])
-                auc_std = deepcopy(self._fae.GetAUCstdMetric()['test'])
-                if temp.size > 0:
-                    show_data.append(temp[tuple(index)].tolist())
-                    show_data_std.append(auc_std[tuple(index)].tolist())
-                    name_list.append('Test')
+            # if self.checkPlotTest.isChecked():
+            #     temp = deepcopy(self._fae.GetAUCMetric()['test'])
+            #     auc_std = deepcopy(self._fae.GetAUCstdMetric()['test'])
+            #     if temp.size > 0:
+            #         show_data.append(temp[tuple(index)].tolist())
+            #         show_data_std.append(auc_std[tuple(index)].tolist())
+            #         name_list.append('Test')
 
         if len(show_data) > 0:
             if selected_index == 3:
@@ -507,15 +507,19 @@ class VisualizationConnection(QWidget, Ui_Visualization):
             data = self._fae.GetAUCMetric()['val']
             std_data = self._fae.GetAUCstdMetric()['val']
             df = self.sheet_dict['val']
-        elif self.comboSheet.currentText() == 'Test':
-            # Sort according to the AUC of validation data set
-            data = self._fae.GetAUCMetric()['val']
-            std_data = self._fae.GetAUCstdMetric()['val']
-            df = self.sheet_dict['test']
+        # elif self.comboSheet.currentText() == 'Test':
+        #     # Sort according to the AUC of validation data set
+        #     data = self._fae.GetAUCMetric()['val']
+        #     std_data = self._fae.GetAUCstdMetric()['val']
+        #     df = self.sheet_dict['test']
         else:
             return
 
         if self.checkMaxFeatureNumber.isChecked():
+            self.sheet_dict['test'] = pd.read_csv(os.path.join(self._root_folder, 'test_result.csv'), index_col=0)
+            data = self._fae.GetAUCMetric()['val']
+            std_data = self._fae.GetAUCstdMetric()['val']
+            df = self.sheet_dict['test']
             name_list = []
             for normalizer, normalizer_index in zip(self._fae.GetNormalizerList(), range(len(self._fae.GetNormalizerList()))):
                 for dimension_reducer, dimension_reducer_index in zip(self._fae.GetDimensionReductionList(),
@@ -538,7 +542,13 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                                     name_list.append(name)
                                     break
             df = df.loc[name_list]
+            index = df['auc'].idxmax()
+            sub_serise = df.loc[index]
+            array = sub_serise.get_values().reshape(1,-1)
+            df = pd.DataFrame(data=array, columns=sub_serise.index.tolist(), index=[index])
         df.sort_index(inplace=True)
+
+
 
         self.tableClinicalStatistic.setRowCount(df.shape[0])
         self.tableClinicalStatistic.setColumnCount(df.shape[1]+1)
@@ -563,9 +573,9 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.comboSheet.addItem('Train')
         self.sheet_dict['val'] = pd.read_csv(os.path.join(self._root_folder, 'val_result.csv'), index_col=0)
         self.comboSheet.addItem('Validation')
-        if os.path.exists(os.path.join(self._root_folder, 'test_result.csv')):
-            self.sheet_dict['test'] = pd.read_csv(os.path.join(self._root_folder, 'test_result.csv'), index_col=0)
-            self.comboSheet.addItem('Test')
+        # if os.path.exists(os.path.join(self._root_folder, 'test_result.csv')):
+        #     self.sheet_dict['test'] = pd.read_csv(os.path.join(self._root_folder, 'test_result.csv'), index_col=0)
+        #     self.comboSheet.addItem('Test')
 
         self.UpdateSheet()
 
