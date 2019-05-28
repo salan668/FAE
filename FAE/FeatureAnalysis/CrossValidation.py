@@ -245,7 +245,7 @@ class CrossValidationLeaveOneOut(CrossValidation):
 class CrossValidation5Folder(CrossValidation):
     def __init__(self):
         super(CrossValidation5Folder, self).__init__()
-        self.__cv = StratifiedKFold(5)
+        self.__cv = StratifiedKFold(5, random_state=42)
 
     def GetCV(self):
         return self.__cv
@@ -411,7 +411,7 @@ class CrossValidation5Folder(CrossValidation):
 class CrossValidation10Folder(CrossValidation):
     def __init__(self):
         super(CrossValidation10Folder, self).__init__()
-        self.__cv = StratifiedKFold(10)
+        self.__cv = StratifiedKFold(10, random_state=42)
 
     def GetCV(self):
         return self.__cv
