@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'D:\MyCode\FAEGitHub\FAE\GUI\Visualization.ui'
+# Form implementation generated from reading ui file 'Visualization.ui'
 #
 # Created by: PyQt5 UI code generator 5.11.3
 #
@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Visualization(object):
     def setupUi(self, Visualization):
         Visualization.setObjectName("Visualization")
-        Visualization.resize(1312, 808)
+        Visualization.resize(1272, 755)
         self.gridLayout_4 = QtWidgets.QGridLayout(Visualization)
         self.gridLayout_4.setObjectName("gridLayout_4")
         self.verticalLayout_6 = QtWidgets.QVBoxLayout()
@@ -135,9 +135,6 @@ class Ui_Visualization(object):
         self.checkPlotTrain = QtWidgets.QCheckBox(Visualization)
         self.checkPlotTrain.setObjectName("checkPlotTrain")
         self.horizontalLayout_4.addWidget(self.checkPlotTrain)
-        self.checkPlotTest = QtWidgets.QCheckBox(Visualization)
-        self.checkPlotTest.setObjectName("checkPlotTest")
-        self.horizontalLayout_4.addWidget(self.checkPlotTest)
         self.verticalLayout_4.addLayout(self.horizontalLayout_4)
         self.gridLayout_2 = QtWidgets.QGridLayout()
         self.gridLayout_2.setObjectName("gridLayout_2")
@@ -225,8 +222,8 @@ class Ui_Visualization(object):
         self.buttonClearResult.setText(_translate("Visualization", "Clear"))
         self.buttonSave.setText(_translate("Visualization", "Save Figure"))
         self.label_7.setText(_translate("Visualization", "Show:"))
-        self.label.setText(_translate("Visualization", "Maximum AUC along:"))
-        self.checkMaxFeatureNumber.setText(_translate("Visualization", "Feature Number"))
+        self.label.setText(_translate("Visualization", "Test result on :"))
+        self.checkMaxFeatureNumber.setText(_translate("Visualization", "Validation"))
         self.label_2.setText(_translate("Visualization", "ROC Curve / Result"))
         self.checkROCCVTrain.setText(_translate("Visualization", "CV Train"))
         self.checkROCCVValidation.setText(_translate("Visualization", "CV Validation"))
@@ -236,7 +233,6 @@ class Ui_Visualization(object):
         self.checkPlotCVTrain.setText(_translate("Visualization", "CV Train"))
         self.checkPlotCVValidation.setText(_translate("Visualization", "CV Validation"))
         self.checkPlotTrain.setText(_translate("Visualization", "Train"))
-        self.checkPlotTest.setText(_translate("Visualization", "Test"))
         self.label_5.setText(_translate("Visualization", "Y-Label"))
         self.label_6.setText(_translate("Visualization", "X-Label"))
         self.label_4.setText(_translate("Visualization", "Feature Contribution"))

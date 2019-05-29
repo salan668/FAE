@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'Process.ui'
 #
-# Created by: PyQt5 UI code generator 5.11.2
+# Created by: PyQt5 UI code generator 5.11.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -192,6 +192,9 @@ class Ui_Process(object):
         self.radio10Folder = QtWidgets.QRadioButton(self.groupBox_2)
         self.radio10Folder.setObjectName("radio10Folder")
         self.horizontalLayout_7.addWidget(self.radio10Folder)
+        self.radioLOO = QtWidgets.QRadioButton(self.groupBox_2)
+        self.radioLOO.setObjectName("radioLOO")
+        self.horizontalLayout_7.addWidget(self.radioLOO)
         self.gridLayout_7.addLayout(self.horizontalLayout_7, 0, 0, 1, 1)
         self.verticalLayout.addWidget(self.groupBox_2)
         self.buttonRun = QtWidgets.QPushButton(Process)
@@ -273,6 +276,7 @@ class Ui_Process(object):
         self.groupBox_2.setTitle(_translate("Process", "Cross Validation"))
         self.radio5folder.setText(_translate("Process", "5-Folder"))
         self.radio10Folder.setText(_translate("Process", "10-Folder"))
+        self.radioLOO.setText(_translate("Process", "LeaveOneOut"))
         self.buttonRun.setText(_translate("Process", "Run and Save"))
         self.label_5.setText(_translate("Process", "Pipeline Description:"))
         self.label_3.setText(_translate("Process", "Data Description"))

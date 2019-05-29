@@ -13,6 +13,7 @@ from FAE.Visualization.PlotMetricVsFeatureNumber import DrawCurve, DrawBar
 from FAE.Visualization.FeatureSort import GeneralFeatureSort, SortRadiomicsFeature
 
 import os
+import re
 
 class VisualizationConnection(QWidget, Ui_Visualization):
     def __init__(self, parent=None):
@@ -62,7 +63,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.checkPlotCVTrain.stateChanged.connect(self.UpdatePlot)
         self.checkPlotCVValidation.stateChanged.connect(self.UpdatePlot)
         self.checkPlotTrain.stateChanged.connect(self.UpdatePlot)
-        self.checkPlotTest.stateChanged.connect(self.UpdatePlot)
+        # self.checkPlotTest.stateChanged.connect(self.UpdatePlot)
 
         # Update Contribution canvas
         self.checkContributionShow.stateChanged.connect(self.UpdateContribution)
@@ -117,7 +118,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.checkPlotCVTrain.setChecked(False)
         self.checkPlotCVValidation.setChecked(False)
         self.checkPlotTrain.setChecked(False)
-        self.checkPlotTest.setChecked(False)
+        # self.checkPlotTest.setChecked(False)
         self.checkContributionShow.setChecked(False)
         self.radioContributionFeatureSelector.setChecked(True)
         self.radioContributionFeatureSelector.setChecked(False)
@@ -372,13 +373,13 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                 show_data.append(temp[tuple(index)].tolist())
                 show_data_std.append(auc_std[tuple(index)].tolist())
                 name_list.append('Train')
-            if self.checkPlotTest.isChecked():
-                temp = deepcopy(self._fae.GetAUCMetric()['test'])
-                auc_std = deepcopy(self._fae.GetAUCstdMetric()['test'])
-                if temp.size > 0:
-                    show_data.append(temp[tuple(index)].tolist())
-                    show_data_std.append(auc_std[tuple(index)].tolist())
-                    name_list.append('Test')
+            # if self.checkPlotTest.isChecked():
+            #     temp = deepcopy(self._fae.GetAUCMetric()['test'])
+            #     auc_std = deepcopy(self._fae.GetAUCstdMetric()['test'])
+            #     if temp.size > 0:
+            #         show_data.append(temp[tuple(index)].tolist())
+            #         show_data_std.append(auc_std[tuple(index)].tolist())
+            #         name_list.append('Test')
 
         if len(show_data) > 0:
             if selected_index == 3:
@@ -412,7 +413,14 @@ class VisualizationConnection(QWidget, Ui_Visualization):
             file_name = self.comboContributionFeatureSelector.currentText() + '_sort.csv'
             file_path = os.path.join(one_result_folder, file_name)
 
+            if not os.path.exists(file_path):
+                file_name = self.comboContributionFeatureSelector.currentText().lower() + '_sort.csv'
+                file_path = os.path.join(one_result_folder, file_name)
+
+
+
             if file_path:
+
                 df = pd.read_csv(file_path, index_col=0)
                 value = list(np.abs(df.iloc[:, 0]))
 
@@ -421,9 +429,9 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                 original_value = list(df.iloc[:, 0])
                 for index in range(len(original_value)):
                     if original_value[index] > 0:
-                        processed_feature_name[index] = processed_feature_name[index] + 'P'
+                        processed_feature_name[index] = processed_feature_name[index] + ' P'
                     else:
-                        processed_feature_name[index] = processed_feature_name[index] + 'N'
+                        processed_feature_name[index] = processed_feature_name[index] + ' N'
 
                 GeneralFeatureSort(processed_feature_name, value, max_num=self.spinContributeFeatureNumber.value(),
                                    is_show=False, fig=self.canvasFeature.getFigure())
@@ -431,6 +439,11 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         elif self.radioContributionClassifier.isChecked():
             specific_name = self.comboContributionClassifier.currentText() + '_coef.csv'
             file_path = os.path.join(one_result_folder, specific_name)
+
+            if not os.path.exists(file_path):
+                specific_name = self.comboContributionClassifier.currentText().lower() + '_coef.csv'
+                file_path = os.path.join(one_result_folder, specific_name)
+
             if file_path:
                 df = pd.read_csv(file_path, index_col=0)
                 feature_name = list(df.index)
@@ -445,10 +458,10 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                     else:
                         processed_feature_name[index] = processed_feature_name[index] + ' N'
 
-                try:
-                    SortRadiomicsFeature(processed_feature_name, value, is_show=False, fig=self.canvasFeature.getFigure())
-                except:
-                    GeneralFeatureSort(processed_feature_name, value,
+                # try:
+                #     SortRadiomicsFeature(processed_feature_name, value, is_show=False, fig=self.canvasFeature.getFigure())
+                # except:
+                GeneralFeatureSort(processed_feature_name, value,
                                        is_show=False, fig=self.canvasFeature.getFigure())
 
 
@@ -479,7 +492,10 @@ class VisualizationConnection(QWidget, Ui_Visualization):
             text += (index.GetName() + '\n')
         text += '\n'
 
+        text += 'Cross Validation: ' + self._fae.GetCrossValidation().GetName()
+
         self.textEditDescription.setPlainText(text)
+
 
     def UpdateSheet(self):
         self.tableClinicalStatistic.clear()
@@ -492,15 +508,19 @@ class VisualizationConnection(QWidget, Ui_Visualization):
             data = self._fae.GetAUCMetric()['val']
             std_data = self._fae.GetAUCstdMetric()['val']
             df = self.sheet_dict['val']
-        elif self.comboSheet.currentText() == 'Test':
-            # Sort according to the AUC of validation data set
-            data = self._fae.GetAUCMetric()['val']
-            std_data = self._fae.GetAUCstdMetric()['val']
-            df = self.sheet_dict['test']
+        # elif self.comboSheet.currentText() == 'Test':
+        #     # Sort according to the AUC of validation data set
+        #     data = self._fae.GetAUCMetric()['val']
+        #     std_data = self._fae.GetAUCstdMetric()['val']
+        #     df = self.sheet_dict['test']
         else:
             return
 
         if self.checkMaxFeatureNumber.isChecked():
+            self.sheet_dict['test'] = pd.read_csv(os.path.join(self._root_folder, 'test_result.csv'), index_col=0)
+            data = self._fae.GetAUCMetric()['val']
+            std_data = self._fae.GetAUCstdMetric()['val']
+            df = self.sheet_dict['test']
             name_list = []
             for normalizer, normalizer_index in zip(self._fae.GetNormalizerList(), range(len(self._fae.GetNormalizerList()))):
                 for dimension_reducer, dimension_reducer_index in zip(self._fae.GetDimensionReductionList(),
@@ -523,7 +543,18 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                                     name_list.append(name)
                                     break
             df = df.loc[name_list]
+            max_index = df['auc'].idxmax()
+            sub_serise = df.loc[max_index]
+            max_array = sub_serise.get_values().reshape(1,-1)
+            max_auc_df = pd.DataFrame(data=max_array, columns=sub_serise.index.tolist(), index=[max_index])
+            max_auc_95ci = max_auc_df.at[max_index,'auc 95% CIs']
+
+            max_auc_95ci = re.findall(r"\d+\.?\d*", max_auc_95ci)
+            df = df[(df['auc'] > float(max_auc_95ci[0])) & (df['auc'] < float(max_auc_95ci[1]))]
+
         df.sort_index(inplace=True)
+
+
 
         self.tableClinicalStatistic.setRowCount(df.shape[0])
         self.tableClinicalStatistic.setColumnCount(df.shape[1]+1)
@@ -548,9 +579,9 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.comboSheet.addItem('Train')
         self.sheet_dict['val'] = pd.read_csv(os.path.join(self._root_folder, 'val_result.csv'), index_col=0)
         self.comboSheet.addItem('Validation')
-        if os.path.exists(os.path.join(self._root_folder, 'test_result.csv')):
-            self.sheet_dict['test'] = pd.read_csv(os.path.join(self._root_folder, 'test_result.csv'), index_col=0)
-            self.comboSheet.addItem('Test')
+        # if os.path.exists(os.path.join(self._root_folder, 'test_result.csv')):
+        #     self.sheet_dict['test'] = pd.read_csv(os.path.join(self._root_folder, 'test_result.csv'), index_col=0)
+        #     self.comboSheet.addItem('Test')
 
         self.UpdateSheet()
 

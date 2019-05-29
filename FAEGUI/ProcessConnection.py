@@ -98,6 +98,7 @@ class ProcessConnection(QWidget, Ui_Process):
 
         self.radio5folder.clicked.connect(self.UpdatePipelineText)
         self.radio10Folder.clicked.connect(self.UpdatePipelineText)
+        self.radioLOO.clicked.connect(self.UpdatePipelineText)
 
         self.buttonRun.clicked.connect(self.Run)
 
@@ -208,6 +209,7 @@ class ProcessConnection(QWidget, Ui_Process):
 
         self.radio5folder.setEnabled(state)
         self.radio10Folder.setEnabled(state)
+        self.radioLOO.setEnabled(state)
 
     def Run(self):
         if self.training_data_container.IsEmpty():
@@ -322,6 +324,8 @@ class ProcessConnection(QWidget, Ui_Process):
             cv = CrossValidation5Folder()
         elif self.radio10Folder.isChecked():
             cv = CrossValidation10Folder()
+        elif self.radioLOO.isChecked():
+            cv = CrossValidationLeaveOneOut()
         else:
             return False
 
@@ -460,6 +464,8 @@ class ProcessConnection(QWidget, Ui_Process):
             cv_method += "5-Folder\n"
         elif self.radio10Folder.isChecked():
             cv_method += "10-folder\n"
+        elif self.radioLOO.isChecked():
+            cv_method += "LeaveOneOut\n"
 
         self.listOnePipeline.addItem(cv_method)
 
