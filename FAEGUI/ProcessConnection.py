@@ -82,6 +82,7 @@ class ProcessConnection(QWidget, Ui_Process):
         self.checkANOVA.clicked.connect(self.UpdatePipelineText)
         self.checkRFE.clicked.connect(self.UpdatePipelineText)
         self.checkRelief.clicked.connect(self.UpdatePipelineText)
+        self.checkMRMR.clicked.connect(self.UpdatePipelineText)
         self.checkFeatureSelectorAll.clicked.connect(self.SelectAllFeatureSelector)
 
         self.checkSVM.clicked.connect(self.UpdatePipelineText)
@@ -189,6 +190,7 @@ class ProcessConnection(QWidget, Ui_Process):
         self.checkANOVA.setEnabled(state)
         self.checkRFE.setEnabled(state)
         self.checkRelief.setEnabled(state)
+        self.checkMRMR.setEnabled(state)
         self.checkFeatureSelectorAll.setEnabled(state)
         
         self.spinBoxMinFeatureNumber.setEnabled(state)
@@ -292,6 +294,8 @@ class ProcessConnection(QWidget, Ui_Process):
             self.__process_feature_selector_list.append(FeatureSelectPipeline([FeatureSelectByRFE()]))
         if self.checkRelief.isChecked():
             self.__process_feature_selector_list.append(FeatureSelectPipeline([FeatureSelectByRelief()]))
+        if self.checkMRMR.isChecked():
+            self.__process_feature_selector_list.append(FeatureSelectPipeline([FeatureSelectByMrmr()]))
 
         self.__process_feature_number_list = np.arange(self.spinBoxMinFeatureNumber.value(), self.spinBoxMaxFeatureNumber.value() + 1).tolist()
 
@@ -416,6 +420,9 @@ class ProcessConnection(QWidget, Ui_Process):
         if self.checkRelief.isChecked():
             feature_selection_text += "Relief\n"
             feature_selector_num += 1
+        if self.checkMRMR.isChecked():
+            feature_selection_text += "mRMR\n"
+            feature_selector_num += 1
         if feature_selector_num == 0:
             feature_selection_text += "None\n"
             feature_selector_num = 1
@@ -499,10 +506,12 @@ class ProcessConnection(QWidget, Ui_Process):
             self.checkANOVA.setChecked(True)
             self.checkRFE.setChecked(True)
             self.checkRelief.setChecked(True)
+            self.checkMRMR.setChecked(True)
         else:
             self.checkANOVA.setChecked(False)
             self.checkRFE.setChecked(False)
             self.checkRelief.setChecked(False)
+            self.checkMRMR.setChecked(False)
 
         self.UpdatePipelineText()
 

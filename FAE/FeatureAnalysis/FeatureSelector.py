@@ -9,6 +9,7 @@ import csv
 
 from sklearn.feature_selection import SelectKBest, f_classif, RFE
 from sklearn.decomposition import PCA
+import pymrmr
 from sklearn.svm import SVC
 
 from FAE.FeatureAnalysis.ReliefF import ReliefF
@@ -407,6 +408,59 @@ class FeatureSelectByRFE(FeatureSelectByAnalysis):
             rfe_sort_path = os.path.join(store_folder, 'RFE_sort.csv')
             df = pd.DataFrame(data=rank, index=data_container.GetFeatureName(), columns=['rank'])
             df.to_csv(rfe_sort_path)
+
+        return new_data_container
+
+class FeatureSelectByMrmr(FeatureSelectByAnalysis):
+    def __init__(self, selected_feature_number=1):
+        super(FeatureSelectByMrmr, self).__init__(selected_feature_number)
+
+    def GetDescription(self):
+        text = "Before build the model, we used recursive feature elimination (mMRM) to select features. The goal of mMRM " \
+               "is to select features based on a classifier by recursively considering smaller set of the features. "
+        return text
+
+    def GetSelectedFeatureIndex(self, data_container):
+        data = data_container.GetArray()
+        data /= np.linalg.norm(data, ord=2, axis=0)
+        label = data_container.GetLabel()
+
+        if data.shape[1] < self.GetSelectedFeatureNumber():
+            print('mMRM: The number of features {:d} in data container is smaller than the required number {:d}'.format(
+                data.shape[1], self.GetSelectedFeatureNumber()))
+            self.SetSelectedFeatureNumber(data.shape[1])
+
+        feature_list = ['class'] + data_container.GetFeatureName()
+        feature_index = []
+        pd_label = pd.DataFrame(label)
+        pd_data = pd.DataFrame(data)
+        mRMR_input = pd.concat([pd_label, pd_data], axis=1)
+        mRMR_input.columns = feature_list
+        feature_name = pymrmr.mRMR(mRMR_input, 'MID', self.GetSelectedFeatureNumber())
+        feature_list.remove('class')
+
+        rank = []
+        for index, item in enumerate(feature_name):
+            feature_index.append(feature_list.index(item))
+            rank.append(index)
+        return feature_index, rank, feature_name
+
+    def GetName(self):
+        return 'mMRM'
+
+    def Run(self, data_container, store_folder=''):
+        selected_index, rank, feature_name = self.GetSelectedFeatureIndex(data_container)
+        new_data_container = self.SelectFeatureByIndex(data_container, selected_index, is_replace=False)
+        if store_folder and os.path.isdir(store_folder):
+            feature_store_path = os.path.join(store_folder, 'selected_feature.csv')
+            featureinfo_store_path = os.path.join(store_folder, 'feature_select_info.csv')
+
+            new_data_container.Save(feature_store_path)
+            SaveSelectInfo(new_data_container, featureinfo_store_path, is_merge=False)
+
+            mrmr_sort_path = os.path.join(store_folder, 'mMRM_sort.csv')
+            df = pd.DataFrame(data=rank, index=feature_name, columns=['rank'])
+            df.to_csv(mrmr_sort_path)
 
         return new_data_container
 
