@@ -418,7 +418,7 @@ class FeatureSelectByMrmr(FeatureSelectByAnalysis):
         self._hyper_parameter_manager = HyperParameterManager()
 
     def GetDescription(self):
-        text = "Before build the model, we used minimum-Redundancy-Maximum-Relevance (mRMR) to select features. The goal of mMRM " \
+        text = "Before build the model, we used minimum-Redundancy-Maximum-Relevance (mRMR) to select features. The goal of mRMR " \
                "is to select a feature subset set that best characterizes the statistical property of a target classification variable," \
                "subject to the constraint that these features are mutually as dissimilar to each other as possible, but marginally as similar to the classification variable as possible."
         return text
