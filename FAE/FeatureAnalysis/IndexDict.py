@@ -32,6 +32,8 @@ class Index2Dict:
             return FeatureSelectByANOVA()
         elif name == FeatureSelectByRFE().GetName():
             return FeatureSelectByRFE()
+        elif name == FeatureSelectByMrmr().GetName():
+            return FeatureSelectByMrmr()
         elif name == SVM().GetName():
             return SVM()
         elif name == LDA().GetName():
