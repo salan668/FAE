@@ -525,7 +525,8 @@ class VisualizationConnection(QWidget, Ui_Visualization):
             self.sheet_dict['test'] = pd.read_csv(os.path.join(self._root_folder, 'test_result.csv'), index_col=0)
             data = self._fae.GetAUCMetric()['val']
             std_data = self._fae.GetAUCstdMetric()['val']
-            df = self.sheet_dict['test']
+            df_val = self.sheet_dict['val']
+            df_test = self.sheet_dict['test']
             name_list = []
             for normalizer, normalizer_index in zip(self._fae.GetNormalizerList(), range(len(self._fae.GetNormalizerList()))):
                 for dimension_reducer, dimension_reducer_index in zip(self._fae.GetDimensionReductionList(),
@@ -547,15 +548,20 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                                     classifier.GetName()
                                     name_list.append(name)
                                     break
-            df = df.loc[name_list]
-            max_index = df['auc'].idxmax()
-            sub_serise = df.loc[max_index]
-            max_array = sub_serise.get_values().reshape(1,-1)
+            # choose the selected models from all test result
+            df_val = df_val.loc[name_list]
+            max_index = df_val['auc'].idxmax()
+            sub_serise = df_val.loc[max_index]
+            max_array = sub_serise.get_values().reshape(1, -1)
             max_auc_df = pd.DataFrame(data=max_array, columns=sub_serise.index.tolist(), index=[max_index])
             max_auc_95ci = max_auc_df.at[max_index,'auc 95% CIs']
 
             max_auc_95ci = re.findall(r"\d+\.?\d*", max_auc_95ci)
-            df = df[(df['auc'] > float(max_auc_95ci[0])) & (df['auc'] < float(max_auc_95ci[1]))]
+            sub_val_df = df_val[(df_val['auc'] > float(max_auc_95ci[0])) & (df_val['auc'] < float(max_auc_95ci[1]))]
+
+            index_by_val = sub_val_df.index.tolist()
+
+            df = df_test.loc[index_by_val]
 
         df.sort_index(inplace=True)
 

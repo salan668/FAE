@@ -9,10 +9,12 @@ import csv
 
 from sklearn.feature_selection import SelectKBest, f_classif, RFE
 from sklearn.decomposition import PCA
+import pymrmr
 from sklearn.svm import SVC
 
 from FAE.FeatureAnalysis.ReliefF import ReliefF
 from FAE.DataContainer.DataContainer import DataContainer
+from FAE.HyperParameterConfig.HyperParamManager import HyperParameterManager
 
 
 def SaveSelectInfo(data_container, store_path, is_merge=False):
@@ -407,6 +409,67 @@ class FeatureSelectByRFE(FeatureSelectByAnalysis):
             rfe_sort_path = os.path.join(store_folder, 'RFE_sort.csv')
             df = pd.DataFrame(data=rank, index=data_container.GetFeatureName(), columns=['rank'])
             df.to_csv(rfe_sort_path)
+
+        return new_data_container
+
+class FeatureSelectByMrmr(FeatureSelectByAnalysis):
+    def __init__(self, selected_feature_number=1):
+        super(FeatureSelectByMrmr, self).__init__(selected_feature_number)
+        self._hyper_parameter_manager = HyperParameterManager()
+
+    def GetDescription(self):
+        text = "Before build the model, we used minimum-Redundancy-Maximum-Relevance (mRMR) to select features. The goal of mRMR " \
+               "is to select a feature subset set that best characterizes the statistical property of a target classification variable," \
+               "subject to the constraint that these features are mutually as dissimilar to each other as possible, but marginally as similar to the classification variable as possible."
+        return text
+
+    def GetSelectedFeatureIndex(self, data_container):
+        data = data_container.GetArray()
+        data /= np.linalg.norm(data, ord=2, axis=0)
+        label = data_container.GetLabel()
+
+        if data.shape[1] < self.GetSelectedFeatureNumber():
+            print('mMRM: The number of features {:d} in data container is smaller than the required number {:d}'.format(
+                data.shape[1], self.GetSelectedFeatureNumber()))
+            self.SetSelectedFeatureNumber(data.shape[1])
+
+        feature_list = ['class'] + data_container.GetFeatureName()
+        feature_index = []
+        pd_label = pd.DataFrame(label)
+        pd_data = pd.DataFrame(data)
+        mRMR_input = pd.concat([pd_label, pd_data], axis=1)
+        mRMR_input.columns = feature_list
+        parameter_list = self.LoadFeatureSelectorParameterList(relative_path=r'HyperParameters\FeatureSelector')
+        feature_name = pymrmr.mRMR(mRMR_input, parameter_list[0]['mutual_information'], self.GetSelectedFeatureNumber())
+        feature_list.remove('class')
+
+        rank = []
+        for index, item in enumerate(feature_name):
+            feature_index.append(feature_list.index(item))
+            rank.append(index)
+        return feature_index, rank, feature_name
+
+    def GetName(self):
+        return 'mRMR'
+
+    def LoadFeatureSelectorParameterList(self, relative_path=os.path.join('HyperParameters', 'FeatureSelector')):
+        self._hyper_parameter_manager.LoadSpecificConfig(self.GetName(), relative_path=relative_path)
+        parameter_list = self._hyper_parameter_manager.GetParameterSetting()
+        return parameter_list
+
+    def Run(self, data_container, store_folder=''):
+        selected_index, rank, feature_name = self.GetSelectedFeatureIndex(data_container)
+        new_data_container = self.SelectFeatureByIndex(data_container, selected_index, is_replace=False)
+        if store_folder and os.path.isdir(store_folder):
+            feature_store_path = os.path.join(store_folder, 'selected_feature.csv')
+            featureinfo_store_path = os.path.join(store_folder, 'feature_select_info.csv')
+
+            new_data_container.Save(feature_store_path)
+            SaveSelectInfo(new_data_container, featureinfo_store_path, is_merge=False)
+
+            mrmr_sort_path = os.path.join(store_folder, 'mMRM_sort.csv')
+            df = pd.DataFrame(data=rank, index=feature_name, columns=['rank'])
+            df.to_csv(mrmr_sort_path)
 
         return new_data_container
 
