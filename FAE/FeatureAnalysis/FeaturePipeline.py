@@ -174,6 +174,7 @@ class FeatureAnalysisPipelines:
         train_df = pd.DataFrame(columns=column_list)
         val_df = pd.DataFrame(columns=column_list)
         test_df = pd.DataFrame(columns=column_list)
+        all_train_df = pd.DataFrame(columns=column_list)
 
         if self.__normalizer_list == []:
             self.__normalizer_list = [NormalizerNone()]
@@ -253,8 +254,8 @@ class FeatureAnalysisPipelines:
 
                                 store_path = os.path.join(store_folder, 'all_train_result.csv')
                                 save_info = [all_train_metric['all_train_' + index] for index in column_list]
-                                train_df.loc[case_name] = save_info
-                                train_df.to_csv(store_path)
+                                all_train_df.loc[case_name] = save_info
+                                all_train_df.to_csv(store_path)
 
                                 store_path = os.path.join(store_folder, 'val_result.csv')
                                 save_info = [val_cv_metric['val_' + index] for index in column_list]
