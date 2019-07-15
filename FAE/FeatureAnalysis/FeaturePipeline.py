@@ -18,7 +18,8 @@ from copy import deepcopy
 
 class FeatureAnalysisPipelines:
     def __init__(self, normalizer_list=[], dimension_reduction_list=[], feature_selector_list=[],
-                 feature_selector_num_list=[], classifier_list=[], cross_validation=None, is_hyper_parameter=False):
+                 feature_selector_num_list=[], classifier_list=[], cross_validation=None, is_hyper_parameter=False,
+                 logger=None):
         self.__normalizer_list = normalizer_list
         self._dimension_reduction_list = dimension_reduction_list
         self.__feature_selector_list = feature_selector_list
@@ -26,6 +27,7 @@ class FeatureAnalysisPipelines:
         self.__classifier_list = classifier_list
         self.__cross_validation = cross_validation
         self.__is_hyper_parameter = is_hyper_parameter
+        self.__logger = logger
 
         self.GenerateMetircDict()
 
@@ -245,7 +247,6 @@ class FeatureAnalysisPipelines:
                                                      feature_num_index,
                                                      classifier_index] = val_cv_metric['val_auc std']
 
-
                             if store_folder and os.path.isdir(store_folder):
                                 store_path = os.path.join(store_folder, 'train_result.csv')
                                 save_info = [train_cv_metric['train_' + index] for index in column_list]
@@ -280,7 +281,6 @@ class FeatureAnalysisPipelines:
                                     test_df.to_csv(store_path)
 
                                 self.SaveMetricDict(store_folder)
-
 
 class OnePipeline:
     def __init__(self, normalizer=None, dimension_reduction=None, feature_selector=None, classifier=None, cross_validation=None):
@@ -409,6 +409,4 @@ if __name__ == '__main__':
     temp = OnePipeline(normalizer=NormalizerZeroCenterAndUnit(), feature_selector=FeatureSelectPipeline([RemoveCosSimilarityFeatures(), FeatureSelectByANOVA(10)]),
                        classifier=SVM(), cross_validation=CrossValidation('5-folder'))
     temp.Run(data_container, store_folder=r'..\..\Example\one_pipeline')
-
-
 
