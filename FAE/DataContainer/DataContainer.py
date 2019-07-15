@@ -63,6 +63,14 @@ class DataContainer:
         else:
             return True
 
+    def IsBinaryLabel(self):
+        return len(np.unique(self.__label)) == 2
+
+    def FindNonValidLabelIndex(self):
+        for index in range(self.__label.shape[0]):
+            if self.__label[index] != 0 and self.__label[index] != 1:
+                return index
+
     def HasNonValidNumber(self):
         array_flat = self._array.flatten()
         for index in range(self._array.size):
@@ -74,7 +82,7 @@ class DataContainer:
         for index0 in range(self._array.shape[0]):
             for index1 in range(self._array.shape[1]):
                 if not self.IsValidNumber(self._array[index0,index1]):
-                    return index0,index1
+                    return index0, index1
         return None, None
 
     def Save(self, store_path):
