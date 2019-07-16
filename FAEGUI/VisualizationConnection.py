@@ -498,6 +498,11 @@ class VisualizationConnection(QWidget, Ui_Visualization):
 
 
     def UpdateSheet(self):
+        if self.checkMaxFeatureNumber.isChecked():
+            self.comboSheet.setEnabled(False)
+        else:
+            self.comboSheet.setEnabled(True)
+
         self.tableClinicalStatistic.clear()
         self.tableClinicalStatistic.setSortingEnabled(False)
         if self.comboSheet.currentText() == 'Train':

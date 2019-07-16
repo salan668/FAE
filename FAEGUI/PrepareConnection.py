@@ -130,6 +130,13 @@ class PrepareConnection(QWidget, Ui_Prepare):
     def CheckAndSave(self):
         if self.data_container.IsEmpty():
             QMessageBox.warning(self, "Warning", "There is no data", QMessageBox.Ok)
+        elif not self.data_container.IsBinaryLabel():
+            QMessageBox.warning(self, "Warning", "There are not 2 Labels", QMessageBox.Ok)
+            non_valid_number_Index = self.data_container.FindNonValidLabelIndex()
+            old_edit_triggers = self.tableFeature.editTriggers()
+            self.tableFeature.setEditTriggers(QAbstractItemView.CurrentChanged)
+            self.tableFeature.setCurrentCell(non_valid_number_Index, 0)
+            self.tableFeature.setEditTriggers(old_edit_triggers)
         elif self.data_container.HasNonValidNumber():
             QMessageBox.warning(self, "Warning", "There are nan items", QMessageBox.Ok)
             non_valid_number_Index = self.data_container.FindNonValidNumberIndex()

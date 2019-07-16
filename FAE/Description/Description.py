@@ -49,7 +49,7 @@ class Description:
                                      "predictive value (NPV) were also calculated at a cutoff value that maximized the " \
                                      "value of the Yorden index. We also boosted estimation 1000 times and applied paired " \
                                      "t-test to give the 95% confidence interval. All above processes were implemented with " \
-                                     "FeAture Explorer (FAE, v0.2.2, https://github.com/salan668/FAE) on Python (3.5.4, https://www.python.org/). \n"
+                                     "FeAture Explorer (FAE, v0.2.5, https://github.com/salan668/FAE) on Python (3.6.8, https://www.python.org/). \n"
 
         # Result Description
         result_folder = os.path.join(result_folder, pipeline.GetStoreName())
@@ -156,7 +156,7 @@ class Description:
         pdf.image(os.path.join(store_folder, 'ROC.jpg'))
         pdf.table_header(figure_title)
 
-        pdf.end_connect("Thanks for using FAE v.0.2. If you need a specific description, please connect to Yang Song (songyangmri@gmail.com) or Guang Yang "
+        pdf.end_connect("Thanks for using FAE v.0.2.5. If you need a specific description, please connect to Yang Song (songyangmri@gmail.com) or Guang Yang "
               "(gyang@phy.ecnu.edu.cn). Welcome any co-operation and discussion. ")
         pdf.generate()
 

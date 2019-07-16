@@ -23,6 +23,7 @@ These instructions will get you a copy of the project up and running on your loc
 The below modules must be installed first to make the FAE work. 
 
 ```
+- imblance-learn
 - matplotlib (seaborn)
 - numpy
 - pandas
@@ -30,7 +31,7 @@ The below modules must be installed first to make the FAE work.
 - pyradiomics
 - PyQt5
 - PyQtGraph
-- imblance-learn
+- reportlab
 - scikit-learn
 - scipy
 ```

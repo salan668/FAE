@@ -63,6 +63,14 @@ class DataContainer:
         else:
             return True
 
+    def IsBinaryLabel(self):
+        return len(np.unique(self.__label)) == 2
+
+    def FindNonValidLabelIndex(self):
+        for index in range(self.__label.shape[0]):
+            if self.__label[index] != 0 and self.__label[index] != 1:
+                return index
+
     def HasNonValidNumber(self):
         array_flat = self._array.flatten()
         for index in range(self._array.size):
@@ -74,7 +82,7 @@ class DataContainer:
         for index0 in range(self._array.shape[0]):
             for index1 in range(self._array.shape[1]):
                 if not self.IsValidNumber(self._array[index0,index1]):
-                    return index0,index1
+                    return index0, index1
         return None, None
 
     def Save(self, store_path):
@@ -139,7 +147,7 @@ class DataContainer:
             print('No "label" in the index')
             index = np.nan
         self.__feature_name.pop(index)
-        self.__label = self.__df[label_name].values
+        self.__label = np.asarray(self.__df[label_name].values, dtype=np.int)
         self._array = np.asarray(self.__df[self.__feature_name].values, dtype=np.float32)
 
     def UpdateFrameByData(self):
@@ -199,7 +207,7 @@ class DataContainer:
     def GetCaseName(self): return self.__case_name
 
     def SetArray(self, array): self._array = array
-    def SetLabel(self, label):self.__label = label
+    def SetLabel(self, label):self.__label = np.asarray(label, dtype=np.int)
     def SetFeatureName(self, feature_name): self.__feature_name = feature_name
     def SetCaseName(self, case_name): self.__case_name = case_name
     def SetFrame(self, frame):
@@ -209,7 +217,7 @@ class DataContainer:
             if len(frame.index.tolist()) != self.__label.size:
                 print('Check the number of fram and the number of labels.')
                 return None
-            frame.insert(0, 'label', self.__label)
+            frame.insert(0, 'label', np.asarray(self.__label, dtype=int))
             self.__df = frame
 
         self.UpdateDataByFrame()
