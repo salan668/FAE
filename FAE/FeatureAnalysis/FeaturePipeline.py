@@ -171,7 +171,8 @@ class FeatureAnalysisPipelines:
                        'auc', 'auc 95% CIs', 'auc std', 'accuracy',
                        'Youden Index', 'sensitivity', 'specificity',
                        'positive predictive value', 'negative predictive value']
-        train_df = pd.DataFrame(columns=column_list)
+        train_cv_df = pd.DataFrame(columns=column_list)
+        train_all_df = pd.DataFrame(columns=column_list)
         val_df = pd.DataFrame(columns=column_list)
         test_df = pd.DataFrame(columns=column_list)
 
@@ -248,13 +249,13 @@ class FeatureAnalysisPipelines:
                             if store_folder and os.path.isdir(store_folder):
                                 store_path = os.path.join(store_folder, 'train_result.csv')
                                 save_info = [train_cv_metric['train_' + index] for index in column_list]
-                                train_df.loc[case_name] = save_info
-                                train_df.to_csv(store_path)
+                                train_cv_df.loc[case_name] = save_info
+                                train_cv_df.to_csv(store_path)
 
                                 store_path = os.path.join(store_folder, 'all_train_result.csv')
                                 save_info = [all_train_metric['all_train_' + index] for index in column_list]
-                                train_df.loc[case_name] = save_info
-                                train_df.to_csv(store_path)
+                                train_all_df.loc[case_name] = save_info
+                                train_all_df.to_csv(store_path)
 
                                 store_path = os.path.join(store_folder, 'val_result.csv')
                                 save_info = [val_cv_metric['val_' + index] for index in column_list]
