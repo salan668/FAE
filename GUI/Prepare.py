@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'D:\MyCode\FAEGitHub\FAE\GUI\Prepare.ui'
+# Form implementation generated from reading ui file 'Prepare.ui'
 #
 # Created by: PyQt5 UI code generator 5.11.3
 #
@@ -130,18 +130,18 @@ class Ui_Prepare(object):
         Prepare.setWindowTitle(_translate("Prepare", "Form"))
         self.buttonLoad.setText(_translate("Prepare", "Load"))
         self.groupRemoveNonvalidValue.setTitle(_translate("Prepare", "Remove non-valid value"))
-        self.radioRemoveNonvalidCases.setText(_translate("Prepare", "Remove non-valid Cases"))
-        self.radioRemoveNonvalidFeatures.setText(_translate("Prepare", "Remove non-valid Features"))
+        self.radioRemoveNonvalidCases.setText(_translate("Prepare", "Remove invalid Cases"))
+        self.radioRemoveNonvalidFeatures.setText(_translate("Prepare", "Remove invalid Features"))
         self.buttonRemove.setText(_translate("Prepare", "Remove"))
         self.groupSeparate.setTitle(_translate("Prepare", "Separate Train and Test"))
         self.label.setText(_translate("Prepare", "Percentage of Testing data"))
-        self.loadTestingReference.setText(_translate("Prepare", "Load Testing Dataset"))
-        self.clearTestingReference.setText(_translate("Prepare", "Clear Testing Dataset"))
+        self.loadTestingReference.setText(_translate("Prepare", "Load Test Dataset"))
+        self.clearTestingReference.setText(_translate("Prepare", "Clear Test Dataset"))
         self.checkSeparate.setText(_translate("Prepare", "Separate Train And Test"))
         self.groupBox_3.setTitle(_translate("Prepare", "Balance Data"))
         self.radioNoneBalance.setText(_translate("Prepare", "None Balance"))
-        self.radioUpSampling.setText(_translate("Prepare", "UpSampling"))
-        self.radioDownSampling.setText(_translate("Prepare", "DownSampling"))
+        self.radioUpSampling.setText(_translate("Prepare", "Upsampling"))
+        self.radioDownSampling.setText(_translate("Prepare", "Downsampling"))
         self.radioSmote.setText(_translate("Prepare", "SMOTE"))
         self.buttonSave.setText(_translate("Prepare", "Check and Save"))
 

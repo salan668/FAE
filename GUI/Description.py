@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'D:\MyCode\FAEGitHub\FAE\GUI\Description.ui'
+# Form implementation generated from reading ui file 'Description.ui'
 #
 # Created by: PyQt5 UI code generator 5.11.3
 #
@@ -169,10 +169,10 @@ class Ui_Description(object):
     def retranslateUi(self, Description):
         _translate = QtCore.QCoreApplication.translate
         Description.setWindowTitle(_translate("Description", "Description"))
-        self.label.setText(_translate("Description", "Training data"))
+        self.label.setText(_translate("Description", "Train dataset"))
         self.buttonLoadTrainingData.setText(_translate("Description", "Load"))
         self.buttonClearTrainingData.setText(_translate("Description", "Clear"))
-        self.label_2.setText(_translate("Description", "Testing data"))
+        self.label_2.setText(_translate("Description", "Test dataset"))
         self.buttonLoadTestingData.setText(_translate("Description", "Load"))
         self.buttonClearTestingData.setText(_translate("Description", "Clear"))
         self.label_3.setText(_translate("Description", "Data Description"))

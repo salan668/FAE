@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'Process.ui'
 #
-# Created by: PyQt5 UI code generator 5.11.2
+# Created by: PyQt5 UI code generator 5.11.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Process(object):
     def setupUi(self, Process):
         Process.setObjectName("Process")
-        Process.resize(1040, 822)
+        Process.resize(1040, 876)
         self.gridLayout = QtWidgets.QGridLayout(Process)
         self.gridLayout.setObjectName("gridLayout")
         self.horizontalLayout_5 = QtWidgets.QHBoxLayout()
@@ -243,9 +243,9 @@ class Ui_Process(object):
         _translate = QtCore.QCoreApplication.translate
         Process.setWindowTitle(_translate("Process", "Form"))
         self.groupBox.setTitle(_translate("Process", "Load"))
-        self.label.setText(_translate("Process", "Training data"))
+        self.label.setText(_translate("Process", "Train dataset"))
         self.buttonLoadTrainingData.setText(_translate("Process", "Load"))
-        self.label_2.setText(_translate("Process", "Testing data"))
+        self.label_2.setText(_translate("Process", "Test dataset"))
         self.buttonLoadTestingData.setText(_translate("Process", "Load"))
         self.groupNormalization.setTitle(_translate("Process", "Normalization"))
         self.checkNormalizeUnit.setText(_translate("Process", "Normalize to unit"))

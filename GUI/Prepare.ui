@@ -85,14 +85,14 @@
             <item>
              <widget class="QRadioButton" name="radioRemoveNonvalidCases">
               <property name="text">
-               <string>Remove non-valid Cases</string>
+               <string>Remove invalid Cases</string>
               </property>
              </widget>
             </item>
             <item>
              <widget class="QRadioButton" name="radioRemoveNonvalidFeatures">
               <property name="text">
-               <string>Remove non-valid Features</string>
+               <string>Remove invalid Features</string>
               </property>
              </widget>
             </item>
@@ -129,14 +129,14 @@
             <item>
              <widget class="QPushButton" name="loadTestingReference">
               <property name="text">
-               <string>Load Testing Dataset</string>
+               <string>Load Test Dataset</string>
               </property>
              </widget>
             </item>
             <item>
              <widget class="QPushButton" name="clearTestingReference">
               <property name="text">
-               <string>Clear Testing Dataset</string>
+               <string>Clear Test Dataset</string>
               </property>
              </widget>
             </item>
@@ -192,14 +192,14 @@
             <item>
              <widget class="QRadioButton" name="radioUpSampling">
               <property name="text">
-               <string>UpSampling</string>
+               <string>Upsampling</string>
               </property>
              </widget>
             </item>
             <item>
              <widget class="QRadioButton" name="radioDownSampling">
               <property name="text">
-               <string>DownSampling</string>
+               <string>Downsampling</string>
               </property>
              </widget>
             </item>
