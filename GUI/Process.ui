@@ -228,13 +228,6 @@
                </widget>
               </item>
               <item>
-               <widget class="QCheckBox" name="checkMRMR">
-                <property name="text">
-                 <string>mRMR</string>
-                </property>
-               </widget>
-              </item>
-              <item>
                <widget class="QCheckBox" name="checkFeatureSelectorAll">
                 <property name="text">
                  <string>All Feature Selector</string>

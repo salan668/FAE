@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'Process.ui'
+# Form implementation generated from reading ui file 'D:\MyCode\FAEGitHub\FAE\GUI\Process.ui'
 #
-# Created by: PyQt5 UI code generator 5.11.2
+# Created by: PyQt5 UI code generator 5.11.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -128,9 +128,6 @@ class Ui_Process(object):
         self.checkRelief = QtWidgets.QCheckBox(self.groupSelector)
         self.checkRelief.setObjectName("checkRelief")
         self.horizontalLayout_8.addWidget(self.checkRelief)
-        self.checkMRMR = QtWidgets.QCheckBox(self.groupSelector)
-        self.checkMRMR.setObjectName("checkMRMR")
-        self.horizontalLayout_8.addWidget(self.checkMRMR)
         self.checkFeatureSelectorAll = QtWidgets.QCheckBox(self.groupSelector)
         self.checkFeatureSelectorAll.setObjectName("checkFeatureSelectorAll")
         self.horizontalLayout_8.addWidget(self.checkFeatureSelectorAll)
@@ -262,7 +259,6 @@ class Ui_Process(object):
         self.checkANOVA.setText(_translate("Process", "ANOVA"))
         self.checkRFE.setText(_translate("Process", "RFE"))
         self.checkRelief.setText(_translate("Process", "Relief"))
-        self.checkMRMR.setText(_translate("Process", "mRMR"))
         self.checkFeatureSelectorAll.setText(_translate("Process", "All Feature Selector"))
         self.groupClassifier.setTitle(_translate("Process", "Classifier"))
         self.checkSVM.setText(_translate("Process", "SVM"))
