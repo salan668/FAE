@@ -45,9 +45,9 @@ class DescriptionConnection(QWidget, Ui_Description):
         self.SetPipelineStateButton(False)
 
     def Generate(self):
-        if self._training_data_container.IsEmpty():
-            QMessageBox.about(self, '', 'Load training data at least')
-            return
+        # if self._training_data_container.IsEmpty():
+        #     QMessageBox.about(self, '', 'Load training data at least')
+        #     return
 
         dlg = QFileDialog()
         dlg.setFileMode(QFileDialog.DirectoryOnly)
@@ -60,7 +60,7 @@ class DescriptionConnection(QWidget, Ui_Description):
 
             report = Description()
             try:
-                report.Run(self._training_data_container, self._current_pipeline, self._root_folder, store_folder, self._testing_data_container)
+                report.Run(self._current_pipeline, self._root_folder, store_folder)
                 os.system("explorer.exe {:s}".format(os.path.normpath(store_folder)))
             except Exception as ex:
                 QMessageBox.about(self, 'Description Generate Error: ', ex.__str__())
