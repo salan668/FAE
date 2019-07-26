@@ -181,6 +181,9 @@ class DataContainer:
             vector = self._array[index, :]
             if np.where(np.isnan(vector))[0].size > 0:
                 removed_index.append(index)
+                continue
+            if self.__label[index] != 0 and self.__label[index] != 1:
+                removed_index.append(index)
 
         # Remove the case name
         removed_case_name = [self.__case_name[index] for index in removed_index]
