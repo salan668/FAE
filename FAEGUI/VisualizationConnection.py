@@ -5,8 +5,8 @@ from PyQt5 import QtCore, QtGui
 from GUI.Visualization import Ui_Visualization
 
 from FAE.FeatureAnalysis.Classifier import *
-from FAE.FeatureAnalysis.FeaturePipeline import FeatureAnalysisPipelines
-#from FAE.Description.Description import Description
+from FAE.FeatureAnalysis.FeaturePipeline import FeatureAnalysisPipelines, OnePipeline
+from FAE.Description.Description import Description
 
 from FAE.Visualization.DrawROCList import DrawROCList
 from FAE.Visualization.PlotMetricVsFeatureNumber import DrawCurve, DrawBar
@@ -27,6 +27,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.buttonLoadResult.clicked.connect(self.LoadAll)
         self.buttonClearResult.clicked.connect(self.ClearAll)
         self.buttonSave.clicked.connect(self.Save)
+        self.buttonGenerateDescription.clicked.connect(self.GenerateDescription)
 
         self.__plt_roc = self.canvasROC.getFigure().add_subplot(111)
         self.__plt_plot = self.canvasPlot.getFigure().add_subplot(111)
@@ -645,3 +646,42 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         except Exception as e:
             print(e)
             return
+
+    def GenerateDescription(self):
+        if (self.comboNormalizer.count() == 0) or \
+                (self.comboDimensionReduction.count() == 0) or \
+                (self.comboFeatureSelector.count() == 0) or \
+                (self.comboClassifier.count() == 0) or \
+                (self.spinBoxFeatureNumber.value() == 0):
+            return
+
+        case_name = self.comboNormalizer.currentText() + '_' + \
+                    self.comboDimensionReduction.currentText() + '_' + \
+                    self.comboFeatureSelector.currentText() + '_' + \
+                    str(self.spinBoxFeatureNumber.value()) + '_' + \
+                    self.comboClassifier.currentText()
+
+        case_folder = os.path.join(self._root_folder, case_name)
+        current_pipeline = OnePipeline()
+        try:
+            current_pipeline.LoadPipeline(os.path.join(case_folder, 'pipeline_info.csv'))
+        except Exception as ex:
+            QMessageBox.about(self, "Load Error", ex.__str__())
+            self.logger.log('Load Pipeline Error, The reason is ' + str(ex))
+
+        dlg = QFileDialog()
+        dlg.setFileMode(QFileDialog.DirectoryOnly)
+        dlg.setOption(QFileDialog.ShowDirsOnly)
+
+        if dlg.exec_():
+            store_folder = dlg.selectedFiles()[0]
+            roc_path = os.path.join(store_folder, 'ROC.jpg')
+            self.canvasROC.getFigure().savefig(roc_path, dpi=300)
+
+            report = Description()
+            try:
+                report.Run(current_pipeline, self._root_folder, store_folder)
+                os.system("explorer.exe {:s}".format(os.path.normpath(store_folder)))
+            except Exception as ex:
+                QMessageBox.about(self, 'Description Generate Error: ', ex.__str__())
+                self.logger.log('Description Generate Error:  ' + str(ex))

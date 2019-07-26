@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Visualization(object):
     def setupUi(self, Visualization):
         Visualization.setObjectName("Visualization")
-        Visualization.resize(1272, 755)
+        Visualization.resize(1272, 773)
         self.gridLayout_4 = QtWidgets.QGridLayout(Visualization)
         self.gridLayout_4.setObjectName("gridLayout_4")
         self.verticalLayout_6 = QtWidgets.QVBoxLayout()
@@ -37,6 +37,9 @@ class Ui_Visualization(object):
         self.buttonSave.setEnabled(False)
         self.buttonSave.setObjectName("buttonSave")
         self.verticalLayout.addWidget(self.buttonSave)
+        self.buttonGenerateDescription = QtWidgets.QPushButton(Visualization)
+        self.buttonGenerateDescription.setObjectName("buttonGenerateDescription")
+        self.verticalLayout.addWidget(self.buttonGenerateDescription)
         self.horizontalLayout_2.addLayout(self.verticalLayout)
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
@@ -221,6 +224,7 @@ class Ui_Visualization(object):
         self.buttonLoadResult.setText(_translate("Visualization", "Load"))
         self.buttonClearResult.setText(_translate("Visualization", "Clear"))
         self.buttonSave.setText(_translate("Visualization", "Save Figure"))
+        self.buttonGenerateDescription.setText(_translate("Visualization", "Generate Description"))
         self.label_7.setText(_translate("Visualization", "Show:"))
         self.checkMaxFeatureNumber.setText(_translate("Visualization", "Estimate"))
         self.label.setText(_translate("Visualization", "testing based"))
