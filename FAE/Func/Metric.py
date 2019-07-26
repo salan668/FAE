@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.stats import sem
+from random import shuffle
 from sklearn.metrics import roc_auc_score, roc_curve, confusion_matrix
 
 def AUC_Confidence_Interval(y_true, y_pred, CI_index=0.95):
@@ -20,17 +20,19 @@ def AUC_Confidence_Interval(y_true, y_pred, CI_index=0.95):
     bootstrapped_scores = []
 
     rng = np.random.RandomState(rng_seed)
+    index_list = list(np.arange(0, len(y_pred), 1))
     for i in range(n_bootstraps):
-        index_list = list(np.arange(0, len(y_pred), 1))
+        shuffle(index_list)
+        selected_index = index_list[:int(0.8 * len(index_list))]
         # bootstrap by sampling with replacement on the prediction indices
-        index_list.pop(int(rng.random_integers(0, len(y_pred) - 1, 1)))
+        # index_list.pop(int(rng.random_integers(0, len(y_pred) - 1, 1)))   # Jing ZHang used it to make the CIs narrow
 
-        if len(np.unique(y_true[index_list])) < 2:
+        if len(np.unique(y_true[selected_index])) < 2:
             # We need at least one positive and one negative sample for ROC AUC
             # to be defined: reject the sample
             continue
 
-        score = roc_auc_score(y_true[index_list], y_pred[index_list])
+        score = roc_auc_score(y_true[selected_index], y_pred[selected_index])
         bootstrapped_scores.append(score)
         # print("Bootstrap #{} ROC area: {:0.3f}".format(i + 1, score))
 
