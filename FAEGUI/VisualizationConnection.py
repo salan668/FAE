@@ -68,7 +68,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         # Update Contribution canvas
         self.radioContributionFeatureSelector.toggled.connect(self.UpdateContribution)
         self.radioContributionClassifier.toggled.connect(self.UpdateContribution)
-        self.comboContributionNormalization.currentIndexChanged.connect(self.UpdateContribution)
+        self.comboContributionNormalizor.currentIndexChanged.connect(self.UpdateContribution)
         self.comboContributionDimension.currentIndexChanged.connect(self.UpdateContribution)
         self.comboContributionFeatureSelector.currentIndexChanged.connect(self.UpdateContribution)
         self.comboContributionClassifier.currentIndexChanged.connect(self.UpdateContribution)
@@ -148,7 +148,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.comboPlotX.clear()
         self.comboPlotY.clear()
 
-        self.comboContributionNormalization.clear()
+        self.comboContributionNormalizor.clear()
         self.comboContributionDimension.clear()
         self.comboContributionClassifier.clear()
         self.comboContributionFeatureSelector.clear()
@@ -223,7 +223,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
 
         # Update Contribution canvas
         for index in self._fae.GetNormalizerList():
-            self.comboContributionNormalization.addItem(index.GetName())
+            self.comboContributionNormalizor.addItem(index.GetName())
         for index in self._fae.GetDimensionReductionList():
             self.comboContributionDimension.addItem(index.GetName())
         for selector in self._fae.GetFeatureSelectorList():
@@ -392,7 +392,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
 
     def UpdateContribution(self):
         try:
-            one_result_folder_name = self.comboContributionNormalization.currentText() + '_' + \
+            one_result_folder_name = self.comboContributionNormalizor.currentText() + '_' + \
                                 self.comboContributionDimension.currentText() + '_' + \
                                 self.comboContributionFeatureSelector.currentText() + '_' + \
                                 str(self.spinContributeFeatureNumber.value()) + '_' + \
@@ -400,7 +400,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
             one_result_folder = os.path.join(self._root_folder, one_result_folder_name)
             # This is compatible witht the previous version
             if not os.path.exists(one_result_folder):
-                one_result_folder_name = self.comboContributionNormalization.currentText() + '_Cos_' + \
+                one_result_folder_name = self.comboContributionNormalizor.currentText() + '_Cos_' + \
                                          self.comboContributionFeatureSelector.currentText() + '_' + \
                                          str(self.spinContributeFeatureNumber.value()) + '_' + \
                                          self.comboContributionClassifier.currentText()
@@ -616,12 +616,31 @@ class VisualizationConnection(QWidget, Ui_Visualization):
             self.comboFeatureSelector.setCurrentText(current_feature_selector)
             self.comboClassifier.setCurrentText(current_classifier)
             self.spinBoxFeatureNumber.setValue(int(current_feature_number))
-
             if not (self.checkROCTrain.isChecked() or self.checkROCCVTrain.isChecked() or
                     self.checkROCCVValidation.isChecked() or self.checkROCTrain.isChecked()):
                 self.checkROCCVTrain.setCheckState(True)
-
+                self.checkROCCVValidation.setCheckState(True)
             self.UpdateROC()
+
+            # Update the AUC versus feature number
+            self.comboPlotNormalizer.setCurrentText(current_normalizer)
+            self.comboPlotDimensionReduction.setCurrentText(current_dimension_reducer)
+            self.comboPlotFeatureSelector.setCurrentText(current_feature_selector)
+            self.comboPlotClassifier.setCurrentText(current_classifier)
+            self.comboPlotX.setCurrentText('Feature Number')
+            if not (self.checkPlotTrain.isChecked() or
+                    self.checkPlotCVTrain.isChecked() or
+                    self.checkPlotCVValidation.isChecked()):
+                self.checkPlotCVValidation.setCheckState(True)
+            self.UpdatePlot()
+
+            # Update the Contribution
+            self.comboContributionNormalizor.setCurrentText(current_normalizer)
+            self.comboContributionDimension.setCurrentText(current_dimension_reducer)
+            self.comboContributionFeatureSelector.setCurrentText(current_feature_selector)
+            self.comboContributionClassifier.setCurrentText(current_classifier)
+            self.spinContributeFeatureNumber.setValue(int(current_feature_number))
+            self.UpdateContribution()
 
         except Exception as e:
             print(e)
