@@ -83,16 +83,23 @@
             </spacer>
            </item>
            <item>
-            <widget class="QLabel" name="label">
+            <widget class="QCheckBox" name="checkMaxFeatureNumber">
              <property name="text">
-              <string>Test result on :</string>
+              <string>Estimate</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QCheckBox" name="checkMaxFeatureNumber">
+            <widget class="QLabel" name="label">
              <property name="text">
-              <string>Validation</string>
+              <string>testing based</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="label_8">
+             <property name="text">
+              <string>on validation</string>
              </property>
             </widget>
            </item>
@@ -301,13 +308,6 @@
          </item>
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_5">
-           <item>
-            <widget class="QCheckBox" name="checkContributionShow">
-             <property name="text">
-              <string>Show</string>
-             </property>
-            </widget>
-           </item>
            <item>
             <widget class="QRadioButton" name="radioContributionFeatureSelector">
              <property name="text">

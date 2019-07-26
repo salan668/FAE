@@ -15,6 +15,6 @@ class eclog:
             self.eclogger.addHandler(self.rotate_handler)
 
     def GetLogger(self):
-        return self.eclogger;
+        return self.eclogger
 
 

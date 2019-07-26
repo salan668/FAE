@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'Visualization.ui'
+# Form implementation generated from reading ui file 'D:\MyCode\FAEGitHub\FAE\GUI\Visualization.ui'
 #
 # Created by: PyQt5 UI code generator 5.11.3
 #
@@ -50,12 +50,15 @@ class Ui_Visualization(object):
         self.verticalLayout_2.addWidget(self.comboSheet)
         spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_2.addItem(spacerItem)
-        self.label = QtWidgets.QLabel(Visualization)
-        self.label.setObjectName("label")
-        self.verticalLayout_2.addWidget(self.label)
         self.checkMaxFeatureNumber = QtWidgets.QCheckBox(Visualization)
         self.checkMaxFeatureNumber.setObjectName("checkMaxFeatureNumber")
         self.verticalLayout_2.addWidget(self.checkMaxFeatureNumber)
+        self.label = QtWidgets.QLabel(Visualization)
+        self.label.setObjectName("label")
+        self.verticalLayout_2.addWidget(self.label)
+        self.label_8 = QtWidgets.QLabel(Visualization)
+        self.label_8.setObjectName("label_8")
+        self.verticalLayout_2.addWidget(self.label_8)
         spacerItem1 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_2.addItem(spacerItem1)
         self.horizontalLayout.addLayout(self.verticalLayout_2)
@@ -178,9 +181,6 @@ class Ui_Visualization(object):
         self.verticalLayout_5.addWidget(self.canvasFeature)
         self.horizontalLayout_5 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_5.setObjectName("horizontalLayout_5")
-        self.checkContributionShow = QtWidgets.QCheckBox(Visualization)
-        self.checkContributionShow.setObjectName("checkContributionShow")
-        self.horizontalLayout_5.addWidget(self.checkContributionShow)
         self.radioContributionFeatureSelector = QtWidgets.QRadioButton(Visualization)
         self.radioContributionFeatureSelector.setChecked(True)
         self.radioContributionFeatureSelector.setObjectName("radioContributionFeatureSelector")
@@ -222,8 +222,9 @@ class Ui_Visualization(object):
         self.buttonClearResult.setText(_translate("Visualization", "Clear"))
         self.buttonSave.setText(_translate("Visualization", "Save Figure"))
         self.label_7.setText(_translate("Visualization", "Show:"))
-        self.label.setText(_translate("Visualization", "Test result on :"))
-        self.checkMaxFeatureNumber.setText(_translate("Visualization", "Validation"))
+        self.checkMaxFeatureNumber.setText(_translate("Visualization", "Estimate"))
+        self.label.setText(_translate("Visualization", "testing based"))
+        self.label_8.setText(_translate("Visualization", "on validation"))
         self.label_2.setText(_translate("Visualization", "ROC Curve / Result"))
         self.checkROCCVTrain.setText(_translate("Visualization", "CV Train"))
         self.checkROCCVValidation.setText(_translate("Visualization", "CV Validation"))
@@ -236,7 +237,6 @@ class Ui_Visualization(object):
         self.label_5.setText(_translate("Visualization", "Y-Label"))
         self.label_6.setText(_translate("Visualization", "X-Label"))
         self.label_4.setText(_translate("Visualization", "Feature Contribution"))
-        self.checkContributionShow.setText(_translate("Visualization", "Show"))
         self.radioContributionFeatureSelector.setText(_translate("Visualization", "Feature Selector"))
         self.radioContributionClassifier.setText(_translate("Visualization", "Classifier"))
 

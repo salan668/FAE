@@ -66,7 +66,6 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         # self.checkPlotTest.stateChanged.connect(self.UpdatePlot)
 
         # Update Contribution canvas
-        self.checkContributionShow.stateChanged.connect(self.UpdateContribution)
         self.radioContributionFeatureSelector.toggled.connect(self.UpdateContribution)
         self.radioContributionClassifier.toggled.connect(self.UpdateContribution)
         self.comboContributionNormalization.currentIndexChanged.connect(self.UpdateContribution)
@@ -392,80 +391,75 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.canvasPlot.draw()
 
     def UpdateContribution(self):
-        if not self.checkContributionShow.isChecked():
-            return
-
-        one_result_folder_name = self.comboContributionNormalization.currentText() + '_' + \
-                            self.comboContributionDimension.currentText() + '_' + \
-                            self.comboContributionFeatureSelector.currentText() + '_' + \
-                            str(self.spinContributeFeatureNumber.value()) + '_' + \
-                            self.comboContributionClassifier.currentText()
-        one_result_folder = os.path.join(self._root_folder, one_result_folder_name)
-        # This is compatible witht the previous version
-        if not os.path.exists(one_result_folder):
-            one_result_folder_name = self.comboContributionNormalization.currentText() + '_Cos_' + \
-                                     self.comboContributionFeatureSelector.currentText() + '_' + \
-                                     str(self.spinContributeFeatureNumber.value()) + '_' + \
-                                     self.comboContributionClassifier.currentText()
+        try:
+            one_result_folder_name = self.comboContributionNormalization.currentText() + '_' + \
+                                self.comboContributionDimension.currentText() + '_' + \
+                                self.comboContributionFeatureSelector.currentText() + '_' + \
+                                str(self.spinContributeFeatureNumber.value()) + '_' + \
+                                self.comboContributionClassifier.currentText()
             one_result_folder = os.path.join(self._root_folder, one_result_folder_name)
+            # This is compatible witht the previous version
+            if not os.path.exists(one_result_folder):
+                one_result_folder_name = self.comboContributionNormalization.currentText() + '_Cos_' + \
+                                         self.comboContributionFeatureSelector.currentText() + '_' + \
+                                         str(self.spinContributeFeatureNumber.value()) + '_' + \
+                                         self.comboContributionClassifier.currentText()
+                one_result_folder = os.path.join(self._root_folder, one_result_folder_name)
 
-        if self.radioContributionFeatureSelector.isChecked():
-            file_name = self.comboContributionFeatureSelector.currentText() + '_sort.csv'
-            file_path = os.path.join(one_result_folder, file_name)
-
-            if not os.path.exists(file_path):
-                file_name = self.comboContributionFeatureSelector.currentText().lower() + '_sort.csv'
+            if self.radioContributionFeatureSelector.isChecked():
+                file_name = self.comboContributionFeatureSelector.currentText() + '_sort.csv'
                 file_path = os.path.join(one_result_folder, file_name)
 
+                if not os.path.exists(file_path):
+                    file_name = self.comboContributionFeatureSelector.currentText().lower() + '_sort.csv'
+                    file_path = os.path.join(one_result_folder, file_name)
 
+                if file_path:
+                    df = pd.read_csv(file_path, index_col=0)
+                    value = list(np.abs(df.iloc[:, 0]))
 
-            if file_path:
+                    #add positive and negatiove info for coef
+                    processed_feature_name = list(df.index)
+                    original_value = list(df.iloc[:, 0])
+                    for index in range(len(original_value)):
+                        if original_value[index] > 0:
+                            processed_feature_name[index] = processed_feature_name[index] + ' P'
+                        else:
+                            processed_feature_name[index] = processed_feature_name[index] + ' N'
 
-                df = pd.read_csv(file_path, index_col=0)
-                value = list(np.abs(df.iloc[:, 0]))
-
-                #add positive and negatiove info for coef
-                processed_feature_name = list(df.index)
-                original_value = list(df.iloc[:, 0])
-                for index in range(len(original_value)):
-                    if original_value[index] > 0:
-                        processed_feature_name[index] = processed_feature_name[index] + ' P'
-                    else:
-                        processed_feature_name[index] = processed_feature_name[index] + ' N'
-
-                GeneralFeatureSort(processed_feature_name, value, max_num=self.spinContributeFeatureNumber.value(),
-                                   is_show=False, fig=self.canvasFeature.getFigure())
-
-        elif self.radioContributionClassifier.isChecked():
-            specific_name = self.comboContributionClassifier.currentText() + '_coef.csv'
-            file_path = os.path.join(one_result_folder, specific_name)
-
-            if not os.path.exists(file_path):
-                specific_name = self.comboContributionClassifier.currentText().lower() + '_coef.csv'
-                file_path = os.path.join(one_result_folder, specific_name)
-
-            if file_path:
-                df = pd.read_csv(file_path, index_col=0)
-                feature_name = list(df.index)
-                value = list(np.abs(df.iloc[:, 0]))
-
-                #add positive and negatiove info for coef
-                processed_feature_name = list(df.index)
-                original_value = list(df.iloc[:, 0])
-                for index in range(len(original_value)):
-                    if original_value[index] > 0:
-                        processed_feature_name[index] = processed_feature_name[index] + ' P'
-                    else:
-                        processed_feature_name[index] = processed_feature_name[index] + ' N'
-
-                # try:
-                #     SortRadiomicsFeature(processed_feature_name, value, is_show=False, fig=self.canvasFeature.getFigure())
-                # except:
-                GeneralFeatureSort(processed_feature_name, value,
+                    GeneralFeatureSort(processed_feature_name, value, max_num=self.spinContributeFeatureNumber.value(),
                                        is_show=False, fig=self.canvasFeature.getFigure())
 
+            elif self.radioContributionClassifier.isChecked():
+                specific_name = self.comboContributionClassifier.currentText() + '_coef.csv'
+                file_path = os.path.join(one_result_folder, specific_name)
 
-        self.canvasFeature.draw()
+                if not os.path.exists(file_path):
+                    specific_name = self.comboContributionClassifier.currentText().lower() + '_coef.csv'
+                    file_path = os.path.join(one_result_folder, specific_name)
+
+                if file_path:
+                    df = pd.read_csv(file_path, index_col=0)
+                    feature_name = list(df.index)
+                    value = list(np.abs(df.iloc[:, 0]))
+
+                    #add positive and negatiove info for coef
+                    processed_feature_name = list(df.index)
+                    original_value = list(df.iloc[:, 0])
+                    for index in range(len(original_value)):
+                        if original_value[index] > 0:
+                            processed_feature_name[index] = processed_feature_name[index] + ' P'
+                        else:
+                            processed_feature_name[index] = processed_feature_name[index] + ' N'
+
+                    # try:
+                    #     SortRadiomicsFeature(processed_feature_name, value, is_show=False, fig=self.canvasFeature.getFigure())
+                    # except:
+                    GeneralFeatureSort(processed_feature_name, value,
+                                           is_show=False, fig=self.canvasFeature.getFigure())
+            self.canvasFeature.draw()
+        except:
+            pass
 
     def SetResultDescription(self):
         text = "Normalizer:\n"
@@ -496,7 +490,6 @@ class VisualizationConnection(QWidget, Ui_Visualization):
 
         self.textEditDescription.setPlainText(text)
 
-
     def UpdateSheet(self):
         if self.checkMaxFeatureNumber.isChecked():
             self.comboSheet.setEnabled(False)
@@ -513,11 +506,11 @@ class VisualizationConnection(QWidget, Ui_Visualization):
             data = self._fae.GetAUCMetric()['val']
             std_data = self._fae.GetAUCstdMetric()['val']
             df = self.sheet_dict['val']
-        # elif self.comboSheet.currentText() == 'Test':
-        #     # Sort according to the AUC of validation data set
-        #     data = self._fae.GetAUCMetric()['val']
-        #     std_data = self._fae.GetAUCstdMetric()['val']
-        #     df = self.sheet_dict['test']
+        elif self.comboSheet.currentText() == 'Test':
+            # Sort according to the AUC of validation data set
+            data = self._fae.GetAUCMetric()['val']
+            std_data = self._fae.GetAUCstdMetric()['val']
+            df = self.sheet_dict['test']
         else:
             return
 
@@ -565,8 +558,6 @@ class VisualizationConnection(QWidget, Ui_Visualization):
 
         df.sort_index(inplace=True)
 
-
-
         self.tableClinicalStatistic.setRowCount(df.shape[0])
         self.tableClinicalStatistic.setColumnCount(df.shape[1]+1)
         headerlabels = df.columns.tolist()
@@ -590,9 +581,9 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.comboSheet.addItem('Train')
         self.sheet_dict['val'] = pd.read_csv(os.path.join(self._root_folder, 'val_result.csv'), index_col=0)
         self.comboSheet.addItem('Validation')
-        # if os.path.exists(os.path.join(self._root_folder, 'test_result.csv')):
-        #     self.sheet_dict['test'] = pd.read_csv(os.path.join(self._root_folder, 'test_result.csv'), index_col=0)
-        #     self.comboSheet.addItem('Test')
+        if os.path.exists(os.path.join(self._root_folder, 'test_result.csv')):
+            self.sheet_dict['test'] = pd.read_csv(os.path.join(self._root_folder, 'test_result.csv'), index_col=0)
+            self.comboSheet.addItem('Test')
 
         self.UpdateSheet()
 
@@ -608,17 +599,17 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                 else:
                     if (file_name.lower() == specific_file_name.lower()) and ('_{:d}_'.format(feature_number) in rt):
                         return os.path.join(rt, file_name)
-
         return ''
 
     def ShowOneResult(self):
         try:
-            for index in self.tableClinicalStatistic.selectedIndexes():
-                row = index.row()
-                one_item = self.tableClinicalStatistic.item(row, 0)
-                text = str(one_item.text())
-                current_normalizer, current_dimension_reducer, current_feature_selector, current_feature_number, current_classifier = \
-                    text.split('_')
+            # for index in self.tableClinicalStatistic.selectedIndexes():
+            index = self.tableClinicalStatistic.selectedIndexes()[0]
+            row = index.row()
+            one_item = self.tableClinicalStatistic.item(row, 0)
+            text = str(one_item.text())
+            current_normalizer, current_dimension_reducer, current_feature_selector, current_feature_number, current_classifier = \
+                text.split('_')
 
             self.comboNormalizer.setCurrentText(current_normalizer)
             self.comboDimensionReduction.setCurrentText(current_dimension_reducer)
@@ -635,16 +626,3 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         except Exception as e:
             print(e)
             return
-
-        #
-        # for item in self.tableClinicalStatistic.selectedItems():
-        #     text = str(item.text())
-        #     try:
-        #         current_normalizer, current_dimension_reducer, current_feature_selector, current_feature_number, current_classifier = \
-        #         text.split('_')
-        #     except:
-        #         return None
-        #     break
-
-
-

@@ -12,7 +12,7 @@ class RadiomicsFeatureExtractor:
         self.feature_values = []
         self.case_list = []
         self.feature_name_list = []
-        self.extractor = featureextractor.RadiomicsFeaturesExtractor(radiomics_parameter_file)
+        self.extractor = featureextractor.RadiomicsFeatureExtractor(radiomics_parameter_file)
         self.error_list = []
 
         self.logger = logging.getLogger(__name__)
@@ -251,10 +251,5 @@ class RadiomicsFeatureExtractor:
             self.__IterateCase(root_folder, key_name_list, roi_key, store_path=store_path, show_key_name_list=show_key_name_list)
 
 if __name__ == '__main__':
-    extractor = RadiomicsFeatureExtractor(r'OnlyIntensityRadiomicsParams.yaml',
-                                          has_label=False)
-    extractor.Execute(r'C:\Users\yangs\Desktop\LiuWei',
-                      key_name_list=['arterial'],
-                      roi_key=['arterial', 'label'],
-                      store_path=r'C:\Users\yangs\Desktop\LiuWei\artery.csv')
+    pass
 
