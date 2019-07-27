@@ -305,10 +305,11 @@ class LR(Classifier):
     def __init__(self, **kwargs):
         super(LR, self).__init__()
         if 'solver' in kwargs.keys():
-            super(LR, self).SetModel(LogisticRegression(penalty='l2', **kwargs))
+            super(LR, self).SetModel(LogisticRegression(penalty='none', **kwargs))
         else:
-            super(LR, self).SetModel(LogisticRegression(penalty='l2', solver='liblinear', **kwargs))
+            super(LR, self).SetModel(LogisticRegression(penalty='none', solver='saga', tol=0.01, **kwargs))
 
+        
     def GetName(self):
         return 'LR'
 
