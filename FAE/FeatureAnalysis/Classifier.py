@@ -309,7 +309,7 @@ class LR(Classifier):
         else:
             super(LR, self).SetModel(LogisticRegression(penalty='none', solver='saga', tol=0.01, **kwargs))
 
-        
+
     def GetName(self):
         return 'LR'
 

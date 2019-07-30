@@ -119,7 +119,6 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.checkPlotCVValidation.setChecked(False)
         self.checkPlotTrain.setChecked(False)
         # self.checkPlotTest.setChecked(False)
-        self.checkContributionShow.setChecked(False)
         self.radioContributionFeatureSelector.setChecked(True)
         self.radioContributionFeatureSelector.setChecked(False)
         self.checkMaxFeatureNumber.setChecked(False)
