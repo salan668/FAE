@@ -74,13 +74,11 @@ class PrepareConnection(QWidget, Ui_Prepare):
             self.logger.info('Open the file ' + file_name + ' Succeed.')
         except OSError as reason:
             self.logger.log('Open SCV file Error, The reason is ' + str(reason))
+            QMessageBox.about(self, 'Load data Error', reason.__str__())
             print('Error！' + str(reason))
         except ValueError:
             self.logger.error('Open SCV file ' + file_name + ' Failed. because of value error.')
-            QMessageBox.information(self, 'Error',
-                                    'The selected data file mismatch.')
-
-
+            QMessageBox.information(self, 'Error',                                    'The selected data file mismatch.')
         self.UpdateTable()
 
         self.buttonRemove.setEnabled(True)
@@ -176,10 +174,11 @@ class PrepareConnection(QWidget, Ui_Prepare):
                                                         'really exists in current data')
                                 return None
                         data_balance.Run(training_data_container, store_path=folder_name)
-                    except:
-                        QMessageBox.information(self, 'Error',
-                            'The separation does not work.')
-                        self.logger.error('The separation does not work.')
+                    except Exception as e:
+                        content = 'PrepareConnection, splitting failed: '
+                        self.logger.error('{}{}'.format(content, str(e)))
+                        QMessageBox.about(self, content, e.__str__())
+
 
             else:
                 file_name, _ = QFileDialog.getSaveFileName(self, "Save data", filter="csv files (*.csv)")

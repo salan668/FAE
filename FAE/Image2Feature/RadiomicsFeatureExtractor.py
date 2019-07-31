@@ -1,11 +1,13 @@
-from radiomics import featureextractor
 import collections
 import os
 import csv
 import copy
-import logging
-import SimpleITK as sitk
 import glob
+
+import SimpleITK as sitk
+from radiomics import featureextractor
+
+from Utility.EcLog import eclog
 
 class RadiomicsFeatureExtractor:
     def __init__(self, radiomics_parameter_file, has_label=True, ignore_tolerence=False, ignore_diagnostic=True):
@@ -15,7 +17,7 @@ class RadiomicsFeatureExtractor:
         self.extractor = featureextractor.RadiomicsFeatureExtractor(radiomics_parameter_file)
         self.error_list = []
 
-        self.logger = logging.getLogger(__name__)
+        self.logger = eclog(os.path.split(__file__)[-1]).GetLogger()
 
         self.__has_label = has_label
         self.__is_ignore_tolerence = ignore_tolerence
@@ -204,8 +206,10 @@ class RadiomicsFeatureExtractor:
                     self.case_list.append(case_name)
 
             except Exception as e:
-                print(e)
+                content = 'In FeatureExtractor, {} extracted failed: '.format(case_name)
+                self.logger.error('{}{}'.format(content, str(e)))
                 self.error_list.append(case_name)
+                print('{} \n{}'.format(content, e.__str__()))
 
         if store_path:
             self.Save(store_path)

@@ -1,7 +1,9 @@
-import numpy as np
-import pickle
 import os
+import pickle
+
 import pandas as pd
+import numpy as np
+from abc import ABCMeta,abstractmethod
 from sklearn.svm import SVC
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
@@ -11,8 +13,8 @@ from sklearn.gaussian_process import GaussianProcessClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.linear_model import LogisticRegression
 
-from abc import ABCMeta,abstractmethod
 from FAE.DataContainer.DataContainer import DataContainer
+from Utility.EcLog import eclog
 
 class Classifier:
     '''
@@ -23,6 +25,7 @@ class Classifier:
         self._x = np.array([])
         self._y = np.array([])
         self._data_container = DataContainer()
+        self.logger = eclog(os.path.split(__file__)[-1]).GetLogger()
 
     def SetDataContainer(self, data_container):
         data = data_container.GetArray()
@@ -35,8 +38,10 @@ class Classifier:
             self._data_container = data_container
             self._x = data
             self._y = label
-        except:
-            print('Check the case number of X and y')
+        except Exception as e:
+            content = 'The case number is not same to the label number: '
+            self.logger.error('{}{}'.format(content, str(e)))
+            print('{} \n{}'.format(content, e.__str__()))
 
     def SetData(self, data, label):
         try:
@@ -46,8 +51,10 @@ class Classifier:
 
             self._x = data
             self._y = label
-        except:
-            print('Check the case number of X and y')
+        except Exception as e:
+            content = 'The case number is not same to the label number: '
+            self.logger.error('{}{}'.format(content, str(e)))
+            print('{} \n{}'.format(content, e.__str__()))
 
     def SetModel(self, model):
         self.__model = model
@@ -131,16 +138,20 @@ class SVM(Classifier):
             coef_path = os.path.join(store_path, 'SVM_coef.csv')
             df = pd.DataFrame(data=np.transpose(self.GetModel().coef_), index=self._data_container.GetFeatureName(), columns=['Coef'])
             df.to_csv(coef_path)
-        except:
-            print("Not support Coef.")
+        except Exception as e:
+            content = 'SVM with specific kernel does not give coef: '
+            self.logger.error('{}{}'.format(content, str(e)))
+            print('{} \n{}'.format(content, e.__str__()))
 
         #Save the intercept_
         try:
             intercept_path = os.path.join(store_path, 'SVM_intercept.csv')
             intercept_df = pd.DataFrame(data=(self.GetModel().intercept_).reshape(1, 1), index=['intercept'], columns=['value'])
             intercept_df.to_csv(intercept_path)
-        except:
-            print("Not support intercept.")
+        except Exception as e:
+            content = 'SVM with specific kernel does not give intercept: '
+            self.logger.error('{}{}'.format(content, str(e)))
+            print('{} \n{}'.format(content, e.__str__()))
 
         super(SVM, self).Save(store_path)
 
@@ -173,8 +184,10 @@ class LDA(Classifier):
             coef_path = os.path.join(store_path, 'LDA_coef.csv')
             df = pd.DataFrame(data=np.transpose(self.GetModel().coef_), index=self._data_container.GetFeatureName(), columns=['Coef'])
             df.to_csv(coef_path)
-        except:
-            print("Not support Coef.")
+        except Exception as e:
+            content = 'LDA with specific kernel does not give coef: '
+            self.logger.error('{}{}'.format(content, str(e)))
+            print('{} \n{}'.format(content, e.__str__()))
 
         super(LDA, self).Save(store_path)
 
@@ -334,15 +347,19 @@ class LR(Classifier):
             coef_path = os.path.join(store_path, 'LR_coef.csv')
             df = pd.DataFrame(data=np.transpose(self.GetModel().coef_), index=self._data_container.GetFeatureName(), columns=['Coef'])
             df.to_csv(coef_path)
-        except:
-            print("Not support Coef.")
+        except Exception as e:
+            content = 'LR can not load coef: '
+            self.logger.error('{}{}'.format(content, str(e)))
+            print('{} \n{}'.format(content, e.__str__()))
 
         try:
             intercept_path = os.path.join(store_path, 'LR_intercept.csv')
             intercept_df = pd.DataFrame(data=(self.GetModel().intercept_).reshape(1, 1), index=['intercept'], columns=['value'])
             intercept_df.to_csv(intercept_path)
-        except:
-            print("Not support intercept.")
+        except Exception as e:
+            content = 'LR can not load intercept: '
+            self.logger.error('{}{}'.format(content, str(e)))
+            print('{} \n{}'.format(content, e.__str__()))
 
         super(LR, self).Save(store_path)
 
@@ -379,28 +396,30 @@ class LRLasso(Classifier):
             coef_path = os.path.join(store_path, 'LRLasso_coef.csv')
             df = pd.DataFrame(data=np.transpose(self.GetModel().coef_), index=self._data_container.GetFeatureName(), columns=['Coef'])
             df.to_csv(coef_path)
-        except:
-            print("Not support Coef.")
+        except Exception as e:
+            content = 'LASSO can not load coef: '
+            self.logger.error('{}{}'.format(content, str(e)))
+            print('{} \n{}'.format(content, e.__str__()))
 
         try:
             intercept_path = os.path.join(store_path, 'LRLasso_intercept.csv')
             intercept_df = pd.DataFrame(data=(self.GetModel().intercept_).reshape(1, 1), index=['intercept'], columns=['value'])
             intercept_df.to_csv(intercept_path)
-        except:
-            print("Not support intercept.")
+        except Exception as e:
+            content = 'LASSO can not load intercept: '
+            self.logger.error('{}{}'.format(content, str(e)))
+            print('{} \n{}'.format(content, e.__str__()))
 
         super(LRLasso, self).Save(store_path)
 
 if __name__ == '__main__':
-    import numpy as np
     X = np.array([[-1, -1], [-2, -1], [1, 1], [2, 1]])
-    y = np.array([1, 1, 2, 2])
+    y = np.array([1, 1, 0, 0])
 
     clf = SVM()
     clf.SetData(X, y)
     clf.Fit()
     print(clf.GetName(), clf.Predict([[1, 1]]))
-
 
     clf = AE()
     clf.SetData(X, y)

@@ -3,12 +3,15 @@ Jun 17, 2018.
 Yang SONG, songyangmri@gmail.com
 '''
 
-import numpy as np
 import os
-import pandas as pd
-
 import copy
 import math
+
+import numpy as np
+import pandas as pd
+
+from Utility.EcLog import eclog
+
 
 def LoadCSVwithChineseInPandas(file_path, **kwargs):
     if 'encoding' not in kwargs.keys():
@@ -26,6 +29,7 @@ class DataContainer:
         self.__case_name = case_name
         self.__label = label
         self._array = array
+        self.logger = eclog(os.path.split(__file__)[-1]).GetLogger()
 
         if array.size != 0 and label.size != 0:
             self.UpdateFrameByData()
@@ -94,16 +98,18 @@ class DataContainer:
         try:
             self.__df = pd.read_csv(file_path, header=0)
             self.UpdateDataByFrame()
-        except:
-            print('Check the CSV file path: LoadWithoutCase')
+        except Exception as e:
+            self.logger.error('LoadWitoutCase:  ' + str(e))
+            print('Check the CSV file path: LoadWithoutCase: \n{}'.format(e.__str__()))
 
 
     def LoadwithNonNumeric(self, file_path):
         self.__init__()
         try:
             self.__df = pd.read_csv(file_path, header=0, index_col=0)
-        except:
-            print('Check the CSV file path: LoadwithNonNumeric')
+        except Exception as e:
+            self.logger.error('LoadWithNonNumeirc:  ' + str(e))
+            print('Check the CSV file path: LoadWithNonNumeirc: \n{}'.format(e.__str__()))
 
 
     def Load(self, file_path):
@@ -112,14 +118,16 @@ class DataContainer:
             self.__df = pd.read_csv(file_path, header=0, index_col=0)
             self.UpdateDataByFrame()
             return
-        except:
-            print('Check the CSV file path: Load')
+        except Exception as e:
+            self.logger.error('Load:  ' + str(e))
+            print('Check the CSV file path: {}: \n{}'.format(file_path, e.__str__()))
 
         try:
             self.__df = LoadCSVwithChineseInPandas(file_path, header=0, index_col=0)
             self.UpdateDataByFrame()
-        except:
-            print('Check the CSV file including Chinese!')
+        except Exception as e:
+            self.logger.error('Load Chinese CSV:  ' + str(e))
+            print('Check the CSV file path: {}: \n{}'.format(file_path, e.__str__()))
 
     def ShowInformation(self):
         print('The number of cases is ', str(len(self.__case_name)))

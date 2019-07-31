@@ -1,25 +1,27 @@
 from copy import deepcopy
+import os
+import re
 
 from PyQt5.QtWidgets import *
 from PyQt5 import QtCore, QtGui
-from GUI.Visualization import Ui_Visualization
 
+from GUI.Visualization import Ui_Visualization
 from FAE.FeatureAnalysis.Classifier import *
 from FAE.FeatureAnalysis.FeaturePipeline import FeatureAnalysisPipelines, OnePipeline
 from FAE.Description.Description import Description
-
 from FAE.Visualization.DrawROCList import DrawROCList
 from FAE.Visualization.PlotMetricVsFeatureNumber import DrawCurve, DrawBar
 from FAE.Visualization.FeatureSort import GeneralFeatureSort, SortRadiomicsFeature
+from Utility.EcLog import eclog
 
-import os
-import re
 
 class VisualizationConnection(QWidget, Ui_Visualization):
     def __init__(self, parent=None):
         self._root_folder = ''
         self._fae = FeatureAnalysisPipelines()
         self.sheet_dict = dict()
+        self.logger = eclog(os.path.split(__file__)[-1]).GetLogger()
+        self.__is_ui_ready = False
 
         super(VisualizationConnection, self).__init__(parent)
         self.setupUi(self)
@@ -168,6 +170,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self._fae = FeatureAnalysisPipelines()
         self._root_folder = ''
         self.sheet_dict = dict()
+        self.__is_ui_ready = False
 
     def Save(self):
         dlg = QFileDialog()
@@ -235,7 +238,11 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.spinContributeFeatureNumber.setMinimum(int(self._fae.GetFeatureNumberList()[0]))
         self.spinContributeFeatureNumber.setMaximum(int(self._fae.GetFeatureNumberList()[-1]))
 
+        self.__is_ui_ready = True
+
     def UpdateROC(self):
+        if not self.__is_ui_ready:
+            return
         if (self.comboNormalizer.count() == 0) or \
                 (self.comboDimensionReduction.count() == 0) or \
                 (self.comboFeatureSelector.count() == 0) or \
@@ -316,6 +323,9 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         return index
 
     def UpdatePlot(self):
+        if not self.__is_ui_ready:
+            return
+
         if self.comboPlotX.count() == 0:
             return
 
@@ -391,6 +401,9 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.canvasPlot.draw()
 
     def UpdateContribution(self):
+        if not self.__is_ui_ready:
+            return
+
         try:
             one_result_folder_name = self.comboContributionNormalizor.currentText() + '_' + \
                                 self.comboContributionDimension.currentText() + '_' + \
@@ -398,7 +411,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                                 str(self.spinContributeFeatureNumber.value()) + '_' + \
                                 self.comboContributionClassifier.currentText()
             one_result_folder = os.path.join(self._root_folder, one_result_folder_name)
-            # This is compatible witht the previous version
+            # This is compatible with the previous version
             if not os.path.exists(one_result_folder):
                 one_result_folder_name = self.comboContributionNormalizor.currentText() + '_Cos_' + \
                                          self.comboContributionFeatureSelector.currentText() + '_' + \
@@ -458,8 +471,11 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                     GeneralFeatureSort(processed_feature_name, value,
                                            is_show=False, fig=self.canvasFeature.getFigure())
             self.canvasFeature.draw()
-        except:
-            pass
+        except Exception as e:
+            content = 'In Visualization, UpdateContribution failed'
+            self.logger.error('{}{}'.format(content, str(e)))
+            QMessageBox.about(self, content, e.__str__())
+
 
     def SetResultDescription(self):
         text = "Normalizer:\n"
@@ -643,8 +659,9 @@ class VisualizationConnection(QWidget, Ui_Visualization):
             self.UpdateContribution()
 
         except Exception as e:
-            print(e)
-            return
+            content = 'Visualization, ShowOneResult failed: '
+            self.logger.error('{}{}'.format(content, str(e)))
+            QMessageBox.about(self, content, e.__str__())
 
     def GenerateDescription(self):
         if (self.comboNormalizer.count() == 0) or \
@@ -665,8 +682,8 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         try:
             current_pipeline.LoadPipeline(os.path.join(case_folder, 'pipeline_info.csv'))
         except Exception as ex:
-            QMessageBox.about(self, "Load Error", ex.__str__())
-            self.logger.log('Load Pipeline Error, The reason is ' + str(ex))
+            QMessageBox.about(self, "In Description, Load Pipeline_info Error", ex.__str__())
+            self.logger.error('Load Pipeline Error, The reason is ' + str(ex))
 
         dlg = QFileDialog()
         dlg.setFileMode(QFileDialog.DirectoryOnly)
