@@ -350,7 +350,8 @@ class CrossValidation5Folder(CrossValidation):
         all_train_label = data_container.GetLabel()
         all_train_metric = EstimateMetirc(all_train_pred, all_train_label, 'all_train')
         all_train_info = [['CaseName', 'Pred', 'Label']]
-        all_train_info.append([case_name, all_train_pred, all_train_label])
+        for one_case, one_pred, one_label in zip(case_name, all_train_pred, all_train_label):
+            all_train_info.append([one_case, one_pred, one_label])
 
         test_metric = {}
         if test_data_container.GetArray().size > 0:
