@@ -37,8 +37,11 @@ def SaveSelectInfo(data_container, store_path, is_merge=False):
 
 class FeatureSelector:
     def __init__(self):
-        self.__selector = None
         self.logger = eclog(os.path.split(__file__)[-1]).GetLogger()
+
+    def __deepcopy__(self, memodict={}):
+        copy_selector = type(self)()
+        return copy_selector
 
     def SelectFeatureByIndex(self, data_container, selected_list, is_replace=False, store_path=''):
         new_data = data_container.GetArray()[:, selected_list]

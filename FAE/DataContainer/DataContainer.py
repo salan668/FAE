@@ -36,6 +36,11 @@ class DataContainer:
         else:
             self.__df = None
 
+    def __deepcopy__(self, memodict={}):
+        copy_data_container = type(self)(self.GetArray(), self.GetLabel(), self.GetFeatureName(), self.GetCaseName())
+        return copy_data_container
+
+
     def __IsNumber(self, input_data):
         try:
             float(input_data)
@@ -99,7 +104,7 @@ class DataContainer:
             self.__df = pd.read_csv(file_path, header=0)
             self.UpdateDataByFrame()
         except Exception as e:
-            self.logger.error('LoadWitoutCase:  ' + str(e))
+            # self.logger.error('LoadWitoutCase:  ' + str(e))
             print('Check the CSV file path: LoadWithoutCase: \n{}'.format(e.__str__()))
 
 
@@ -108,7 +113,7 @@ class DataContainer:
         try:
             self.__df = pd.read_csv(file_path, header=0, index_col=0)
         except Exception as e:
-            self.logger.error('LoadWithNonNumeirc:  ' + str(e))
+            # self.logger.error('LoadWithNonNumeirc:  ' + str(e))
             print('Check the CSV file path: LoadWithNonNumeirc: \n{}'.format(e.__str__()))
 
 
@@ -119,14 +124,14 @@ class DataContainer:
             self.UpdateDataByFrame()
             return
         except Exception as e:
-            self.logger.error('Load:  ' + str(e))
+            # self.logger.error('Load:  ' + str(e))
             print('Check the CSV file path: {}: \n{}'.format(file_path, e.__str__()))
 
         try:
             self.__df = LoadCSVwithChineseInPandas(file_path, header=0, index_col=0)
             self.UpdateDataByFrame()
         except Exception as e:
-            self.logger.error('Load Chinese CSV:  ' + str(e))
+            # self.logger.error('Load Chinese CSV:  ' + str(e))
             print('Check the CSV file path: {}: \n{}'.format(file_path, e.__str__()))
 
     def ShowInformation(self):
@@ -235,21 +240,11 @@ class DataContainer:
 
 
 def main():
-    # test FeatureReader
-    # feature_reader = DataContainer()
-    # array, label, feature_name, case_name = feature_reader.LoadAndGetData(r'..\Result\numeric_feature.csv')
-    # print(array.shape)
-    # print(label.shape)
-    # print(len(feature_name))
-    # print(len(case_name))
-    # feature_reader.SaveData(r'..\Result\NewNumericFeature.csv')
-
-    # Test Normalization
+    import copy
     data = DataContainer()
-    data.Load(r'..\..\Example\numeric_feature.csv')
-    data.ShowInformation()
-    data.UsualNormalize(r'..\Example\normalization.csv')
-    data.ArtefactNormalize(r'..\Example\normalization.csv')
+    data.Load(r'C:\Users\yangs\Desktop\fae_test\data_noncontrast_original.csv')
+    new_data = copy.deepcopy(data)
+    new_data.ShowInformation()
 
 if __name__ == '__main__':
     main()

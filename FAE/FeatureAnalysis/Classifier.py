@@ -1,5 +1,6 @@
 import os
 import pickle
+from copy import deepcopy
 
 import pandas as pd
 import numpy as np
@@ -26,6 +27,13 @@ class Classifier:
         self._y = np.array([])
         self._data_container = DataContainer()
         self.logger = eclog(os.path.split(__file__)[-1]).GetLogger()
+
+    def __deepcopy__(self, memodict={}):
+        copy_classifier = type(self)()
+        copy_classifier._data_container = deepcopy(self._data_container)
+        copy_classifier._x, copy_classifier._y = deepcopy(self._x), deepcopy(self._y)
+        copy_classifier.SetModel(deepcopy(self.__model))
+        return copy_classifier
 
     def SetDataContainer(self, data_container):
         data = data_container.GetArray()
