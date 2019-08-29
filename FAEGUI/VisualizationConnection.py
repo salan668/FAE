@@ -179,12 +179,23 @@ class VisualizationConnection(QWidget, Ui_Visualization):
 
         if dlg.exec_():
             store_folder = dlg.selectedFiles()[0]
-            self.canvasROC.getFigure().savefig(os.path.join(store_folder, 'ROC.eps'), dpi=1200)
-            self.canvasROC.getFigure().savefig(os.path.join(store_folder, 'ROC.jpg'), dpi=300)
-            self.canvasPlot.getFigure().savefig(os.path.join(store_folder, 'Compare.eps'), dpi=1200)
-            self.canvasPlot.getFigure().savefig(os.path.join(store_folder, 'Compare.jpg'), dpi=300)
-            self.canvasFeature.getFigure().savefig(os.path.join(store_folder, 'FeatureWeights.eps'), dpi=1200)
-            self.canvasFeature.getFigure().savefig(os.path.join(store_folder, 'FeatureWeights.jpg'), dpi=300)
+            try:
+                self.canvasROC.getFigure().savefig(os.path.join(store_folder, 'ROC.eps'), dpi=1200)
+                self.canvasROC.getFigure().savefig(os.path.join(store_folder, 'ROC.jpg'), dpi=300)
+            except Exception as e:
+                QMessageBox.about(self, 'Save Figure Failed', 'There is no ROC figure.\n' + e.__str__())
+
+            try:
+                self.canvasPlot.getFigure().savefig(os.path.join(store_folder, 'Compare.eps'), dpi=1200)
+                self.canvasPlot.getFigure().savefig(os.path.join(store_folder, 'Compare.jpg'), dpi=300)
+            except Exception as e:
+                QMessageBox.about(self, 'Save Figure Failed', 'There is no AUC comparison figure.\n' + e.__str__())
+
+            try:
+                self.canvasFeature.getFigure().savefig(os.path.join(store_folder, 'FeatureWeights.eps'), dpi=1200)
+                self.canvasFeature.getFigure().savefig(os.path.join(store_folder, 'FeatureWeights.jpg'), dpi=300)
+            except Exception as e:
+                QMessageBox.about(self, 'Save Figure Failed', 'There is no Feature Contribution figure.\n' + e.__str__())
 
     def InitialUi(self):
         # Update ROC canvers
