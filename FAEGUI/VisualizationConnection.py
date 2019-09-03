@@ -487,7 +487,6 @@ class VisualizationConnection(QWidget, Ui_Visualization):
             self.logger.error('{}{}'.format(content, str(e)))
             QMessageBox.about(self, content, e.__str__())
 
-
     def SetResultDescription(self):
         text = "Normalizer:\n"
         for index in self._fae.GetNormalizerList():
@@ -526,17 +525,10 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.tableClinicalStatistic.clear()
         self.tableClinicalStatistic.setSortingEnabled(False)
         if self.comboSheet.currentText() == 'Train':
-            data = self._fae.GetAUCMetric()['train']
-            std_data = self._fae.GetAUCstdMetric()['train']
             df = self.sheet_dict['train']
         elif self.comboSheet.currentText() == 'Validation':
-            data = self._fae.GetAUCMetric()['val']
-            std_data = self._fae.GetAUCstdMetric()['val']
             df = self.sheet_dict['val']
         elif self.comboSheet.currentText() == 'Test':
-            # Sort according to the AUC of validation data set
-            data = self._fae.GetAUCMetric()['val']
-            std_data = self._fae.GetAUCstdMetric()['val']
             df = self.sheet_dict['test']
         else:
             return
@@ -548,13 +540,10 @@ class VisualizationConnection(QWidget, Ui_Visualization):
             df_val = self.sheet_dict['val']
             df_test = self.sheet_dict['test']
             name_list = []
-            for normalizer, normalizer_index in zip(self._fae.GetNormalizerList(), range(len(self._fae.GetNormalizerList()))):
-                for dimension_reducer, dimension_reducer_index in zip(self._fae.GetDimensionReductionList(),
-                                                                      range(len(self._fae.GetDimensionReductionList()))):
-                    for feature_selector, feature_selector_index in zip(self._fae.GetFeatureSelectorList(),
-                                                                        range(len(self._fae.GetFeatureSelectorList()))):
-                        for classifier, classifier_index in zip(self._fae.GetClassifierList(),
-                                                                range(len(self._fae.GetClassifierList()))):
+            for normalizer_index, normalizer in enumerate(self._fae.GetNormalizerList()):
+                for dimension_reducer_index, dimension_reducer in enumerate(self._fae.GetDimensionReductionList()):
+                    for feature_selector_index, feature_selector in enumerate(self._fae.GetFeatureSelectorList()):
+                        for classifier_index, classifier in enumerate(self._fae.GetClassifierList()):
                             sub_auc = data[normalizer_index, dimension_reducer_index, feature_selector_index, :,
                                       classifier_index]
                             sub_auc_std = std_data[normalizer_index, dimension_reducer_index, feature_selector_index, :,
@@ -562,22 +551,23 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                             one_se = max(sub_auc)-sub_auc_std[np.argmax(sub_auc)]
                             for feature_number_index in range(len(self._fae.GetFeatureNumberList())):
                                 if data[normalizer_index, dimension_reducer_index,
-                                        feature_selector_index, feature_number_index,classifier_index] >= one_se:
+                                        feature_selector_index, feature_number_index, classifier_index] >= one_se:
                                     name = normalizer.GetName() + '_' + dimension_reducer.GetName() + '_' + \
-                                    feature_selector.GetName() + '_' + str(self._fae.GetFeatureNumberList()[feature_number_index]) + '_' + \
-                                    classifier.GetName()
+                                            feature_selector.GetName() + '_' + str(self._fae.GetFeatureNumberList()[feature_number_index]) + '_' + \
+                                            classifier.GetName()
                                     name_list.append(name)
                                     break
+
             # choose the selected models from all test result
             df_val = df_val.loc[name_list]
             max_index = df_val['auc'].idxmax()
             sub_serise = df_val.loc[max_index]
             max_array = sub_serise.get_values().reshape(1, -1)
             max_auc_df = pd.DataFrame(data=max_array, columns=sub_serise.index.tolist(), index=[max_index])
-            max_auc_95ci = max_auc_df.at[max_index,'auc 95% CIs']
+            max_auc_95ci = max_auc_df.at[max_index, 'auc 95% CIs']
 
             max_auc_95ci = re.findall(r"\d+\.?\d*", max_auc_95ci)
-            sub_val_df = df_val[(df_val['auc'] > float(max_auc_95ci[0])) & (df_val['auc'] < float(max_auc_95ci[1]))]
+            sub_val_df = df_val[(df_val['auc'] >= float(max_auc_95ci[0])) & (df_val['auc'] <= float(max_auc_95ci[1]))]
 
             index_by_val = sub_val_df.index.tolist()
 
