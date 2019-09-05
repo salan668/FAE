@@ -142,32 +142,41 @@ class ProcessConnection(QWidget, Ui_Process):
 
     def GenerateVerboseTest(self, normalizer_name, dimension_reduction_name, feature_selector_name, classifier_name, feature_num,
                        current_num, total_num):
-        text = "Current:\n"
 
-        text += "{:s} / ".format(normalizer_name)
-        for temp in self.__process_normalizer_list:
-            text += (temp.GetName() + ", ")
-        text += '\n'
+        def formatOneLine(thename, thelist):
+            """
+            A function that generates a line
+            
+            I am not sure whether the last ', ' is needed here.
+            I am leaving it here to ensure it produces the exactly 
+            same line as before.
+            Do remove it in the return line if that is desired. 
+            """
+            name_string = "{:s} / ".format(thename)
+            list_string = ", ".join([temp.GetName() for temp in thelist])
+            return name_string + list_string + ", "
 
-        text += "{:s} / ".format(dimension_reduction_name)
-        for temp in self.__process_dimension_reduction_list:
-            text += (temp.GetName() + ", ")
-        text += '\n'
+    
+        text_list = ["Current:"]
 
-        text += "{:s} / ".format(feature_selector_name)
-        for temp in self.__process_feature_selector_list:
-            text += (temp.GetName() + ", ")
-        text += '\n'
+        text_list.append(formatOneLine(normalizer_name, 
+                            self.__process_normalizer_list))
+        
+        text_list.append(formatOneLine(dimension_reduction_name, 
+                            self.__process_dimension_reduction_list))
 
-        text += "Feature Number: {:d} / [{:d}-{:d}]\n".format(feature_num, self.spinBoxMinFeatureNumber.value(), self.spinBoxMaxFeatureNumber.value())
+        text_list.append(formatOneLine(feature_selector_name, 
+                            self.__process_feature_selector_list))
 
-        text += "{:s} / ".format(classifier_name)
-        for temp in self.__process_classifier_list:
-            text += (temp.GetName() + ", ")
-        text += '\n'
+        text_list.append("Feature Number: {:d} / [{:d}-{:d}]".format(feature_num, 
+                                                                    self.spinBoxMinFeatureNumber.value(), 
+                                                                    self.spinBoxMaxFeatureNumber.value()))
 
-        text += "Total process: {:d} / {:d}".format(current_num, total_num)
-        return text
+        text_list.append(formatOneLine(classifier_name, 
+                            self.__process_classifier_list))
+
+        text_list.append("Total process: {:d} / {:d}".format(current_num, total_num))
+        return "\n".join(text_list)
 
     def SetStateAllButtonWhenRunning(self, state):
         self.buttonLoadTrainingData.setEnabled(state)
