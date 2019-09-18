@@ -9,6 +9,7 @@ from radiomics import featureextractor
 
 from Utility.EcLog import eclog
 
+
 class RadiomicsFeatureExtractor:
     def __init__(self, radiomics_parameter_file, has_label=True, ignore_tolerence=False, ignore_diagnostic=True):
         self.feature_values = []
@@ -23,6 +24,14 @@ class RadiomicsFeatureExtractor:
         self.__is_ignore_tolerence = ignore_tolerence
         self.__is_ignore_diagnostic = ignore_diagnostic
         self.error_list = []
+
+    def _RemoveKeyFromPathList(self, path_list, key):
+        new_path_list = []
+        for p in path_list:
+            if key not in str(p):
+                new_path_list.append(p)
+
+        return new_path_list
 
 
     def __GetFeatureValuesEachModality(self, data_path, roi_path, key_name):
@@ -73,6 +82,8 @@ class RadiomicsFeatureExtractor:
                 sequence_key_path += '{}*'.format(one_sequence_key)
 
             sequence_candidate = glob.glob(os.path.join(case_folder, sequence_key_path))
+            for one_roi_key in roi_key:
+                sequence_candidate = self._RemoveKeyFromPathList(sequence_candidate, one_roi_key)
             if len(sequence_candidate) != 1:
                 self.logger.error('Check the data file path of case: ' + sequence_key_path)
                 return None
@@ -150,6 +161,9 @@ class RadiomicsFeatureExtractor:
                 sequence_key_path += '{}*'.format(one_sequence_key)
 
             sequence_candidate = glob.glob(os.path.join(case_folder, sequence_key_path))
+            for one_roi_key in roi_key:
+                sequence_candidate = self._RemoveKeyFromPathList(sequence_candidate, one_roi_key)
+
             if len(sequence_candidate) != 1:
                 self.logger.error('Check the data file path of case: ' + sequence_key_path)
                 return None

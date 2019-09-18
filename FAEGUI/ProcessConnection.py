@@ -143,7 +143,7 @@ class ProcessConnection(QWidget, Ui_Process):
     def GenerateVerboseTest(self, normalizer_name, dimension_reduction_name, feature_selector_name, classifier_name, feature_num,
                        current_num, total_num):
 
-        def formatOneLine(thename, thelist):
+        def FormatOneLine(the_name, the_list):
             """
             A function that generates a line
             
@@ -152,27 +152,27 @@ class ProcessConnection(QWidget, Ui_Process):
             same line as before.
             Do remove it in the return line if that is desired. 
             """
-            name_string = "{:s} / ".format(thename)
-            list_string = ", ".join([temp.GetName() for temp in thelist])
+            name_string = "{:s} / ".format(the_name)
+            list_string = ", ".join([temp.GetName() for temp in the_list])
             return name_string + list_string + ", "
 
     
         text_list = ["Current:"]
 
-        text_list.append(formatOneLine(normalizer_name, 
+        text_list.append(FormatOneLine(normalizer_name,
                             self.__process_normalizer_list))
         
-        text_list.append(formatOneLine(dimension_reduction_name, 
+        text_list.append(FormatOneLine(dimension_reduction_name,
                             self.__process_dimension_reduction_list))
 
-        text_list.append(formatOneLine(feature_selector_name, 
+        text_list.append(FormatOneLine(feature_selector_name,
                             self.__process_feature_selector_list))
 
         text_list.append("Feature Number: {:d} / [{:d}-{:d}]".format(feature_num, 
                                                                     self.spinBoxMinFeatureNumber.value(), 
                                                                     self.spinBoxMaxFeatureNumber.value()))
 
-        text_list.append(formatOneLine(classifier_name, 
+        text_list.append(FormatOneLine(classifier_name,
                             self.__process_classifier_list))
 
         text_list.append("Total process: {:d} / {:d}".format(current_num, total_num))

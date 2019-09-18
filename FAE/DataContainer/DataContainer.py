@@ -6,6 +6,7 @@ Yang SONG, songyangmri@gmail.com
 import os
 import copy
 import math
+from copy import deepcopy
 
 import numpy as np
 import pandas as pd
@@ -37,7 +38,10 @@ class DataContainer:
             self.__df = None
 
     def __deepcopy__(self, memodict={}):
-        copy_data_container = type(self)(self.GetArray(), self.GetLabel(), self.GetFeatureName(), self.GetCaseName())
+        copy_data_container = type(self)(deepcopy(self.GetArray()),
+                                         deepcopy(self.GetLabel()),
+                                         deepcopy(self.GetFeatureName()),
+                                         deepcopy(self.GetCaseName()))
         return copy_data_container
 
 
