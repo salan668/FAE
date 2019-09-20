@@ -440,7 +440,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
 
                 if file_path:
                     df = pd.read_csv(file_path, index_col=0)
-                    value = list(np.abs(df.iloc[:, 0]))
+                    value = list(df.iloc[:, 0])
 
                     #add positive and negatiove info for coef
                     processed_feature_name = list(df.index)
