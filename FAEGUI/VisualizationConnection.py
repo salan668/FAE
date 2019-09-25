@@ -1,25 +1,27 @@
 from copy import deepcopy
+import os
+import re
 
 from PyQt5.QtWidgets import *
 from PyQt5 import QtCore, QtGui
+
 from GUI.Visualization import Ui_Visualization
-
 from FAE.FeatureAnalysis.Classifier import *
-from FAE.FeatureAnalysis.FeaturePipeline import FeatureAnalysisPipelines
-#from FAE.Description.Description import Description
-
+from FAE.FeatureAnalysis.FeaturePipeline import FeatureAnalysisPipelines, OnePipeline
+from FAE.Description.Description import Description
 from FAE.Visualization.DrawROCList import DrawROCList
 from FAE.Visualization.PlotMetricVsFeatureNumber import DrawCurve, DrawBar
 from FAE.Visualization.FeatureSort import GeneralFeatureSort, SortRadiomicsFeature
+from Utility.EcLog import eclog
 
-import os
-import re
 
 class VisualizationConnection(QWidget, Ui_Visualization):
     def __init__(self, parent=None):
         self._root_folder = ''
         self._fae = FeatureAnalysisPipelines()
         self.sheet_dict = dict()
+        self.logger = eclog(os.path.split(__file__)[-1]).GetLogger()
+        self.__is_ui_ready = False
 
         super(VisualizationConnection, self).__init__(parent)
         self.setupUi(self)
@@ -27,6 +29,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.buttonLoadResult.clicked.connect(self.LoadAll)
         self.buttonClearResult.clicked.connect(self.ClearAll)
         self.buttonSave.clicked.connect(self.Save)
+        self.buttonGenerateDescription.clicked.connect(self.GenerateDescription)
 
         self.__plt_roc = self.canvasROC.getFigure().add_subplot(111)
         self.__plt_plot = self.canvasPlot.getFigure().add_subplot(111)
@@ -66,10 +69,9 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         # self.checkPlotTest.stateChanged.connect(self.UpdatePlot)
 
         # Update Contribution canvas
-        self.checkContributionShow.stateChanged.connect(self.UpdateContribution)
         self.radioContributionFeatureSelector.toggled.connect(self.UpdateContribution)
         self.radioContributionClassifier.toggled.connect(self.UpdateContribution)
-        self.comboContributionNormalization.currentIndexChanged.connect(self.UpdateContribution)
+        self.comboContributionNormalizor.currentIndexChanged.connect(self.UpdateContribution)
         self.comboContributionDimension.currentIndexChanged.connect(self.UpdateContribution)
         self.comboContributionFeatureSelector.currentIndexChanged.connect(self.UpdateContribution)
         self.comboContributionClassifier.currentIndexChanged.connect(self.UpdateContribution)
@@ -119,7 +121,6 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.checkPlotCVValidation.setChecked(False)
         self.checkPlotTrain.setChecked(False)
         # self.checkPlotTest.setChecked(False)
-        self.checkContributionShow.setChecked(False)
         self.radioContributionFeatureSelector.setChecked(True)
         self.radioContributionFeatureSelector.setChecked(False)
         self.checkMaxFeatureNumber.setChecked(False)
@@ -149,7 +150,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.comboPlotX.clear()
         self.comboPlotY.clear()
 
-        self.comboContributionNormalization.clear()
+        self.comboContributionNormalizor.clear()
         self.comboContributionDimension.clear()
         self.comboContributionClassifier.clear()
         self.comboContributionFeatureSelector.clear()
@@ -169,6 +170,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self._fae = FeatureAnalysisPipelines()
         self._root_folder = ''
         self.sheet_dict = dict()
+        self.__is_ui_ready = False
 
     def Save(self):
         dlg = QFileDialog()
@@ -177,12 +179,23 @@ class VisualizationConnection(QWidget, Ui_Visualization):
 
         if dlg.exec_():
             store_folder = dlg.selectedFiles()[0]
-            self.canvasROC.getFigure().savefig(os.path.join(store_folder, 'ROC.eps'), dpi=1200)
-            self.canvasROC.getFigure().savefig(os.path.join(store_folder, 'ROC.jpg'), dpi=300)
-            self.canvasPlot.getFigure().savefig(os.path.join(store_folder, 'Compare.eps'), dpi=1200)
-            self.canvasPlot.getFigure().savefig(os.path.join(store_folder, 'Compare.jpg'), dpi=300)
-            self.canvasFeature.getFigure().savefig(os.path.join(store_folder, 'FeatureWeights.eps'), dpi=1200)
-            self.canvasFeature.getFigure().savefig(os.path.join(store_folder, 'FeatureWeights.jpg'), dpi=300)
+            try:
+                self.canvasROC.getFigure().savefig(os.path.join(store_folder, 'ROC.eps'), dpi=1200)
+                self.canvasROC.getFigure().savefig(os.path.join(store_folder, 'ROC.jpg'), dpi=300)
+            except Exception as e:
+                QMessageBox.about(self, 'Save Figure Failed', 'There is no ROC figure.\n' + e.__str__())
+
+            try:
+                self.canvasPlot.getFigure().savefig(os.path.join(store_folder, 'Compare.eps'), dpi=1200)
+                self.canvasPlot.getFigure().savefig(os.path.join(store_folder, 'Compare.jpg'), dpi=300)
+            except Exception as e:
+                QMessageBox.about(self, 'Save Figure Failed', 'There is no AUC comparison figure.\n' + e.__str__())
+
+            try:
+                self.canvasFeature.getFigure().savefig(os.path.join(store_folder, 'FeatureWeights.eps'), dpi=1200)
+                self.canvasFeature.getFigure().savefig(os.path.join(store_folder, 'FeatureWeights.jpg'), dpi=300)
+            except Exception as e:
+                QMessageBox.about(self, 'Save Figure Failed', 'There is no Feature Contribution figure.\n' + e.__str__())
 
     def InitialUi(self):
         # Update ROC canvers
@@ -224,7 +237,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
 
         # Update Contribution canvas
         for index in self._fae.GetNormalizerList():
-            self.comboContributionNormalization.addItem(index.GetName())
+            self.comboContributionNormalizor.addItem(index.GetName())
         for index in self._fae.GetDimensionReductionList():
             self.comboContributionDimension.addItem(index.GetName())
         for selector in self._fae.GetFeatureSelectorList():
@@ -236,7 +249,11 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.spinContributeFeatureNumber.setMinimum(int(self._fae.GetFeatureNumberList()[0]))
         self.spinContributeFeatureNumber.setMaximum(int(self._fae.GetFeatureNumberList()[-1]))
 
+        self.__is_ui_ready = True
+
     def UpdateROC(self):
+        if not self.__is_ui_ready:
+            return
         if (self.comboNormalizer.count() == 0) or \
                 (self.comboDimensionReduction.count() == 0) or \
                 (self.comboFeatureSelector.count() == 0) or \
@@ -317,6 +334,9 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         return index
 
     def UpdatePlot(self):
+        if not self.__is_ui_ready:
+            return
+
         if self.comboPlotX.count() == 0:
             return
 
@@ -392,80 +412,80 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.canvasPlot.draw()
 
     def UpdateContribution(self):
-        if not self.checkContributionShow.isChecked():
+        if not self.__is_ui_ready:
             return
 
-        one_result_folder_name = self.comboContributionNormalization.currentText() + '_' + \
-                            self.comboContributionDimension.currentText() + '_' + \
-                            self.comboContributionFeatureSelector.currentText() + '_' + \
-                            str(self.spinContributeFeatureNumber.value()) + '_' + \
-                            self.comboContributionClassifier.currentText()
-        one_result_folder = os.path.join(self._root_folder, one_result_folder_name)
-        # This is compatible witht the previous version
-        if not os.path.exists(one_result_folder):
-            one_result_folder_name = self.comboContributionNormalization.currentText() + '_Cos_' + \
-                                     self.comboContributionFeatureSelector.currentText() + '_' + \
-                                     str(self.spinContributeFeatureNumber.value()) + '_' + \
-                                     self.comboContributionClassifier.currentText()
+        try:
+            one_result_folder_name = self.comboContributionNormalizor.currentText() + '_' + \
+                                self.comboContributionDimension.currentText() + '_' + \
+                                self.comboContributionFeatureSelector.currentText() + '_' + \
+                                str(self.spinContributeFeatureNumber.value()) + '_' + \
+                                self.comboContributionClassifier.currentText()
             one_result_folder = os.path.join(self._root_folder, one_result_folder_name)
+            # This is compatible with the previous version
+            if not os.path.exists(one_result_folder):
+                one_result_folder_name = self.comboContributionNormalizor.currentText() + '_Cos_' + \
+                                         self.comboContributionFeatureSelector.currentText() + '_' + \
+                                         str(self.spinContributeFeatureNumber.value()) + '_' + \
+                                         self.comboContributionClassifier.currentText()
+                one_result_folder = os.path.join(self._root_folder, one_result_folder_name)
 
-        if self.radioContributionFeatureSelector.isChecked():
-            file_name = self.comboContributionFeatureSelector.currentText() + '_sort.csv'
-            file_path = os.path.join(one_result_folder, file_name)
-
-            if not os.path.exists(file_path):
-                file_name = self.comboContributionFeatureSelector.currentText().lower() + '_sort.csv'
+            if self.radioContributionFeatureSelector.isChecked():
+                file_name = self.comboContributionFeatureSelector.currentText() + '_sort.csv'
                 file_path = os.path.join(one_result_folder, file_name)
 
+                if not os.path.exists(file_path):
+                    file_name = self.comboContributionFeatureSelector.currentText().lower() + '_sort.csv'
+                    file_path = os.path.join(one_result_folder, file_name)
 
+                if file_path:
+                    df = pd.read_csv(file_path, index_col=0)
+                    value = list(df.iloc[:, 0])
 
-            if file_path:
+                    #add positive and negatiove info for coef
+                    processed_feature_name = list(df.index)
+                    original_value = list(df.iloc[:, 0])
+                    for index in range(len(original_value)):
+                        if original_value[index] > 0:
+                            processed_feature_name[index] = processed_feature_name[index] + ' P'
+                        else:
+                            processed_feature_name[index] = processed_feature_name[index] + ' N'
 
-                df = pd.read_csv(file_path, index_col=0)
-                value = list(np.abs(df.iloc[:, 0]))
-
-                #add positive and negatiove info for coef
-                processed_feature_name = list(df.index)
-                original_value = list(df.iloc[:, 0])
-                for index in range(len(original_value)):
-                    if original_value[index] > 0:
-                        processed_feature_name[index] = processed_feature_name[index] + ' P'
-                    else:
-                        processed_feature_name[index] = processed_feature_name[index] + ' N'
-
-                GeneralFeatureSort(processed_feature_name, value, max_num=self.spinContributeFeatureNumber.value(),
-                                   is_show=False, fig=self.canvasFeature.getFigure())
-
-        elif self.radioContributionClassifier.isChecked():
-            specific_name = self.comboContributionClassifier.currentText() + '_coef.csv'
-            file_path = os.path.join(one_result_folder, specific_name)
-
-            if not os.path.exists(file_path):
-                specific_name = self.comboContributionClassifier.currentText().lower() + '_coef.csv'
-                file_path = os.path.join(one_result_folder, specific_name)
-
-            if file_path:
-                df = pd.read_csv(file_path, index_col=0)
-                feature_name = list(df.index)
-                value = list(np.abs(df.iloc[:, 0]))
-
-                #add positive and negatiove info for coef
-                processed_feature_name = list(df.index)
-                original_value = list(df.iloc[:, 0])
-                for index in range(len(original_value)):
-                    if original_value[index] > 0:
-                        processed_feature_name[index] = processed_feature_name[index] + ' P'
-                    else:
-                        processed_feature_name[index] = processed_feature_name[index] + ' N'
-
-                # try:
-                #     SortRadiomicsFeature(processed_feature_name, value, is_show=False, fig=self.canvasFeature.getFigure())
-                # except:
-                GeneralFeatureSort(processed_feature_name, value,
+                    GeneralFeatureSort(processed_feature_name, value, max_num=self.spinContributeFeatureNumber.value(),
                                        is_show=False, fig=self.canvasFeature.getFigure())
 
+            elif self.radioContributionClassifier.isChecked():
+                specific_name = self.comboContributionClassifier.currentText() + '_coef.csv'
+                file_path = os.path.join(one_result_folder, specific_name)
 
-        self.canvasFeature.draw()
+                if not os.path.exists(file_path):
+                    specific_name = self.comboContributionClassifier.currentText().lower() + '_coef.csv'
+                    file_path = os.path.join(one_result_folder, specific_name)
+
+                if file_path:
+                    df = pd.read_csv(file_path, index_col=0)
+                    feature_name = list(df.index)
+                    value = list(np.abs(df.iloc[:, 0]))
+
+                    #add positive and negatiove info for coef
+                    processed_feature_name = list(df.index)
+                    original_value = list(df.iloc[:, 0])
+                    for index in range(len(original_value)):
+                        if original_value[index] > 0:
+                            processed_feature_name[index] = processed_feature_name[index] + ' P'
+                        else:
+                            processed_feature_name[index] = processed_feature_name[index] + ' N'
+
+                    # try:
+                    #     SortRadiomicsFeature(processed_feature_name, value, is_show=False, fig=self.canvasFeature.getFigure())
+                    # except:
+                    GeneralFeatureSort(processed_feature_name, value,
+                                           is_show=False, fig=self.canvasFeature.getFigure())
+            self.canvasFeature.draw()
+        except Exception as e:
+            content = 'In Visualization, UpdateContribution failed'
+            self.logger.error('{}{}'.format(content, str(e)))
+            QMessageBox.about(self, content, e.__str__())
 
     def SetResultDescription(self):
         text = "Normalizer:\n"
@@ -496,23 +516,20 @@ class VisualizationConnection(QWidget, Ui_Visualization):
 
         self.textEditDescription.setPlainText(text)
 
-
     def UpdateSheet(self):
+        if self.checkMaxFeatureNumber.isChecked():
+            self.comboSheet.setEnabled(False)
+        else:
+            self.comboSheet.setEnabled(True)
+
         self.tableClinicalStatistic.clear()
         self.tableClinicalStatistic.setSortingEnabled(False)
         if self.comboSheet.currentText() == 'Train':
-            data = self._fae.GetAUCMetric()['train']
-            std_data = self._fae.GetAUCstdMetric()['train']
             df = self.sheet_dict['train']
         elif self.comboSheet.currentText() == 'Validation':
-            data = self._fae.GetAUCMetric()['val']
-            std_data = self._fae.GetAUCstdMetric()['val']
             df = self.sheet_dict['val']
-        # elif self.comboSheet.currentText() == 'Test':
-        #     # Sort according to the AUC of validation data set
-        #     data = self._fae.GetAUCMetric()['val']
-        #     std_data = self._fae.GetAUCstdMetric()['val']
-        #     df = self.sheet_dict['test']
+        elif self.comboSheet.currentText() == 'Test':
+            df = self.sheet_dict['test']
         else:
             return
 
@@ -523,13 +540,10 @@ class VisualizationConnection(QWidget, Ui_Visualization):
             df_val = self.sheet_dict['val']
             df_test = self.sheet_dict['test']
             name_list = []
-            for normalizer, normalizer_index in zip(self._fae.GetNormalizerList(), range(len(self._fae.GetNormalizerList()))):
-                for dimension_reducer, dimension_reducer_index in zip(self._fae.GetDimensionReductionList(),
-                                                                      range(len(self._fae.GetDimensionReductionList()))):
-                    for feature_selector, feature_selector_index in zip(self._fae.GetFeatureSelectorList(),
-                                                                        range(len(self._fae.GetFeatureSelectorList()))):
-                        for classifier, classifier_index in zip(self._fae.GetClassifierList(),
-                                                                range(len(self._fae.GetClassifierList()))):
+            for normalizer_index, normalizer in enumerate(self._fae.GetNormalizerList()):
+                for dimension_reducer_index, dimension_reducer in enumerate(self._fae.GetDimensionReductionList()):
+                    for feature_selector_index, feature_selector in enumerate(self._fae.GetFeatureSelectorList()):
+                        for classifier_index, classifier in enumerate(self._fae.GetClassifierList()):
                             sub_auc = data[normalizer_index, dimension_reducer_index, feature_selector_index, :,
                                       classifier_index]
                             sub_auc_std = std_data[normalizer_index, dimension_reducer_index, feature_selector_index, :,
@@ -537,30 +551,29 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                             one_se = max(sub_auc)-sub_auc_std[np.argmax(sub_auc)]
                             for feature_number_index in range(len(self._fae.GetFeatureNumberList())):
                                 if data[normalizer_index, dimension_reducer_index,
-                                        feature_selector_index, feature_number_index,classifier_index] >= one_se:
+                                        feature_selector_index, feature_number_index, classifier_index] >= one_se:
                                     name = normalizer.GetName() + '_' + dimension_reducer.GetName() + '_' + \
-                                    feature_selector.GetName() + '_' + str(self._fae.GetFeatureNumberList()[feature_number_index]) + '_' + \
-                                    classifier.GetName()
+                                            feature_selector.GetName() + '_' + str(self._fae.GetFeatureNumberList()[feature_number_index]) + '_' + \
+                                            classifier.GetName()
                                     name_list.append(name)
                                     break
+
             # choose the selected models from all test result
             df_val = df_val.loc[name_list]
             max_index = df_val['auc'].idxmax()
             sub_serise = df_val.loc[max_index]
             max_array = sub_serise.get_values().reshape(1, -1)
             max_auc_df = pd.DataFrame(data=max_array, columns=sub_serise.index.tolist(), index=[max_index])
-            max_auc_95ci = max_auc_df.at[max_index,'auc 95% CIs']
+            max_auc_95ci = max_auc_df.at[max_index, 'auc 95% CIs']
 
             max_auc_95ci = re.findall(r"\d+\.?\d*", max_auc_95ci)
-            sub_val_df = df_val[(df_val['auc'] > float(max_auc_95ci[0])) & (df_val['auc'] < float(max_auc_95ci[1]))]
+            sub_val_df = df_val[(df_val['auc'] >= float(max_auc_95ci[0])) & (df_val['auc'] <= float(max_auc_95ci[1]))]
 
             index_by_val = sub_val_df.index.tolist()
 
             df = df_test.loc[index_by_val]
 
         df.sort_index(inplace=True)
-
-
 
         self.tableClinicalStatistic.setRowCount(df.shape[0])
         self.tableClinicalStatistic.setColumnCount(df.shape[1]+1)
@@ -585,9 +598,9 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.comboSheet.addItem('Train')
         self.sheet_dict['val'] = pd.read_csv(os.path.join(self._root_folder, 'val_result.csv'), index_col=0)
         self.comboSheet.addItem('Validation')
-        # if os.path.exists(os.path.join(self._root_folder, 'test_result.csv')):
-        #     self.sheet_dict['test'] = pd.read_csv(os.path.join(self._root_folder, 'test_result.csv'), index_col=0)
-        #     self.comboSheet.addItem('Test')
+        if os.path.exists(os.path.join(self._root_folder, 'test_result.csv')):
+            self.sheet_dict['test'] = pd.read_csv(os.path.join(self._root_folder, 'test_result.csv'), index_col=0)
+            self.comboSheet.addItem('Test')
 
         self.UpdateSheet()
 
@@ -603,43 +616,89 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                 else:
                     if (file_name.lower() == specific_file_name.lower()) and ('_{:d}_'.format(feature_number) in rt):
                         return os.path.join(rt, file_name)
-
         return ''
 
     def ShowOneResult(self):
         try:
-            for index in self.tableClinicalStatistic.selectedIndexes():
-                row = index.row()
-                one_item = self.tableClinicalStatistic.item(row, 0)
-                text = str(one_item.text())
-                current_normalizer, current_dimension_reducer, current_feature_selector, current_feature_number, current_classifier = \
-                    text.split('_')
+            # for index in self.tableClinicalStatistic.selectedIndexes():
+            index = self.tableClinicalStatistic.selectedIndexes()[0]
+            row = index.row()
+            one_item = self.tableClinicalStatistic.item(row, 0)
+            text = str(one_item.text())
+            current_normalizer, current_dimension_reducer, current_feature_selector, current_feature_number, current_classifier = \
+                text.split('_')
 
             self.comboNormalizer.setCurrentText(current_normalizer)
             self.comboDimensionReduction.setCurrentText(current_dimension_reducer)
             self.comboFeatureSelector.setCurrentText(current_feature_selector)
             self.comboClassifier.setCurrentText(current_classifier)
             self.spinBoxFeatureNumber.setValue(int(current_feature_number))
-
             if not (self.checkROCTrain.isChecked() or self.checkROCCVTrain.isChecked() or
                     self.checkROCCVValidation.isChecked() or self.checkROCTrain.isChecked()):
                 self.checkROCCVTrain.setCheckState(True)
-
+                self.checkROCCVValidation.setCheckState(True)
             self.UpdateROC()
 
+            # Update the AUC versus feature number
+            self.comboPlotNormalizer.setCurrentText(current_normalizer)
+            self.comboPlotDimensionReduction.setCurrentText(current_dimension_reducer)
+            self.comboPlotFeatureSelector.setCurrentText(current_feature_selector)
+            self.comboPlotClassifier.setCurrentText(current_classifier)
+            self.comboPlotX.setCurrentText('Feature Number')
+            if not (self.checkPlotTrain.isChecked() or
+                    self.checkPlotCVTrain.isChecked() or
+                    self.checkPlotCVValidation.isChecked()):
+                self.checkPlotCVValidation.setCheckState(True)
+            self.UpdatePlot()
+
+            # Update the Contribution
+            self.comboContributionNormalizor.setCurrentText(current_normalizer)
+            self.comboContributionDimension.setCurrentText(current_dimension_reducer)
+            self.comboContributionFeatureSelector.setCurrentText(current_feature_selector)
+            self.comboContributionClassifier.setCurrentText(current_classifier)
+            self.spinContributeFeatureNumber.setValue(int(current_feature_number))
+            self.UpdateContribution()
+
         except Exception as e:
-            print(e)
+            content = 'Visualization, ShowOneResult failed: '
+            self.logger.error('{}{}'.format(content, str(e)))
+            QMessageBox.about(self, content, e.__str__())
+
+    def GenerateDescription(self):
+        if (self.comboNormalizer.count() == 0) or \
+                (self.comboDimensionReduction.count() == 0) or \
+                (self.comboFeatureSelector.count() == 0) or \
+                (self.comboClassifier.count() == 0) or \
+                (self.spinBoxFeatureNumber.value() == 0):
             return
 
-        #
-        # for item in self.tableClinicalStatistic.selectedItems():
-        #     text = str(item.text())
-        #     try:
-        #         current_normalizer, current_dimension_reducer, current_feature_selector, current_feature_number, current_classifier = \
-        #         text.split('_')
-        #     except:
-        #         return None
-        #     break
+        case_name = self.comboNormalizer.currentText() + '_' + \
+                    self.comboDimensionReduction.currentText() + '_' + \
+                    self.comboFeatureSelector.currentText() + '_' + \
+                    str(self.spinBoxFeatureNumber.value()) + '_' + \
+                    self.comboClassifier.currentText()
 
+        case_folder = os.path.join(self._root_folder, case_name)
+        current_pipeline = OnePipeline()
+        try:
+            current_pipeline.LoadPipeline(os.path.join(case_folder, 'pipeline_info.csv'))
+        except Exception as ex:
+            QMessageBox.about(self, "In Description, Load Pipeline_info Error", ex.__str__())
+            self.logger.error('Load Pipeline Error, The reason is ' + str(ex))
 
+        dlg = QFileDialog()
+        dlg.setFileMode(QFileDialog.DirectoryOnly)
+        dlg.setOption(QFileDialog.ShowDirsOnly)
 
+        if dlg.exec_():
+            store_folder = dlg.selectedFiles()[0]
+            roc_path = os.path.join(store_folder, 'ROC.jpg')
+            self.canvasROC.getFigure().savefig(roc_path, dpi=300)
+
+            report = Description()
+            try:
+                report.Run(current_pipeline, self._root_folder, store_folder)
+                os.system("explorer.exe {:s}".format(os.path.normpath(store_folder)))
+            except Exception as ex:
+                QMessageBox.about(self, 'Description Generate Error: ', ex.__str__())
+                self.logger.log('Description Generate Error:  ' + str(ex))

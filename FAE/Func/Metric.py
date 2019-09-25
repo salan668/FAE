@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.stats import sem
+from random import shuffle
 from sklearn.metrics import roc_auc_score, roc_curve, confusion_matrix
 
 def AUC_Confidence_Interval(y_true, y_pred, CI_index=0.95):
@@ -7,6 +7,8 @@ def AUC_Confidence_Interval(y_true, y_pred, CI_index=0.95):
     This function can help calculate the AUC value and the confidence intervals. It is note the confidence interval is
     not calculated by the standard deviation. The auc is calculated by sklearn and the auc of the group are bootstraped
     1000 times. the confidence interval are extracted from the bootstrap result.
+
+    Ref: https://onlinelibrary.wiley.com/doi/abs/10.1002/%28SICI%291097-0258%2820000515%2919%3A9%3C1141%3A%3AAID-SIM479%3E3.0.CO%3B2-F
     :param y_true: The label, dim should be 1.
     :param y_pred: The prediction, dim should be 1
     :param CI_index: The range of confidence interval. Default is 95%
@@ -15,24 +17,23 @@ def AUC_Confidence_Interval(y_true, y_pred, CI_index=0.95):
 
     single_auc = roc_auc_score(y_true, y_pred)
 
-    n_bootstraps = 1000
-    rng_seed = 42  # control reproducibility
     bootstrapped_scores = []
 
-    rng = np.random.RandomState(rng_seed)
-    for i in range(n_bootstraps):
-        index_list = list(np.arange(0, len(y_pred), 1))
-        # bootstrap by sampling with replacement on the prediction indices
-        index_list.pop(int(rng.random_integers(0, len(y_pred) - 1, 1)))
+    np.random.seed(42) # control reproducibility
+    seed_index = np.random.randint(0, 65535, 1000)
+    for seed in seed_index.tolist():
+        np.random.seed(seed)
+        pred_one_sample = np.random.choice(y_pred, size=y_pred.size, replace=True)
+        np.random.seed(seed)
+        label_one_sample = np.random.choice(y_true, size=y_pred.size, replace=True)
 
-        if len(np.unique(y_true[index_list])) < 2:
+        if len(np.unique(label_one_sample)) < 2:
             # We need at least one positive and one negative sample for ROC AUC
             # to be defined: reject the sample
             continue
 
-        score = roc_auc_score(y_true[index_list], y_pred[index_list])
+        score = roc_auc_score(label_one_sample, pred_one_sample)
         bootstrapped_scores.append(score)
-        # print("Bootstrap #{} ROC area: {:0.3f}".format(i + 1, score))
 
     sorted_scores = np.array(bootstrapped_scores)
     std_auc = np.std(sorted_scores)

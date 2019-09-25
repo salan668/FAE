@@ -23,14 +23,16 @@ These instructions will get you a copy of the project up and running on your loc
 The below modules must be installed first to make the FAE work. 
 
 ```
+- imbalanced-learn
 - matplotlib (seaborn)
 - numpy
 - pandas
 - pdfdocument(https://github.com/salan668/pdfdocument.git)
-- pyradiomics
+- pymrmr
 - PyQt5
 - PyQtGraph
-- imblance-learn
+- pyradiomics
+- reportlab
 - scikit-learn
 - scipy
 ```

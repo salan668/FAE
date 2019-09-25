@@ -90,6 +90,13 @@
           <item row="0" column="0">
            <layout class="QVBoxLayout" name="verticalLayout_7">
             <item>
+             <widget class="QCheckBox" name="checkNormalizeNone">
+              <property name="text">
+               <string>None Normalization</string>
+              </property>
+             </widget>
+            </item>
+            <item>
              <widget class="QCheckBox" name="checkNormalizeUnit">
               <property name="text">
                <string>Normalize to unit</string>
@@ -224,13 +231,6 @@
                <widget class="QCheckBox" name="checkRelief">
                 <property name="text">
                  <string>Relief</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QCheckBox" name="checkMRMR">
-                <property name="text">
-                 <string>mRMR</string>
                 </property>
                </widget>
               </item>

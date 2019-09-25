@@ -74,13 +74,11 @@ class PrepareConnection(QWidget, Ui_Prepare):
             self.logger.info('Open the file ' + file_name + ' Succeed.')
         except OSError as reason:
             self.logger.log('Open SCV file Error, The reason is ' + str(reason))
+            QMessageBox.about(self, 'Load data Error', reason.__str__())
             print('Error！' + str(reason))
         except ValueError:
             self.logger.error('Open SCV file ' + file_name + ' Failed. because of value error.')
-            QMessageBox.information(self, 'Error',
-                                    'The selected data file mismatch.')
-
-
+            QMessageBox.information(self, 'Error',                                    'The selected data file mismatch.')
         self.UpdateTable()
 
         self.buttonRemove.setEnabled(True)
@@ -130,6 +128,13 @@ class PrepareConnection(QWidget, Ui_Prepare):
     def CheckAndSave(self):
         if self.data_container.IsEmpty():
             QMessageBox.warning(self, "Warning", "There is no data", QMessageBox.Ok)
+        elif not self.data_container.IsBinaryLabel():
+            QMessageBox.warning(self, "Warning", "There are not 2 Labels", QMessageBox.Ok)
+            non_valid_number_Index = self.data_container.FindNonValidLabelIndex()
+            old_edit_triggers = self.tableFeature.editTriggers()
+            self.tableFeature.setEditTriggers(QAbstractItemView.CurrentChanged)
+            self.tableFeature.setCurrentCell(non_valid_number_Index, 0)
+            self.tableFeature.setEditTriggers(old_edit_triggers)
         elif self.data_container.HasNonValidNumber():
             QMessageBox.warning(self, "Warning", "There are nan items", QMessageBox.Ok)
             non_valid_number_Index = self.data_container.FindNonValidNumberIndex()
@@ -169,10 +174,11 @@ class PrepareConnection(QWidget, Ui_Prepare):
                                                         'really exists in current data')
                                 return None
                         data_balance.Run(training_data_container, store_path=folder_name)
-                    except:
-                        QMessageBox.information(self, 'Error',
-                            'The separation does not work.')
-                        self.logger.error('The separation does not work.')
+                    except Exception as e:
+                        content = 'PrepareConnection, splitting failed: '
+                        self.logger.error('{}{}'.format(content, str(e)))
+                        QMessageBox.about(self, content, e.__str__())
+
 
             else:
                 file_name, _ = QFileDialog.getSaveFileName(self, "Save data", filter="csv files (*.csv)")

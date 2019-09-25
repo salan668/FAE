@@ -70,7 +70,7 @@ class NormalizerUnit(Normalizer):
         if is_test:
             self.Load(os.path.join(store_folder, 'unit_normalization_training.csv'))
         else:
-            self._slop = np.sum(np.square(array), axis=0)
+            self._slop = np.linalg.norm(array, axis=0)
             self._interception = np.zeros_like(self._slop)
 
         data_container = self.Transform(data_container)

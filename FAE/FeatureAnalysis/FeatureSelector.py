@@ -1,21 +1,19 @@
-from abc import ABCMeta,abstractmethod
-import numpy as np
-from copy import deepcopy
-import pandas as pd
-from random import randrange,seed
 import os
 import numbers
 import csv
 
-from sklearn.feature_selection import SelectKBest, f_classif, RFE
-from sklearn.decomposition import PCA
 import pymrmr
+import numpy as np
+import pandas as pd
+from copy import deepcopy
 from sklearn.svm import SVC
+from abc import ABCMeta,abstractmethod
+from sklearn.feature_selection import SelectKBest, f_classif, RFE
 
 from FAE.FeatureAnalysis.ReliefF import ReliefF
 from FAE.DataContainer.DataContainer import DataContainer
 from FAE.HyperParameterConfig.HyperParamManager import HyperParameterManager
-
+from Utility.EcLog import eclog
 
 def SaveSelectInfo(data_container, store_path, is_merge=False):
     info = {}
@@ -39,7 +37,11 @@ def SaveSelectInfo(data_container, store_path, is_merge=False):
 
 class FeatureSelector:
     def __init__(self):
-        self.__selector = None
+        self.logger = eclog(os.path.split(__file__)[-1]).GetLogger()
+
+    def __deepcopy__(self, memodict={}):
+        copy_selector = type(self)()
+        return copy_selector
 
     def SelectFeatureByIndex(self, data_container, selected_list, is_replace=False, store_path=''):
         new_data = data_container.GetArray()[:, selected_list]
@@ -486,8 +488,10 @@ class FeatureSelectPipeline(FeatureSelector):
         self.__selected_feature_number = selected_feature_number
         try:
             self.__selector_list[-1].SetSelectedFeatureNumber(selected_feature_number)
-        except:
-            print('The last selector does not have method SetSelectedFeatureNumber')
+        except Exception as e:
+            content = 'In FeatureSelectPipeline, the last selector does not have method SetSelectedFeaturNumber: '
+            self.logger.error('{}{}'.format(content, str(e)))
+            print('{} \n{}'.format(content, e.__str__()))
 
     def GetSelectedFeatureNumber(self):
         return self.__selected_feature_number
@@ -495,8 +499,10 @@ class FeatureSelectPipeline(FeatureSelector):
     def GetName(self):
         try:
             return self.__selector_list[-1].GetName()
-        except:
-            print('The last selector does not have method GetName')
+        except Exception as e:
+            content = 'In FeatureSelectPipeline, the last selector does not have method GetName: '
+            self.logger.error('{}{}'.format(content, str(e)))
+            print('{} \n{}'.format(content, e.__str__()))
 
     #TODO: Add verbose parameter to show the removed feature name in each selector
     def Run(self, data_container, store_folder=''):
@@ -511,7 +517,6 @@ class FeatureSelectPipeline(FeatureSelector):
 if __name__ == '__main__':
     import os
     print(os.getcwd())
-    from FAE.DataContainer.DataContainer import DataContainer
     data_container = DataContainer()
     print(os.path.abspath(r'..\..\Example\numeric_feature.csv'))
     data_container.Load(r'..\..\Example\numeric_feature.csv')

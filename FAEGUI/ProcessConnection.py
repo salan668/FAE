@@ -53,8 +53,8 @@ class ProcessConnection(QWidget, Ui_Process):
     def __init__(self, parent=None):
         self.training_data_container = DataContainer()
         self.testing_data_container = DataContainer()
-        self.fae = FeatureAnalysisPipelines()
         self.logger = eclog(os.path.split(__file__)[-1]).GetLogger()
+        self.fae = FeatureAnalysisPipelines(logger=self.logger)
         self.__process_normalizer_list = []
         self.__process_dimension_reduction_list = []
         self.__process_feature_selector_list = []
@@ -82,7 +82,7 @@ class ProcessConnection(QWidget, Ui_Process):
         self.checkANOVA.clicked.connect(self.UpdatePipelineText)
         self.checkRFE.clicked.connect(self.UpdatePipelineText)
         self.checkRelief.clicked.connect(self.UpdatePipelineText)
-        self.checkMRMR.clicked.connect(self.UpdatePipelineText)
+        # self.checkMRMR.clicked.connect(self.UpdatePipelineText)
         self.checkFeatureSelectorAll.clicked.connect(self.SelectAllFeatureSelector)
 
         self.checkSVM.clicked.connect(self.UpdatePipelineText)
@@ -142,32 +142,41 @@ class ProcessConnection(QWidget, Ui_Process):
 
     def GenerateVerboseTest(self, normalizer_name, dimension_reduction_name, feature_selector_name, classifier_name, feature_num,
                        current_num, total_num):
-        text = "Current:\n"
 
-        text += "{:s} / ".format(normalizer_name)
-        for temp in self.__process_normalizer_list:
-            text += (temp.GetName() + ", ")
-        text += '\n'
+        def FormatOneLine(the_name, the_list):
+            """
+            A function that generates a line
+            
+            I am not sure whether the last ', ' is needed here.
+            I am leaving it here to ensure it produces the exactly 
+            same line as before.
+            Do remove it in the return line if that is desired. 
+            """
+            name_string = "{:s} / ".format(the_name)
+            list_string = ", ".join([temp.GetName() for temp in the_list])
+            return name_string + list_string + ", "
 
-        text += "{:s} / ".format(dimension_reduction_name)
-        for temp in self.__process_dimension_reduction_list:
-            text += (temp.GetName() + ", ")
-        text += '\n'
+    
+        text_list = ["Current:"]
 
-        text += "{:s} / ".format(feature_selector_name)
-        for temp in self.__process_feature_selector_list:
-            text += (temp.GetName() + ", ")
-        text += '\n'
+        text_list.append(FormatOneLine(normalizer_name,
+                            self.__process_normalizer_list))
+        
+        text_list.append(FormatOneLine(dimension_reduction_name,
+                            self.__process_dimension_reduction_list))
 
-        text += "Feature Number: {:d} / [{:d}-{:d}]\n".format(feature_num, self.spinBoxMinFeatureNumber.value(), self.spinBoxMaxFeatureNumber.value())
+        text_list.append(FormatOneLine(feature_selector_name,
+                            self.__process_feature_selector_list))
 
-        text += "{:s} / ".format(classifier_name)
-        for temp in self.__process_classifier_list:
-            text += (temp.GetName() + ", ")
-        text += '\n'
+        text_list.append("Feature Number: {:d} / [{:d}-{:d}]".format(feature_num, 
+                                                                    self.spinBoxMinFeatureNumber.value(), 
+                                                                    self.spinBoxMaxFeatureNumber.value()))
 
-        text += "Total process: {:d} / {:d}".format(current_num, total_num)
-        return text
+        text_list.append(FormatOneLine(classifier_name,
+                            self.__process_classifier_list))
+
+        text_list.append("Total process: {:d} / {:d}".format(current_num, total_num))
+        return "\n".join(text_list)
 
     def SetStateAllButtonWhenRunning(self, state):
         self.buttonLoadTrainingData.setEnabled(state)
@@ -190,7 +199,7 @@ class ProcessConnection(QWidget, Ui_Process):
         self.checkANOVA.setEnabled(state)
         self.checkRFE.setEnabled(state)
         self.checkRelief.setEnabled(state)
-        self.checkMRMR.setEnabled(state)
+        # self.checkMRMR.setEnabled(state)
         self.checkFeatureSelectorAll.setEnabled(state)
         
         self.spinBoxMinFeatureNumber.setEnabled(state)
@@ -294,8 +303,8 @@ class ProcessConnection(QWidget, Ui_Process):
             self.__process_feature_selector_list.append(FeatureSelectPipeline([FeatureSelectByRFE()]))
         if self.checkRelief.isChecked():
             self.__process_feature_selector_list.append(FeatureSelectPipeline([FeatureSelectByRelief()]))
-        if self.checkMRMR.isChecked():
-            self.__process_feature_selector_list.append(FeatureSelectPipeline([FeatureSelectByMrmr()]))
+        # if self.checkMRMR.isChecked():
+        #     self.__process_feature_selector_list.append(FeatureSelectPipeline([FeatureSelectByMrmr()]))
 
         self.__process_feature_number_list = np.arange(self.spinBoxMinFeatureNumber.value(), self.spinBoxMaxFeatureNumber.value() + 1).tolist()
 
@@ -420,9 +429,9 @@ class ProcessConnection(QWidget, Ui_Process):
         if self.checkRelief.isChecked():
             feature_selection_text += "Relief\n"
             feature_selector_num += 1
-        if self.checkMRMR.isChecked():
-            feature_selection_text += "mRMR\n"
-            feature_selector_num += 1
+        # if self.checkMRMR.isChecked():
+        #     feature_selection_text += "mRMR\n"
+        #     feature_selector_num += 1
         if feature_selector_num == 0:
             feature_selection_text += "None\n"
             feature_selector_num = 1
@@ -506,12 +515,12 @@ class ProcessConnection(QWidget, Ui_Process):
             self.checkANOVA.setChecked(True)
             self.checkRFE.setChecked(True)
             self.checkRelief.setChecked(True)
-            self.checkMRMR.setChecked(True)
+            # self.checkMRMR.setChecked(True)
         else:
             self.checkANOVA.setChecked(False)
             self.checkRFE.setChecked(False)
             self.checkRelief.setChecked(False)
-            self.checkMRMR.setChecked(False)
+            # self.checkMRMR.setChecked(False)
 
         self.UpdatePipelineText()
 

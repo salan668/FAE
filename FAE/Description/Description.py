@@ -1,6 +1,5 @@
 from pdfdocument.document import PDFDocument
 import glob
-import numpy as np
 import os
 import pandas as pd
 import csv
@@ -14,25 +13,35 @@ class Description:
         self.__current_paragraph = ''
         pass
 
-    def Run(self, training_data_container, pipeline, result_folder, store_folder, testing_data_container=DataContainer()):
+    # def Run(self, training_data_container, pipeline, result_folder, store_folder, testing_data_container=DataContainer()):
+    def Run(self, pipeline, result_folder, store_folder):
+
         # Data Description
         data_description_text = "    "
-        if len(np.unique(training_data_container.GetLabel())) != 2:
-            print('Only works for the 2-label classification')
-            return False
-        positive_number = len(
-            np.where(training_data_container.GetLabel() == np.max(training_data_container.GetLabel()))[0])
-        negative_number = len(training_data_container.GetLabel()) - positive_number
 
-        data_description_text += "We selected {:d} cases as the training data set ({:d}/{:d} = positive/negative)). ".format(len(training_data_container.GetCaseName()), positive_number, negative_number)
-        if testing_data_container.IsEmpty():
+        all_training_result_csv_path = os.path.join(result_folder, 'all_train_result.csv')
+        if not os.path.exists(all_training_result_csv_path):
+            print('There is no result here')
+            return False
+
+        all_training_result_df = pd.read_csv(all_training_result_csv_path, index_col=0, header=0)
+        sample_number = all_training_result_df.iloc[0, :]['sample_number']
+        positive_number = all_training_result_df.iloc[0, :]['positive_number']
+        negative_number = all_training_result_df.iloc[0, :]['negative_number']
+        data_description_text += "We selected {:d} cases as the training data set ({:d}/{:d} = positive/negative)). ".\
+            format(sample_number, positive_number, negative_number)
+
+        testing_result_csv_path = os.path.join(result_folder, 'test_result.csv')
+        if not os.path.exists(testing_result_csv_path):
             data_description_text += "Since the number of the samples were limited, there was no independent testing data. "
         else:
-            positive_number = len(
-                np.where(testing_data_container.GetLabel() == np.max(testing_data_container.GetLabel()))[0])
-            negative_number = len(testing_data_container.GetLabel()) - positive_number
-            data_description_text += "We also selected another {:d} cases as the independent testing data set ({:d}/{:d} = positive/negative). \n" \
-                    "".format(len(testing_data_container.GetCaseName()), positive_number, negative_number)
+            testing_result_df = pd.read_csv(testing_result_csv_path, index_col=0, header=0)
+            sample_number = testing_result_df.iloc[0, :]['sample_number']
+            positive_number = testing_result_df.iloc[0, :]['positive_number']
+            negative_number = testing_result_df.iloc[0, :]['negative_number']
+            data_description_text += "We also selected another {:d} cases as the independent testing data " \
+                                     "set ({:d}/{:d} = positive/negative). \n" \
+                                     "".format(sample_number, positive_number, negative_number)
 
         # Method Description
         method_description_text = "    "
@@ -49,18 +58,13 @@ class Description:
                                      "predictive value (NPV) were also calculated at a cutoff value that maximized the " \
                                      "value of the Yorden index. We also boosted estimation 1000 times and applied paired " \
                                      "t-test to give the 95% confidence interval. All above processes were implemented with " \
-                                     "FeAture Explorer (FAE, v0.2.2, https://github.com/salan668/FAE) on Python (3.5.4, https://www.python.org/). \n"
+                                     "FeAture Explorer (FAE, v0.2.5, https://github.com/salan668/FAE) on Python (3.6.8, https://www.python.org/). \n"
 
         # Result Description
         result_folder = os.path.join(result_folder, pipeline.GetStoreName())
         result = pd.read_csv(os.path.join(result_folder, 'result.csv'), index_col=0)
-        train_pred = np.load(os.path.join(result_folder, 'train_predict.npy'))
-        train_label = np.load(os.path.join(result_folder, 'train_label.npy'))
-        val_pred = np.load(os.path.join(result_folder, 'val_predict.npy'))
-        val_label = np.load(os.path.join(result_folder, 'val_label.npy'))
 
-        from FAE.Visualization.DrawROCList import DrawROCList
-        if not testing_data_container.IsEmpty():
+        if os.path.exists(testing_result_csv_path):
             result_description_text = "We found that the model based on {:d} features can get the highest AUC on the " \
                                       "validation data set. The AUC and the accuracy could achieve {:.3f} and {:.3f}, respectively. In this point, " \
                                       "The AUC and the accuracy of the model achieve {:.3f} and {:.3f} on testing data set. " \
@@ -73,10 +77,6 @@ class Description:
                                                 float(result.loc['test_accuracy'].values)
                                                 )
 
-            test_pred = np.load(os.path.join(result_folder, 'test_predict.npy'))
-            test_label = np.load(os.path.join(result_folder, 'test_label.npy'))
-            DrawROCList([train_pred, val_pred, test_pred], [train_label, val_label, test_label], name_list=['train', 'val', 'test'],
-                        store_path=os.path.join(store_folder, 'ROC.jpg'), is_show=False)
         else:
             result_description_text = "We found that the model based on {:d} features can get the highest AUC on the " \
                                       "validation data set. The AUC and the accuracy could achieve {:.3f} and {:.3f}, respectively. " \
@@ -84,9 +84,6 @@ class Description:
                                       "The ROC curve was shown in Figure 1. \n" \
                                       "".format(pipeline.GetFeatureSelector().GetSelectedFeatureNumber(),
                                                 float(result.loc['val_auc'].values), float(result.loc['val_accuracy'].values))
-            DrawROCList([train_pred, val_pred], [train_label, val_label], name_list=['train', 'val'],
-                        store_path=os.path.join(store_folder, 'ROC.jpg'), is_show=False)
-            pass
 
         from reportlab.lib import colors
         table_stype = (
@@ -98,7 +95,8 @@ class Description:
             ('ALIGN', (0, 0), (-1, -1), 'CENTER')
         )
         table_1_header = "Table 1. Clinical statistics in the diagnosis. "
-        if testing_data_container.IsEmpty():
+
+        if not os.path.exists(testing_result_csv_path):
             table_1 = [['Statistics', 'Value'],
                        ['Accuracy', str(result.loc['val_accuracy'].values[0])],
                        ['AUC', str(result.loc['val_auc'].values[0])],
@@ -156,7 +154,7 @@ class Description:
         pdf.image(os.path.join(store_folder, 'ROC.jpg'))
         pdf.table_header(figure_title)
 
-        pdf.end_connect("Thanks for using FAE v.0.2. If you need a specific description, please connect to Yang Song (songyangmri@gmail.com) or Guang Yang "
+        pdf.end_connect("Thanks for using FAE v.0.2.5. If you need a specific description, please connect to Yang Song (songyangmri@gmail.com) or Guang Yang "
               "(gyang@phy.ecnu.edu.cn). Welcome any co-operation and discussion. ")
         pdf.generate()
 

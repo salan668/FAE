@@ -337,6 +337,7 @@ class CrossValidation5Folder(CrossValidation):
         total_train_pred = param_all[index]['total_train_pred']
         train_cv_metric = param_all[index]['train_metric']
         train_cv_info = param_all[index]['train_cv_info']
+
         total_val_label = param_all[index]['total_val_label']
         total_val_pred = param_all[index]['total_val_pred']
         val_cv_metric = param_all[index]['val_metric']
@@ -350,6 +351,9 @@ class CrossValidation5Folder(CrossValidation):
         all_train_pred = self.classifier.Predict(data_container.GetArray())
         all_train_label = data_container.GetLabel()
         all_train_metric = EstimateMetirc(all_train_pred, all_train_label, 'all_train')
+        all_train_info = [['CaseName', 'Pred', 'Label']]
+        for one_case, one_pred, one_label in zip(case_name, all_train_pred, all_train_label):
+            all_train_info.append([one_case, one_pred, one_label])
 
         test_metric = {}
         if test_data_container.GetArray().size > 0:
@@ -392,6 +396,9 @@ class CrossValidation5Folder(CrossValidation):
             with open(os.path.join(store_folder, 'val_cv5_info.csv'), 'w', newline='') as csvfile:
                 writer = csv.writer(csvfile)
                 writer.writerows(val_cv_info)
+            with open(os.path.join(store_folder, 'all_train_info.csv'), 'w', newline='') as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerows(all_train_info)
 
             if test_data_container.GetArray().size > 0:
                 info.update(test_metric)

@@ -1,26 +1,37 @@
-from radiomics import featureextractor
 import collections
 import os
 import csv
 import copy
-import logging
-import SimpleITK as sitk
 import glob
+
+import SimpleITK as sitk
+from radiomics import featureextractor
+
+from Utility.EcLog import eclog
+
 
 class RadiomicsFeatureExtractor:
     def __init__(self, radiomics_parameter_file, has_label=True, ignore_tolerence=False, ignore_diagnostic=True):
         self.feature_values = []
         self.case_list = []
         self.feature_name_list = []
-        self.extractor = featureextractor.RadiomicsFeaturesExtractor(radiomics_parameter_file)
+        self.extractor = featureextractor.RadiomicsFeatureExtractor(radiomics_parameter_file)
         self.error_list = []
 
-        self.logger = logging.getLogger(__name__)
+        self.logger = eclog(os.path.split(__file__)[-1]).GetLogger()
 
         self.__has_label = has_label
         self.__is_ignore_tolerence = ignore_tolerence
         self.__is_ignore_diagnostic = ignore_diagnostic
         self.error_list = []
+
+    def _RemoveKeyFromPathList(self, path_list, key):
+        new_path_list = []
+        for p in path_list:
+            if key not in str(p):
+                new_path_list.append(p)
+
+        return new_path_list
 
 
     def __GetFeatureValuesEachModality(self, data_path, roi_path, key_name):
@@ -71,6 +82,8 @@ class RadiomicsFeatureExtractor:
                 sequence_key_path += '{}*'.format(one_sequence_key)
 
             sequence_candidate = glob.glob(os.path.join(case_folder, sequence_key_path))
+            for one_roi_key in roi_key:
+                sequence_candidate = self._RemoveKeyFromPathList(sequence_candidate, one_roi_key)
             if len(sequence_candidate) != 1:
                 self.logger.error('Check the data file path of case: ' + sequence_key_path)
                 return None
@@ -148,6 +161,9 @@ class RadiomicsFeatureExtractor:
                 sequence_key_path += '{}*'.format(one_sequence_key)
 
             sequence_candidate = glob.glob(os.path.join(case_folder, sequence_key_path))
+            for one_roi_key in roi_key:
+                sequence_candidate = self._RemoveKeyFromPathList(sequence_candidate, one_roi_key)
+
             if len(sequence_candidate) != 1:
                 self.logger.error('Check the data file path of case: ' + sequence_key_path)
                 return None
@@ -204,8 +220,10 @@ class RadiomicsFeatureExtractor:
                     self.case_list.append(case_name)
 
             except Exception as e:
-                print(e)
+                content = 'In FeatureExtractor, {} extracted failed: '.format(case_name)
+                self.logger.error('{}{}'.format(content, str(e)))
                 self.error_list.append(case_name)
+                print('{} \n{}'.format(content, e.__str__()))
 
         if store_path:
             self.Save(store_path)
@@ -251,10 +269,5 @@ class RadiomicsFeatureExtractor:
             self.__IterateCase(root_folder, key_name_list, roi_key, store_path=store_path, show_key_name_list=show_key_name_list)
 
 if __name__ == '__main__':
-    extractor = RadiomicsFeatureExtractor(r'OnlyIntensityRadiomicsParams.yaml',
-                                          has_label=False)
-    extractor.Execute(r'C:\Users\yangs\Desktop\LiuWei',
-                      key_name_list=['arterial'],
-                      roi_key=['arterial', 'label'],
-                      store_path=r'C:\Users\yangs\Desktop\LiuWei\artery.csv')
+    pass
 

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1272</width>
-    <height>755</height>
+    <height>773</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -53,6 +53,13 @@
            </property>
           </widget>
          </item>
+         <item>
+          <widget class="QPushButton" name="buttonGenerateDescription">
+           <property name="text">
+            <string>Generate Description</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
        <item>
@@ -83,16 +90,23 @@
             </spacer>
            </item>
            <item>
-            <widget class="QLabel" name="label">
+            <widget class="QCheckBox" name="checkMaxFeatureNumber">
              <property name="text">
-              <string>Test result on :</string>
+              <string>Estimate</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QCheckBox" name="checkMaxFeatureNumber">
+            <widget class="QLabel" name="label">
              <property name="text">
-              <string>Validation</string>
+              <string>testing based</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="label_8">
+             <property name="text">
+              <string>on validation</string>
              </property>
             </widget>
            </item>
@@ -302,13 +316,6 @@
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_5">
            <item>
-            <widget class="QCheckBox" name="checkContributionShow">
-             <property name="text">
-              <string>Show</string>
-             </property>
-            </widget>
-           </item>
-           <item>
             <widget class="QRadioButton" name="radioContributionFeatureSelector">
              <property name="text">
               <string>Feature Selector</string>
@@ -343,7 +350,7 @@
             </widget>
            </item>
            <item row="1" column="0">
-            <widget class="QComboBox" name="comboContributionNormalization"/>
+            <widget class="QComboBox" name="comboContributionNormalizor"/>
            </item>
            <item row="2" column="0">
             <widget class="QComboBox" name="comboContributionDimension"/>

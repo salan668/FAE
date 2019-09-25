@@ -1,7 +1,8 @@
 import logging
-from  logging.handlers import  RotatingFileHandler
+import copy
+from logging.handlers import RotatingFileHandler
 
-class eclog:
+class eclog(object):
     def __init__(self, file):
         self.eclogger = logging.getLogger(file)
         self.eclogger.setLevel(level=logging.DEBUG)
@@ -14,7 +15,17 @@ class eclog:
             self.rotate_handler.setFormatter(formatter)
             self.eclogger.addHandler(self.rotate_handler)
 
+    # def __deepcopy__(self, memodict={}):
+    #     copy_object = type(self)("new_FECA.log")
+    #     copy_object.rotate_handler = copy.deepcopy(self.rotate_handler, memodict)
+    #     copy_object.eclogger = copy.deepcopy(self.eclogger, memodict)
+        # return copy_object
+
     def GetLogger(self):
-        return self.eclogger;
+        return self.eclogger
 
 
+if __name__ == '__main__':
+    logger = eclog('temp.log')
+    new_logger = copy.deepcopy(logger)
+    new_logger.GetLogger().error('test')

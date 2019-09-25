@@ -51,5 +51,5 @@ class Ui_Form(object):
 " Tel: +86-021-62233873\n"
 "\n"
 " Version:\n"
-"0.2.5"))
+"0.2.6"))
 
