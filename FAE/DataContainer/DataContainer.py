@@ -221,7 +221,7 @@ class DataContainer:
         return self._array, self.__label, self.__feature_name, self.__case_name
 
     def GetFrame(self): return self.__df
-    def GetArray(self): return self._array
+    def GetArray(self): return self._array.astype(np.float64)
     def GetLabel(self): return self.__label
     def GetFeatureName(self): return self.__feature_name
     def GetCaseName(self): return self.__case_name
