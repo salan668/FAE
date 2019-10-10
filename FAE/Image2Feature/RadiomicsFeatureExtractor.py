@@ -62,6 +62,7 @@ class RadiomicsFeatureExtractor:
             roi_key_path += '{}*'.format(one_roi_key)
 
         roi_candidate = glob.glob(os.path.join(case_folder, roi_key_path))
+        roi_candidate = [one for one in roi_candidate if 'nii' in one]
         if len(roi_candidate) != 1:
             self.logger.error('Check the ROI file path of case: ' + case_folder)
             return None
@@ -138,6 +139,7 @@ class RadiomicsFeatureExtractor:
         for one_roi_key in roi_key:
             roi_key_path += '{}*'.format(one_roi_key)
         roi_candidate = glob.glob(os.path.join(case_folder, roi_key_path))
+        roi_candidate = [one for one in roi_candidate if 'nii' in one]
 
         if len(roi_candidate) != 1:
             self.logger.error('Check the ROI file path of case: ' + case_folder)
