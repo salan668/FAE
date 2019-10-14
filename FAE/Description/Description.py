@@ -29,7 +29,7 @@ class Description:
         positive_number = all_training_result_df.iloc[0, :]['positive_number']
         negative_number = all_training_result_df.iloc[0, :]['negative_number']
         data_description_text += "We selected {:d} cases as the training data set ({:d}/{:d} = positive/negative)). ".\
-            format(sample_number, positive_number, negative_number)
+            format(int(sample_number), int(positive_number), int(negative_number))
 
         testing_result_csv_path = os.path.join(result_folder, 'test_result.csv')
         if not os.path.exists(testing_result_csv_path):
@@ -41,7 +41,7 @@ class Description:
             negative_number = testing_result_df.iloc[0, :]['negative_number']
             data_description_text += "We also selected another {:d} cases as the independent testing data " \
                                      "set ({:d}/{:d} = positive/negative). \n" \
-                                     "".format(sample_number, positive_number, negative_number)
+                                     "".format(int(sample_number), int(positive_number), int(negative_number))
 
         # Method Description
         method_description_text = "    "
@@ -70,7 +70,7 @@ class Description:
                                       "The AUC and the accuracy of the model achieve {:.3f} and {:.3f} on testing data set. " \
                                       "The clinical statistics in the diagonsis and the selected features were shown in Table 1 and Table 2. " \
                                       "The ROC curve was shown in Figure 1. \n" \
-                                      "".format(pipeline.GetFeatureSelector().GetSelectedFeatureNumber(),
+                                      "".format(int(pipeline.GetFeatureSelector().GetSelectedFeatureNumber()),
                                                 float(result.loc['val_auc'].values),
                                                 float(result.loc['val_accuracy'].values),
                                                 float(result.loc['test_auc'].values),
@@ -82,7 +82,7 @@ class Description:
                                       "validation data set. The AUC and the accuracy could achieve {:.3f} and {:.3f}, respectively. " \
                                       "The clinical statistics in the diagonsis and the selected features were shown in Table 1 and Table 2. " \
                                       "The ROC curve was shown in Figure 1. \n" \
-                                      "".format(pipeline.GetFeatureSelector().GetSelectedFeatureNumber(),
+                                      "".format(int(pipeline.GetFeatureSelector().GetSelectedFeatureNumber()),
                                                 float(result.loc['val_auc'].values), float(result.loc['val_accuracy'].values))
 
         from reportlab.lib import colors
@@ -154,7 +154,7 @@ class Description:
         pdf.image(os.path.join(store_folder, 'ROC.jpg'))
         pdf.table_header(figure_title)
 
-        pdf.end_connect("Thanks for using FAE v.0.2.5. If you need a specific description, please connect to Yang Song (songyangmri@gmail.com) or Guang Yang "
+        pdf.end_connect("Thanks for using FAE v.0.2.6. If you need a specific description, please connect to Yang Song (songyangmri@gmail.com) or Guang Yang "
               "(gyang@phy.ecnu.edu.cn). Welcome any co-operation and discussion. ")
         pdf.generate()
 
