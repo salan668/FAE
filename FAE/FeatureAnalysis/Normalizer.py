@@ -20,9 +20,9 @@ class Normalizer:
         new_data_container.UpdateFrameByData()
         return new_data_container
 
-    def Save(self, store_path):
-        df = pd.DataFrame({'slop':self._slop, 'interception':self._interception})
-        df.to_csv(store_path)
+    def Save(self, store_path, feature_name):
+        df = pd.DataFrame({ 'feature_name':feature_name, 'slop':self._slop, 'interception':self._interception})
+        df.to_csv(store_path,index=None)
 
     def Load(self, file_path):
         df = pd.read_csv(file_path)
@@ -50,7 +50,7 @@ class NormalizerNone(Normalizer):
             store_path = os.path.join(store_folder, 'non_normalized_feature.csv')
             data_container.Save(store_path)
 
-            self.Save(store_path=os.path.join(store_folder, 'non_normalization.csv'))
+            self.Save(store_path=os.path.join(store_folder, 'non_normalization.csv'), feature_name=data_container.GetFeatureName())
 
         return data_container
 
@@ -77,7 +77,7 @@ class NormalizerUnit(Normalizer):
         if store_folder:
             if not is_test:
                 data_container.Save(os.path.join(store_folder, 'unit_normalized_training_feature.csv'))
-                self.Save(store_path=os.path.join(store_folder, 'unit_normalization_training.csv'))
+                self.Save(store_path=os.path.join(store_folder, 'unit_normalization_training.csv'), feature_name=data_container.GetFeatureName())
             else:
                 data_container.Save(os.path.join(store_folder, 'unit_normalized_testing_feature.csv'))
         return data_container
@@ -106,7 +106,7 @@ class NormalizerZeroCenter(Normalizer):
         if store_folder:
             if not is_test:
                 data_container.Save(os.path.join(store_folder, 'zero_center_normalized_training_feature.csv'))
-                self.Save(store_path=os.path.join(store_folder, 'zero_center_normalization_training.csv'))
+                self.Save(store_path=os.path.join(store_folder, 'zero_center_normalization_training.csv'), feature_name=data_container.GetFeatureName())
             else:
                 data_container.Save(os.path.join(store_folder, 'zero_center_normalized_testing_feature.csv'))
         return data_container
@@ -137,7 +137,7 @@ class NormalizerZeroCenterAndUnit(Normalizer):
         if store_folder:
             if not is_test:
                 data_container.Save(os.path.join(store_folder, 'zero_center_unit_training_feature.csv'))
-                self.Save(store_path=os.path.join(store_folder, 'zero_center_unit_normalization_training.csv'))
+                self.Save(store_path=os.path.join(store_folder, 'zero_center_unit_normalization_training.csv'), feature_name=data_container.GetFeatureName())
             else:
                 data_container.Save(os.path.join(store_folder, 'zero_center_unit_normalized_testing_feature.csv'))
         return data_container
