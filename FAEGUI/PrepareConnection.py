@@ -43,16 +43,25 @@ class PrepareConnection(QWidget, Ui_Prepare):
         self.tableFeature.setRowCount(len(self.data_container.GetCaseName()))
         header_name = deepcopy(self.data_container.GetFeatureName())
         header_name.insert(0, 'Label')
-        self.tableFeature.setColumnCount(len(header_name))
+
+        min_col = np.min([len(header_name), 100])
+        if min_col == 100:
+            header_name = header_name[:100]
+            header_name[-1] = '...'
+
+        self.tableFeature.setColumnCount(min_col)
         self.tableFeature.setHorizontalHeaderLabels(header_name)
         self.tableFeature.setVerticalHeaderLabels(list(map(str, self.data_container.GetCaseName())))
 
         for row_index in range(len(self.data_container.GetCaseName())):
-            for col_index in range(len(header_name)):
+            print(row_index)
+            for col_index in range(min_col):
                 if col_index == 0:
                     self.tableFeature.setItem(row_index, col_index, QTableWidgetItem(str(self.data_container.GetLabel()[row_index])))
-                else:
+                elif col_index < 99:
                     self.tableFeature.setItem(row_index, col_index, QTableWidgetItem(str(self.data_container.GetArray()[row_index, col_index - 1])))
+                else:
+                    self.tableFeature.setItem(row_index, col_index, QTableWidgetItem('...'))
 
 
 
