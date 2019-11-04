@@ -12,7 +12,7 @@ from FAE.DataContainer import DataSeparate
 from FAE.FeatureAnalysis.FeatureSelector import RemoveSameFeatures
 from FAE.DataContainer.DataBalance import UpSampling, DownSampling, SmoteSampling, DataBalance
 
-from PyQt5.QtCore import QItemSelectionModel,QModelIndex
+from PyQt5.QtCore import QItemSelectionModel, QModelIndex
 
 
 class PrepareConnection(QWidget, Ui_Prepare):
@@ -54,7 +54,6 @@ class PrepareConnection(QWidget, Ui_Prepare):
         self.tableFeature.setVerticalHeaderLabels(list(map(str, self.data_container.GetCaseName())))
 
         for row_index in range(len(self.data_container.GetCaseName())):
-            print(row_index)
             for col_index in range(min_col):
                 if col_index == 0:
                     self.tableFeature.setItem(row_index, col_index, QTableWidgetItem(str(self.data_container.GetLabel()[row_index])))
@@ -62,8 +61,6 @@ class PrepareConnection(QWidget, Ui_Prepare):
                     self.tableFeature.setItem(row_index, col_index, QTableWidgetItem(str(self.data_container.GetArray()[row_index, col_index - 1])))
                 else:
                     self.tableFeature.setItem(row_index, col_index, QTableWidgetItem('...'))
-
-
 
         text = "The number of cases: {:d}\n".format(len(self.data_container.GetCaseName()))
         text += "The number of features: {:d}\n".format(len(self.data_container.GetFeatureName()))
