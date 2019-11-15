@@ -2,7 +2,7 @@ import os
 import numbers
 import csv
 
-import pymrmr
+# import pymrmr
 import numpy as np
 import pandas as pd
 from copy import deepcopy

@@ -165,7 +165,7 @@ class DataContainer:
             index = np.nan
         self.__feature_name.pop(index)
         self.__label = np.asarray(self.__df[label_name].values, dtype=np.int)
-        self._array = np.asarray(self.__df[self.__feature_name].values, dtype=np.float32)
+        self._array = np.asarray(self.__df[self.__feature_name].values, dtype=np.float64)
 
     def UpdateFrameByData(self):
         data = np.concatenate((self.__label[..., np.newaxis], self._array), axis=1)
@@ -188,7 +188,7 @@ class DataContainer:
             self.__feature_name.remove(feature_name)
 
         new_array = np.delete(self._array, removed_index, axis=1)
-        self._array = new_array
+        self._array = new_array.astype(np.float64)
 
         self.UpdateFrameByData()
 
@@ -208,7 +208,7 @@ class DataContainer:
             self.__case_name.remove(case_name)
 
         new_array = np.delete(self._array, removed_index, axis=0)
-        self._array = new_array
+        self._array = new_array.astype(np.float64)
         new_label = np.delete(self.__label, removed_index, axis=0)
         self.__label = new_label
 
@@ -226,7 +226,7 @@ class DataContainer:
     def GetFeatureName(self): return self.__feature_name
     def GetCaseName(self): return self.__case_name
 
-    def SetArray(self, array): self._array = array
+    def SetArray(self, array): self._array = array.astype(np.float64)
     def SetLabel(self, label):self.__label = np.asarray(label, dtype=np.int)
     def SetFeatureName(self, feature_name): self.__feature_name = feature_name
     def SetCaseName(self, case_name): self.__case_name = case_name

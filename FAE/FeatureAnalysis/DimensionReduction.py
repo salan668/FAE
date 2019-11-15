@@ -109,12 +109,16 @@ class DimensionReductionByPCC(DimensionReduction):
 
     def GetSelectedFeatureIndex(self, data_container):
         data = data_container.GetArray()
+        label = data_container.GetLabel()
         data /= np.linalg.norm(data, ord=2, axis=0)
 
         for feature_index in range(data.shape[1]):
             is_similar = False
             for save_index in self.__selected_index:
                 if self.__PCCSimilarity(data[:, save_index], data[:, feature_index]) > self.__threshold:
+                    if self.__PCCSimilarity(data[:, save_index], label) < self.__PCCSimilarity(data[:, feature_index],
+                                                                                               label):
+                        self.__selected_index[self.__selected_index == save_index] = feature_index
                     is_similar = True
                     break
             if not is_similar:

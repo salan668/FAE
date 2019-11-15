@@ -49,7 +49,7 @@ def DrawROCList(pred_list, label_list, name_list='', store_path='', is_show=True
             fig.savefig(store_path, dpi=1200, format='eps')
 
     if is_show:
-        axes.show()
+        plt.show()
 
     return axes
 
