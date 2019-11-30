@@ -6,7 +6,7 @@ from copy import deepcopy
 from PyQt5.QtWidgets import *
 from GUI.Prepare import Ui_Prepare
 from Utility.EcLog import eclog
-
+from FAEGUI.FeatureExtractionConnection import FeatureExactionConnection
 from FAE.DataContainer.DataContainer import DataContainer
 from FAE.DataContainer import DataSeparate
 from FAE.FeatureAnalysis.FeatureSelector import RemoveSameFeatures
@@ -25,6 +25,7 @@ class PrepareConnection(QWidget, Ui_Prepare):
         self.buttonRemove.clicked.connect(self.RemoveNonValidValue)
         self.loadTestingReference.clicked.connect(self.LoadTestingReferenceDataContainer)
         self.clearTestingReference.clicked.connect(self.ClearTestingReferenceDataContainer)
+        self.FeatureExtractionButton.clicked.connect(self.ShowFeatureExtractionDialog)
         self.__testing_ref_data_container = DataContainer()
         self.checkSeparate.clicked.connect(self.SetSeparateStatus)
 
@@ -72,9 +73,19 @@ class PrepareConnection(QWidget, Ui_Prepare):
             text += "The number of negative samples: {:d}\n".format(negative_number)
         self.textInformation.setText(text)
 
+    def ShowFeatureExtractionDialog(self):
+        dlg = FeatureExactionConnection()
+        dlg.exec()
+        if(dlg.SucceedExtraction()):
+            return self.GetExtractionFeaturePath()
+        else:
+            return None
+
+
     def LoadData(self):
         dlg = QFileDialog()
         file_name, _ = dlg.getOpenFileName(self, 'Open SCV file', filter="csv files (*.csv)")
+
         try:
             self.data_container.Load(file_name)
             self.logger.info('Open the file ' + file_name + ' Succeed.')

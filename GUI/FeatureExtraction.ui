@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>EeatureExtractionDialog</class>
+ <widget class="QDialog" name="EeatureExtractionDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>773</width>
+    <height>502</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Feature Extraction</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="8" column="2">
+    <widget class="QPushButton" name="BrowseLabelButton_2">
+     <property name="text">
+      <string>Mearge……</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>DataPath:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="label_3">
+     <property name="text">
+      <string>RoiKey：</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="QLineEdit" name="DataPathEdit"/>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="label_2">
+     <property name="text">
+      <string>DataKey：</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="2">
+    <widget class="QPushButton" name="BrowseButton">
+     <property name="text">
+      <string>Browse……</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="QLineEdit" name="DatakeyLineEdit"/>
+   </item>
+   <item row="2" column="1">
+    <widget class="QLineEdit" name="RoiKeyLineEdit"/>
+   </item>
+   <item row="3" column="0">
+    <widget class="QLabel" name="label_4">
+     <property name="text">
+      <string>Feature Path：</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="2">
+    <widget class="QPushButton" name="SelectButton">
+     <property name="text">
+      <string>Select</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0">
+    <widget class="QLabel" name="OutputInfo">
+     <property name="text">
+      <string>extraction：</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="2">
+    <widget class="QPushButton" name="ExtractionButton">
+     <property name="text">
+      <string>Go!</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="0">
+    <widget class="Line" name="line">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="0">
+    <widget class="QLabel" name="StandardLabel">
+     <property name="text">
+      <string>Label:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="2">
+    <widget class="QPushButton" name="BrowseLabelButton">
+     <property name="text">
+      <string>Browse……</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="0">
+    <widget class="QLabel" name="FeaturePathLabel">
+     <property name="text">
+      <string>Feature Path:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="1">
+    <widget class="QLineEdit" name="FeaturePathLineEdit2"/>
+   </item>
+   <item row="3" column="1">
+    <widget class="QLineEdit" name="FeaturePathLineEdit_2"/>
+   </item>
+   <item row="7" column="1">
+    <widget class="QLineEdit" name="LabelLineEdit"/>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
