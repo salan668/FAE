@@ -70,12 +70,13 @@ class FeatureExactionConnection(QDialog, Ui_EeatureExtractionDialog):
                     return name_list
 
 
-                omics_extractor = RadiomicsFeatureExtractor(self.radiomics_config_path, has_label=False)
+                omics_extractor = RadiomicsFeatureExtractor(self.radiomics_config_path, has_label=False, ignore_tolerence=True)
                 total_cases = len([temp for temp in os.listdir(self.DataPathEdit.text()) if
                                    os.path.isdir(self.DataPathEdit.text())])
                 total_cases *= len(GetNameList(self.RoiKeyLineEdit.text()))
                 text = "Total {} cases are processed:\n".format(total_cases)
                 self.OutputInfo.setText("Begin Extraction...")
+
                 omics_extractor.Execute(self.DataPathEdit.text(), key_name_list=GetNameList(self.DatakeyLineEdit.text()),
                                                                 roi_key=GetNameList(self.RoiKeyLineEdit.text()),
                                                                 store_path=self.FeaturePathLineEdit.text())
@@ -85,7 +86,7 @@ class FeatureExactionConnection(QDialog, Ui_EeatureExtractionDialog):
 
         except Exception as e:
             print(e.__str__())
-            self.OutputInfo.setText("Failed!")
+            self.OutputInfo.setText("Failed: {}".format(e.__str__()))
             self.extraction = False
 
     def SucceedExtraction(self):
