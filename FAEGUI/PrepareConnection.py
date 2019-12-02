@@ -76,8 +76,8 @@ class PrepareConnection(QWidget, Ui_Prepare):
     def ShowFeatureExtractionDialog(self):
         dlg = FeatureExactionConnection()
         dlg.exec()
-        if(dlg.SucceedExtraction()):
-            return self.GetExtractionFeaturePath()
+        if dlg.SucceedExtraction():
+            return dlg.GetExtractionFeaturePath()
         else:
             return None
 

@@ -7,17 +7,27 @@
     <x>0</x>
     <y>0</y>
     <width>773</width>
-    <height>502</height>
+    <height>462</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Feature Extraction</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="8" column="2">
-    <widget class="QPushButton" name="BrowseLabelButton_2">
-     <property name="text">
-      <string>Mearge……</string>
+   <item row="4" column="0">
+    <widget class="Line" name="line">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1">
+    <widget class="QLineEdit" name="FeaturePathLineEdit">
+     <property name="font">
+      <font>
+       <family>Arial</family>
+       <pointsize>10</pointsize>
+      </font>
      </property>
     </widget>
    </item>
@@ -36,7 +46,14 @@
     </widget>
    </item>
    <item row="0" column="1">
-    <widget class="QLineEdit" name="DataPathEdit"/>
+    <widget class="QLineEdit" name="DataPathEdit">
+     <property name="font">
+      <font>
+       <family>Arial</family>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
+    </widget>
    </item>
    <item row="1" column="0">
     <widget class="QLabel" name="label_2">
@@ -53,10 +70,24 @@
     </widget>
    </item>
    <item row="1" column="1">
-    <widget class="QLineEdit" name="DatakeyLineEdit"/>
+    <widget class="QLineEdit" name="DatakeyLineEdit">
+     <property name="font">
+      <font>
+       <family>Arial</family>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
+    </widget>
    </item>
    <item row="2" column="1">
-    <widget class="QLineEdit" name="RoiKeyLineEdit"/>
+    <widget class="QLineEdit" name="RoiKeyLineEdit">
+     <property name="font">
+      <font>
+       <family>Arial</family>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
+    </widget>
    </item>
    <item row="3" column="0">
     <widget class="QLabel" name="label_4">
@@ -72,56 +103,19 @@
      </property>
     </widget>
    </item>
-   <item row="4" column="0">
-    <widget class="QLabel" name="OutputInfo">
-     <property name="text">
-      <string>extraction：</string>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="2">
+   <item row="5" column="2">
     <widget class="QPushButton" name="ExtractionButton">
      <property name="text">
       <string>Go!</string>
      </property>
     </widget>
    </item>
-   <item row="5" column="0">
-    <widget class="Line" name="line">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-    </widget>
-   </item>
-   <item row="7" column="0">
-    <widget class="QLabel" name="StandardLabel">
+   <item row="5" column="0" colspan="2">
+    <widget class="QLabel" name="OutputInfo">
      <property name="text">
-      <string>Label:</string>
+      <string>extraction：</string>
      </property>
     </widget>
-   </item>
-   <item row="7" column="2">
-    <widget class="QPushButton" name="BrowseLabelButton">
-     <property name="text">
-      <string>Browse……</string>
-     </property>
-    </widget>
-   </item>
-   <item row="8" column="0">
-    <widget class="QLabel" name="FeaturePathLabel">
-     <property name="text">
-      <string>Feature Path:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="8" column="1">
-    <widget class="QLineEdit" name="FeaturePathLineEdit2"/>
-   </item>
-   <item row="3" column="1">
-    <widget class="QLineEdit" name="FeaturePathLineEdit_2"/>
-   </item>
-   <item row="7" column="1">
-    <widget class="QLineEdit" name="LabelLineEdit"/>
    </item>
   </layout>
  </widget>

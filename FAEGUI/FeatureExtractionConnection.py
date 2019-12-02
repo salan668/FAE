@@ -19,8 +19,6 @@ class FeatureExactionConnection(QDialog, Ui_EeatureExtractionDialog):
         self.BrowseButton.clicked.connect(self.BrowseSourceFolder)
         self.ExtractionButton.clicked.connect(self.BeginExtraction)
         self.SelectButton.clicked.connect(self.BrowseOutputFile)
-        self.BrowseLabelButton_2.clicked.connect(self.MergeLabelToFeature)
-        self.BrowseLabelButton.clicked.connect(self.BrowseLabel)
         self.check_background_color = "background-color:rgba(255,0,0,64)"
         self.raw_background_color = "background-color:rgba(255, 255, 255, 255)"
         folder, _ = os.path.split(os.path.abspath(sys.argv[0]))
@@ -35,22 +33,13 @@ class FeatureExactionConnection(QDialog, Ui_EeatureExtractionDialog):
             self._root_folder = dlg.selectedFiles()[0]
             self.DataPathEdit.setText(self._root_folder)
 
-    def BrowseLabel(self):
-        dlg = QFileDialog()
-        file_path, _ = dlg.getOpenFileName(None, 'Open Label file', filter="CSV files (*.csv);;All files (*.*)",
-                                           options=QtGui.QFileDialog.DontUseNativeDialog)
-
-        index = file_path.rfind('/')
-        if index != -1:
-            self.LabelLineEdit.setText(file_path[index + 1:])
-
 
     def BrowseOutputFile(self):
         dlg = QFileDialog()
         file_name, _ = dlg.getSaveFileName(self, 'Save CSV feature files', 'features.csv',
                                            filter="CSV files (*.csv)")
-        self.FeaturePathLineEdit_2.setText(file_name)
-        self.FeaturePathLineEdit2.setText(file_name)
+        self.FeaturePathLineEdit.setText(file_name)
+
 
     def SetColor(self, ctrl, check_pass):
         if check_pass:
@@ -60,7 +49,7 @@ class FeatureExactionConnection(QDialog, Ui_EeatureExtractionDialog):
 
 
     def Check(self):
-        check_ctrls = {self.DataPathEdit, self.DatakeyLineEdit, self.RoiKeyLineEdit, self.FeaturePathLineEdit_2}
+        check_ctrls = {self.DataPathEdit, self.DatakeyLineEdit, self.RoiKeyLineEdit, self.FeaturePathLineEdit}
         result = True
         for ctrl in check_ctrls:
             result &= len(ctrl.text()) > 0
@@ -86,10 +75,10 @@ class FeatureExactionConnection(QDialog, Ui_EeatureExtractionDialog):
                                    os.path.isdir(self.DataPathEdit.text())])
                 total_cases *= len(GetNameList(self.RoiKeyLineEdit.text()))
                 text = "Total {} cases are processed:\n".format(total_cases)
-                self.OutputInfo.setText(text)
+                self.OutputInfo.setText("Begin Extraction...")
                 omics_extractor.Execute(self.DataPathEdit.text(), key_name_list=GetNameList(self.DatakeyLineEdit.text()),
                                                                 roi_key=GetNameList(self.RoiKeyLineEdit.text()),
-                                                                store_path=self.FeaturePathLineEdit_2.text())
+                                                                store_path=self.FeaturePathLineEdit.text())
                     #self.ExtractionProgressBar.setValue(int(index / total_cases * 100))
                 self.OutputInfo.setText("Succeed!")
                 self.extraction = True
@@ -100,10 +89,8 @@ class FeatureExactionConnection(QDialog, Ui_EeatureExtractionDialog):
             self.extraction = False
 
     def SucceedExtraction(self):
-        return  self.extraction
+        return self.extraction
 
     def GetExtractionFeaturePath(self):
-        return  self.FeaturePathLineEdit_2.text()
+        return self.FeaturePathLineEdit.text()
 
-    def MergeLabelToFeature(self):
-        pass
