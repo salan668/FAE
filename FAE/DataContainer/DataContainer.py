@@ -100,7 +100,7 @@ class DataContainer:
 
     def Save(self, store_path):
         self.UpdateFrameByData()
-        self.__df.to_csv(store_path, index='CaseName')
+        self.__df.to_csv(store_path, index='CaseID')
 
     def LoadWithoutCase(self, file_path):
         self.__init__()
