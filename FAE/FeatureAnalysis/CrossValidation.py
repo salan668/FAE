@@ -8,7 +8,7 @@ from sklearn.model_selection import StratifiedKFold, LeaveOneOut
 
 from FAE.DataContainer.DataContainer import DataContainer
 from FAE.FeatureAnalysis.Classifier import Classifier
-from FAE.Func.Metric import EstimateMetirc, EstimateCVMetirc
+from FAE.Func.Metric import EstimateMetirc
 from FAE.HyperParameterConfig.HyperParamManager import HyperParameterManager
 
 class CrossValidation:
@@ -145,11 +145,11 @@ class CrossValidationLeaveOneOut(CrossValidation):
 
             total_train_label = np.asarray(train_label_list, dtype=np.uint8)
             total_train_pred = np.asarray(train_pred_list, dtype=np.float32)
-            train_cv_metric = EstimateCVMetirc(train_cv_info, self.GetName(), total_train_pred, total_train_label, 'train')
+            train_cv_metric = EstimateMetirc(train_cv_info, self.GetName(), total_train_pred, total_train_label, 'train')
 
             total_val_label = np.asarray(val_label_list, dtype=np.uint8)
             total_val_pred = np.asarray(val_pred_list, dtype=np.float32)
-            val_cv_metric = EstimateCVMetirc(val_cv_info, self.GetName(), total_val_pred, total_val_label, 'val')
+            val_cv_metric = EstimateMetirc(val_cv_info, self.GetName(), total_val_pred, total_val_label, 'val')
 
             param_metric_train_auc.append(float(train_cv_metric['train_auc']))
             param_metric_val_auc.append(float(val_cv_metric['val_auc']))
@@ -311,13 +311,11 @@ class CrossValidation5Folder(CrossValidation):
 
             total_train_label = np.asarray(train_label_list, dtype=np.uint8)
             total_train_pred = np.asarray(train_pred_list, dtype=np.float32)
-            train_cv_metric = EstimateCVMetirc(train_cv_info, self.GetName(), total_train_pred, total_train_label, 'train')
-            # train_cv_metric = EstimateMetirc(total_train_pred, total_train_label, 'train')
+            train_cv_metric = EstimateMetirc(total_train_pred, total_train_label, 'train')
 
             total_val_label = np.asarray(val_label_list, dtype=np.uint8)
             total_val_pred = np.asarray(val_pred_list, dtype=np.float32)
-            val_cv_metric = EstimateCVMetirc(val_cv_info, self.GetName(),total_val_pred, total_val_label, 'val')
-            # val_cv_metric = EstimateMetirc(total_val_pred, total_val_label, 'val')
+            val_cv_metric = EstimateMetirc(total_val_pred, total_val_label, 'val')
 
             param_metric_train_auc.append(float(train_cv_metric['train_auc']))
             param_metric_val_auc.append(float(val_cv_metric['val_auc']))

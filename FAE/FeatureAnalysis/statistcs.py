@@ -68,13 +68,17 @@ class FeatureStatistic:
         chi2_array = np.array([[np.array(train_class_0[-1]), np.array(train_class_1[-1])],
                                [np.array(test_class_0[-1]), np.array(test_class_1[-1])]])
 
-        data_description = pd.DataFrame(data=chi2_array, index=['train', 'test'],
-                                        columns=[train_class_0[0], train_class_1[0]])
+        percentage = np.asarray(chi2_array / np.sum(chi2_array, axis=0), dtype=np.float64)
+        data_description = pd.DataFrame(data=np.hstack((chi2_array, percentage)),
+                                        index=['train', 'test'],
+                                        columns=[train_class_0[0], train_class_1[0], 'train P', 'test P'])
 
         # 列联表的自由度为1，所以需要chi2_contingency 的修正项，correction置为true
         a, p_value, b, c = chi2_contingency(chi2_array, correction=True)
 
         statistic_method = 'chi2_contingency'
+
+
         return data_description, statistic_method,  p_value
 
     def statistic_single_feature(self, feature_name):
@@ -115,16 +119,20 @@ class FeatureStatistic:
             if statistic_method == 'chi2_contingency':
                 # 写入统计数据
                 sheet0.write(col_index + 1, 1, 'class ' + str(data_description.columns.tolist()[0]))
-                sheet0.write(col_index + 2, 1, float(data_description.get_values()[0, 0]))
+                sheet0.write(col_index + 2, 1, str(float(data_description.get_values()[0, 0])) +
+                             '('+'%.2f%%'%(100*float(data_description.get_values()[0, 2]))+')')
 
                 sheet0.write(col_index + 1, 2, 'class ' + str(data_description.columns.tolist()[1]))
-                sheet0.write(col_index + 2, 2, float(data_description.get_values()[0, 1]))
+                sheet0.write(col_index + 2, 2, str(float(data_description.get_values()[0, 1])) +
+                             '('+'%.2f%%'%(100*float(data_description.get_values()[0, 3]))+')')
 
                 sheet0.write(col_index + 1, 3, 'class ' + str(data_description.columns.tolist()[0]))
-                sheet0.write(col_index + 2, 3, float(data_description.get_values()[1, 0]))
+                sheet0.write(col_index + 2, 3, str(float(data_description.get_values()[1, 0])) +
+                             '('+'%.2f%%'%(100*float(data_description.get_values()[1, 2]))+')')
 
                 sheet0.write(col_index + 1, 4, 'class ' + str(data_description.columns.tolist()[1]))
-                sheet0.write(col_index + 2, 4, float(data_description.get_values()[1, 1]))
+                sheet0.write(col_index + 2, 4, str(float(data_description.get_values()[1, 1])) +
+                             '('+'%.2f%%'%(100*float(data_description.get_values()[1, 3]))+')')
 
                 sheet0.write_merge(col_index + 1, col_index + 2, 0, 0, feature_name)
                 sheet0.write_merge(col_index + 1, col_index + 2, 5, 5, str('%.2f' % p_value))
@@ -143,11 +151,10 @@ class FeatureStatistic:
 
 
 if __name__ == '__main__':
-    def test():
-        feature_path = r'D:\hospital\CancerHospital\extract_date\0.65\data_set'
-        store_path = r'D:\hospital\CancerHospital\extract_date\0.65\data_set'
-        quality_list = ['Quality_age', 'Quality_gender', 'Quality_invoved']
-        feature_statistic = FeatureStatistic(feature_path)
-        feature_statistic.load_train_test_feature()
-        feature_statistic.difference_between_cohorts(store_path)
-    test()
+    feature_path = r'D:\hospital\CancerHospital\extract_date\splitted_data_set_by_date_0.6\clinical'
+    store_path = r'D:\hospital\CancerHospital\extract_date\splitted_data_set_by_date_0.6\clinical'
+    quality_list = ['Quality_age', 'Quality_gender', 'Quality_invoved']
+    feature_statistic = FeatureStatistic(feature_path)
+    feature_statistic.load_train_test_feature()
+    feature_statistic.difference_between_cohorts(store_path)
+

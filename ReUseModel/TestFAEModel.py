@@ -114,7 +114,6 @@ def TestNewData(NewDataCsv, model_folder, result_save_path=''):
 
 
 if __name__ == '__main__':
-
-    TestNewData(r'D:\hospital\Huangli\smote\test_numeric_feature.csv',
-            r'D:\hospital\Huangli\smote\process-result\Norm0Center_PCC_ANOVA_5_LR',
-            r'D:\MyScript\demo')
+    TestNewData(r'\test_numeric_feature.csv',
+                r'\Norm0Center_PCC_ANOVA_5_LR',
+                r'D:\MyScript\demo')
