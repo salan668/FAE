@@ -226,6 +226,7 @@ class RadiomicsFeatureExtractor:
                 self.logger.error('{}{}'.format(content, str(e)))
                 self.error_list.append(case_name)
                 print('{} \n{}'.format(content, e.__str__()))
+                raise e
 
         if store_path:
             self.Save(store_path)

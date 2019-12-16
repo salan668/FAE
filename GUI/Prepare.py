@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'D:\MyCode\FAEGitHub\FAE\GUI\Prepare.ui'
+# Form implementation generated from reading ui file 'Prepare.ui'
 #
-# Created by: PyQt5 UI code generator 5.11.3
+# Created by: PyQt5 UI code generator 5.12.2
 #
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_Prepare(object):
     def setupUi(self, Prepare):
@@ -19,6 +20,9 @@ class Ui_Prepare(object):
         self.verticalLayout = QtWidgets.QVBoxLayout()
         self.verticalLayout.setSizeConstraint(QtWidgets.QLayout.SetDefaultConstraint)
         self.verticalLayout.setObjectName("verticalLayout")
+        self.FeatureExtractionButton = QtWidgets.QPushButton(Prepare)
+        self.FeatureExtractionButton.setObjectName("FeatureExtractionButton")
+        self.verticalLayout.addWidget(self.FeatureExtractionButton)
         self.buttonLoad = QtWidgets.QPushButton(Prepare)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -128,6 +132,7 @@ class Ui_Prepare(object):
     def retranslateUi(self, Prepare):
         _translate = QtCore.QCoreApplication.translate
         Prepare.setWindowTitle(_translate("Prepare", "Form"))
+        self.FeatureExtractionButton.setText(_translate("Prepare", "FeatureExtraction"))
         self.buttonLoad.setText(_translate("Prepare", "Load"))
         self.groupRemoveNonvalidValue.setTitle(_translate("Prepare", "Remove non-valid value"))
         self.radioRemoveNonvalidCases.setText(_translate("Prepare", "Remove non-valid Cases"))
@@ -144,4 +149,5 @@ class Ui_Prepare(object):
         self.radioDownSampling.setText(_translate("Prepare", "DownSampling"))
         self.radioSmote.setText(_translate("Prepare", "SMOTE"))
         self.buttonSave.setText(_translate("Prepare", "Check and Save"))
+
 
