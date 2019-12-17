@@ -42,8 +42,23 @@ class DimensionReductionByPCA(DimensionReduction):
         super(DimensionReductionByPCA, self).__init__(number=number, is_transform=True)
         super(DimensionReductionByPCA, self).SetModel(PCA(n_components=super(DimensionReductionByPCA, self).GetRemainedNumber()))
 
+        self.__raw_feature_name = []
+        self.__pca_feature_name = []
+
     def GetName(self):
         return 'PCA'
+
+    def SaveInfo(self, store_folder):
+        pca_sort_path = os.path.join(store_folder, 'pca_sort.csv')
+        df = pd.DataFrame(data=self.GetModel().components_, index=self.__pca_feature_name, columns=self.__raw_feature_name)
+        df.to_csv(pca_sort_path)
+
+    def SaveDataContainer(self, data_container, store_folder, is_test=False):
+        if is_test:
+            container_store_path = os.path.join(store_folder, 'pca_test_feature.csv')
+        else:
+            container_store_path = os.path.join(store_folder, 'pca_train_feature.csv')
+        data_container.Save(container_store_path)
 
     def SetRemainedNumber(self, number):
         super(DimensionReductionByPCA, self).SetRemainedNumber(number)
@@ -84,14 +99,13 @@ class DimensionReductionByPCA(DimensionReduction):
         new_data_container.SetArray(sub_data)
         new_data_container.SetFeatureName(sub_feature_name)
         new_data_container.UpdateFrameByData()
-        if store_folder and os.path.isdir(store_folder):
-            container_store_path = os.path.join(store_folder, 'pca_train_feature.csv')
-            new_data_container.Save(container_store_path)
 
-            pca_sort_path = os.path.join(store_folder, 'pca_sort.csv')
-            df = pd.DataFrame(data=self.GetModel().components_, index=new_data_container.GetFeatureName(),
-                              columns=data_container.GetFeatureName())
-            df.to_csv(pca_sort_path)
+        self.__raw_feature_name = data_container.GetFeatureName()
+        self.__pca_feature_name = new_data_container.GetFeatureName()
+
+        if store_folder and os.path.isdir(store_folder):
+            self.SaveInfo(store_folder)
+            self.SaveDataContainer(data_container, store_folder)
 
         return new_data_container
 
@@ -101,11 +115,25 @@ class DimensionReductionByPCC(DimensionReduction):
         self.__threshold = threshold
         self.__selected_index = []
 
+        self.__new_feature = []
+
     def GetName(self):
         return 'PCC'
 
     def __PCCSimilarity(self, data1, data2):
         return np.abs(pearsonr(data1, data2)[0])
+
+    def SaveInfo(self, store_folder):
+        pca_sort_path = os.path.join(store_folder, 'PCC_sort.csv')
+        df = pd.DataFrame(data=self.__new_feature)
+        df.to_csv(pca_sort_path)
+
+    def SaveDataContainer(self, data_container, store_folder, is_test=False):
+        if is_test:
+            container_store_path = os.path.join(store_folder, 'PCC_test_feature.csv')
+        else:
+            container_store_path = os.path.join(store_folder, 'PCC_train_feature.csv')
+        data_container.Save(container_store_path)
 
     def GetSelectedFeatureIndex(self, data_container):
         data = data_container.GetArray()
@@ -139,20 +167,16 @@ class DimensionReductionByPCC(DimensionReduction):
         self.GetSelectedFeatureIndex(data_container)
 
         new_data = data_container.GetArray()[:, self.__selected_index]
-        new_feature = [data_container.GetFeatureName()[t] for t in self.__selected_index]
+        self.__new_feature = [data_container.GetFeatureName()[t] for t in self.__selected_index]
 
         new_data_container = deepcopy(data_container)
         new_data_container.SetArray(new_data)
-        new_data_container.SetFeatureName(new_feature)
+        new_data_container.SetFeatureName(self.__new_feature)
         new_data_container.UpdateFrameByData()
 
         if store_folder and os.path.isdir(store_folder):
-            container_store_path = os.path.join(store_folder, 'PCC_feature.csv')
-            new_data_container.Save(container_store_path)
-
-            pca_sort_path = os.path.join(store_folder, 'PCC_sort.csv')
-            df = pd.DataFrame(data=new_feature)
-            df.to_csv(pca_sort_path)
+            self.SaveInfo(store_folder)
+            self.SaveDataContainer(new_data_container, store_folder, is_test=False)
 
         return new_data_container
 

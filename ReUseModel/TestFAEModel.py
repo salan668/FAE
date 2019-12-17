@@ -22,7 +22,7 @@ def LoadTrainInfo(model_folder):
     if not os.path.exists(normalization_path):
         print('Check the normalization name : zero_center_normalization')
     else:
-        normalizer.Load(normalization_path)
+        normalizer.LoadInfo(normalization_path)
 
     train_info['normalizer'] = normalizer
     ## Load selected features
