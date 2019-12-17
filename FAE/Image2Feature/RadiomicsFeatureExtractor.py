@@ -238,7 +238,7 @@ class RadiomicsFeatureExtractor:
 
     def Save(self, store_path):
         header = copy.deepcopy(self.feature_name_list)
-        header.insert(0, 'CaseName')
+        header.insert(0, 'CaseID')
         with open(store_path, 'w', newline='') as csvfile:
             writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
             writer.writerow(header)

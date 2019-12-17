@@ -47,7 +47,7 @@ def LoadTrainInfo(model_folder):
 
     return train_info
 
-def TestNewData(NewDataCsv, model_folder, result_save_path):
+def TestNewData(NewDataCsv, model_folder, result_save_path=''):
     '''
 
     :param NewDataCsv: New radiomics feature matrix csv file path
@@ -83,30 +83,37 @@ def TestNewData(NewDataCsv, model_folder, result_save_path):
     label = new_data_container.GetLabel()
     case_name = new_data_container.GetCaseName()
 
-    np.save(os.path.join(result_save_path, 'test_predict.npy'), predict)
-    np.save(os.path.join(result_save_path, 'test_label.npy'), label)
+
 
     test_result_info = [['CaseName', 'Pred', 'Label']]
     for index in range(len(label)):
         test_result_info.append([case_name[index], predict[index], label[index]])
-    with open(os.path.join(result_save_path, 'test_info.csv'), 'w', newline='') as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerows(test_result_info)
+
 
     metric = EstimateMetirc(predict, label)
     info = {}
     info.update(metric)
     cv = CrossValidation()
-    cv.SaveResult(info, result_save_path)
+
+    print(metric)
+    print('\t')
+
+    if result_save_path:
+        cv.SaveResult(info, result_save_path)
+        np.save(os.path.join(result_save_path, 'test_predict.npy'), predict)
+        np.save(os.path.join(result_save_path, 'test_label.npy'), label)
+        with open(os.path.join(result_save_path, 'test_info.csv'), 'w', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerows(test_result_info)
 
 
 
-    # print(metric)
+
+
     return metric
 
 
 if __name__ == '__main__':
-
-    TestNewData(r'D:\hospital\Huangli\smote\test_numeric_feature.csv',
-            r'D:\hospital\Huangli\smote\process-result\Norm0Center_PCC_ANOVA_5_LR',
-            r'D:\MyScript\demo')
+    TestNewData(r'\test_numeric_feature.csv',
+                r'\Norm0Center_PCC_ANOVA_5_LR',
+                r'D:\MyScript\demo')
