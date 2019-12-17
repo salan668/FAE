@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'D:\MyCode\FAEGitHub\FAE\GUI\Visualization.ui'
+# Form implementation generated from reading ui file 'Visualization.ui'
 #
-# Created by: PyQt5 UI code generator 5.11.3
+# Created by: PyQt5 UI code generator 5.13.0
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_Visualization(object):
     def setupUi(self, Visualization):
@@ -141,6 +143,9 @@ class Ui_Visualization(object):
         self.checkPlotTrain = QtWidgets.QCheckBox(Visualization)
         self.checkPlotTrain.setObjectName("checkPlotTrain")
         self.horizontalLayout_4.addWidget(self.checkPlotTrain)
+        self.checkPlotOneSE = QtWidgets.QCheckBox(Visualization)
+        self.checkPlotOneSE.setObjectName("checkPlotOneSE")
+        self.horizontalLayout_4.addWidget(self.checkPlotOneSE)
         self.verticalLayout_4.addLayout(self.horizontalLayout_4)
         self.gridLayout_2 = QtWidgets.QGridLayout()
         self.gridLayout_2.setObjectName("gridLayout_2")
@@ -228,7 +233,7 @@ class Ui_Visualization(object):
         self.label_7.setText(_translate("Visualization", "Show:"))
         self.checkMaxFeatureNumber.setText(_translate("Visualization", "Estimate"))
         self.label.setText(_translate("Visualization", "testing based"))
-        self.label_8.setText(_translate("Visualization", "on validation"))
+        self.label_8.setText(_translate("Visualization", "on val by 1-SE"))
         self.label_2.setText(_translate("Visualization", "ROC Curve / Result"))
         self.checkROCCVTrain.setText(_translate("Visualization", "CV Train"))
         self.checkROCCVValidation.setText(_translate("Visualization", "CV Validation"))
@@ -238,10 +243,10 @@ class Ui_Visualization(object):
         self.checkPlotCVTrain.setText(_translate("Visualization", "CV Train"))
         self.checkPlotCVValidation.setText(_translate("Visualization", "CV Validation"))
         self.checkPlotTrain.setText(_translate("Visualization", "Train"))
+        self.checkPlotOneSE.setText(_translate("Visualization", "1-SE"))
         self.label_5.setText(_translate("Visualization", "Y-Label"))
         self.label_6.setText(_translate("Visualization", "X-Label"))
         self.label_4.setText(_translate("Visualization", "Feature Contribution"))
         self.radioContributionFeatureSelector.setText(_translate("Visualization", "Feature Selector"))
         self.radioContributionClassifier.setText(_translate("Visualization", "Classifier"))
-
 from MatplotlibWidget import MatplotlibWidget

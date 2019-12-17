@@ -66,7 +66,9 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.checkPlotCVTrain.stateChanged.connect(self.UpdatePlot)
         self.checkPlotCVValidation.stateChanged.connect(self.UpdatePlot)
         self.checkPlotTrain.stateChanged.connect(self.UpdatePlot)
+        self.checkPlotOneSE.stateChanged.connect(self.UpdatePlot)
         # self.checkPlotTest.stateChanged.connect(self.UpdatePlot)
+       #
 
         # Update Contribution canvas
         self.radioContributionFeatureSelector.toggled.connect(self.UpdateContribution)
@@ -120,6 +122,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.checkPlotCVTrain.setChecked(False)
         self.checkPlotCVValidation.setChecked(False)
         self.checkPlotTrain.setChecked(False)
+        self.checkPlotOneSE.setChecked(False)
         # self.checkPlotTest.setChecked(False)
         self.radioContributionFeatureSelector.setChecked(True)
         self.radioContributionFeatureSelector.setChecked(False)
@@ -401,10 +404,11 @@ class VisualizationConnection(QWidget, Ui_Visualization):
             #         show_data_std.append(auc_std[tuple(index)].tolist())
             #         name_list.append('Test')
 
+
         if len(show_data) > 0:
             if selected_index == 3:
                 DrawCurve(x_ticks, show_data, show_data_std, xlabel=x_label, ylabel=self.comboPlotY.currentText(),
-                          name_list=name_list, is_show=False, fig=self.canvasPlot.getFigure())
+                          name_list=name_list, is_show=False, one_se=self.checkPlotOneSE.isChecked(), fig=self.canvasPlot.getFigure())
             else:
                 DrawBar(x_ticks, show_data, ylabel=self.comboPlotY.currentText(),
                           name_list=name_list, is_show=False, fig=self.canvasPlot.getFigure())
@@ -659,6 +663,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                     self.checkPlotCVValidation.isChecked()):
                 self.checkPlotCVValidation.setCheckState(True)
             self.UpdatePlot()
+
 
             # Update the Contribution
             self.comboContributionNormalizor.setCurrentText(current_normalizer)

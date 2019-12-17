@@ -4,7 +4,8 @@ import numpy as np
 
 color_list = sns.color_palette('deep') + sns.color_palette('bright')
 
-def DrawCurve(x, y_list, std_list=[], xlabel='', ylabel='', title='', name_list=[], store_path='', is_show=True, fig=plt.figure()):
+def DrawCurve(x, y_list, std_list=[], xlabel='', ylabel='', title='', name_list=[], store_path='',
+              one_se=False, is_show=True, fig=plt.figure()):
     '''
     Draw the curve like ROC
     :param x: the vector of the x
@@ -33,36 +34,43 @@ def DrawCurve(x, y_list, std_list=[], xlabel='', ylabel='', title='', name_list=
         if name_list != []:
             axes.legend(name_list, loc=4)
     else:
+
         for index in range(len(y_list)):
             sub_y_list = y_list[index]
             sub_std_list = std_list[index]
             if name_list[index] == 'CV Validation':
                 axes.errorbar(x, sub_y_list, yerr=sub_std_list, fmt='-o',
                               color=color_list[index], elinewidth=2, capsize=4, alpha=0.7, marker='.', label='CV Validation')
+                if one_se:
+                    sub_y_list = y_list[index]
+                    sub_std_list = std_list[index]
+                    sub_one_se = max(sub_y_list) - sub_std_list[sub_y_list.index(max(sub_y_list))]
+                    line = np.ones((1, len(x))) * sub_one_se
+                    line_list = line.tolist()
+
+                    for index in range(len(sub_y_list)):
+                        if sub_y_list[index] >= sub_one_se:
+                            best_auc_value = sub_y_list[index]
+                            best_auc_feature_number = index + 1
+
+                            axes.plot(x, line_list[0], color='orange', linewidth=1, linestyle="--")
+                            axes.plot(best_auc_feature_number, best_auc_value, 'H', linewidth=20, color='black')
+                            break
+
+                else:
+                    axes.plot(np.argmax(sub_y_list) + 1, np.max(sub_y_list), 'H', linewidth=20, color='black')
+                    best_auc_feature_number = np.argmax(sub_y_list) + 1
+
             else:
                 axes.plot(x, y_list[index], color=color_list[index], label=name_list[index])
 
-        axes.set_xlabel(xlabel)
-        axes.set_ylabel(ylabel)
-        axes.set_title(title)
-        if name_list != []:
-            axes.legend(loc=4)
-        for index in range(len(y_list)):
-            if name_list[index] == 'CV Validation':
-                sub_y_list = y_list[index]
-                sub_std_list = std_list[index]
-                sub_one_se = max(sub_y_list) - sub_std_list[sub_y_list.index(max(sub_y_list))]
-                line = np.ones((1, len(x))) * sub_one_se
-                line_list = line.tolist()
+            axes.set_xlabel(xlabel)
+            axes.set_ylabel(ylabel)
+            axes.set_title(title)
+            if name_list != []:
+                axes.legend(loc=4)
 
-                for index in range(len(sub_y_list)):
-                    if sub_y_list[index] >= sub_one_se:
-                        best_auc_value = sub_y_list[index]
-                        best_auc_feature_number = index+1
 
-                        axes.plot(x, line_list[0], color='orange', linewidth=1, linestyle="--")
-                        axes.plot(best_auc_feature_number, best_auc_value, 'H', linewidth=20, color='black')
-                        break
         if len(x) < 21:
             axes.set_xticks(np.linspace(1, len(x), len(x)))
         else:
