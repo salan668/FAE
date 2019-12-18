@@ -15,11 +15,11 @@ from FAE.DataContainer.DataContainer import DataContainer
 from FAE.HyperParameterConfig.HyperParamManager import HyperParameterManager
 from Utility.EcLog import eclog
 
-def SaveSelectInfo(data_container, store_path, is_merge=False):
+def SaveSelectInfo(feature_name, store_path, is_merge=False):
     info = {}
-    info['feature_number'] = len(data_container.GetFeatureName())
+    info['feature_number'] = len(feature_name)
     if not is_merge:
-        info['selected_feature'] = data_container.GetFeatureName()
+        info['selected_feature'] = feature_name
 
     write_info = []
     for key in info.keys():
@@ -190,6 +190,9 @@ class FeatureSelectByAnalysis(FeatureSelector):
 class FeatureSelectByANOVA(FeatureSelectByAnalysis):
     def __init__(self, selected_feature_number=1):
         super(FeatureSelectByANOVA, self).__init__(selected_feature_number)
+        self._f_value = np.array([])
+        self._p_value = np.array([])
+        self._selected_features = []
 
     def GetSelectedFeatureIndex(self, data_container):
         data = data_container.GetArray()
@@ -207,6 +210,23 @@ class FeatureSelectByANOVA(FeatureSelectByAnalysis):
         f_value, p_value = f_classif(data, label)
         return feature_index.tolist(), f_value, p_value
 
+    def SaveInfo(self, store_folder):
+        anova_sort_path = os.path.join(store_folder, 'anova_sort.csv')
+        df = pd.DataFrame(data=np.stack((self._f_value, self._p_value), axis=1), index=self._selected_features,
+                          columns=['F', 'P'])
+        df.to_csv(anova_sort_path)
+
+        featureinfo_store_path = os.path.join(store_folder, 'feature_select_info.csv')
+        SaveSelectInfo(self._selected_features, featureinfo_store_path, is_merge=False)
+
+    def SaveDataContainer(self, data_container, store_folder, is_test=False):
+        if is_test:
+            feature_store_path = os.path.join(store_folder, 'selected_feature_testing.csv')
+        else:
+            feature_store_path = os.path.join(store_folder, 'selected_feature_training.csv')
+        data_container.Save(feature_store_path)
+
+
     def GetName(self):
         return 'ANOVA'
 
@@ -218,18 +238,12 @@ class FeatureSelectByANOVA(FeatureSelectByAnalysis):
         return text
 
     def Run(self, data_container, store_folder=''):
-        selected_index, f_value, p_value = self.GetSelectedFeatureIndex(data_container)
+        selected_index, self._f_value, self._p_value = self.GetSelectedFeatureIndex(data_container)
         new_data_container = self.SelectFeatureByIndex(data_container, selected_index, is_replace=False)
+        self._selected_features = data_container.GetFeatureName()
         if store_folder and os.path.isdir(store_folder):
-            feature_store_path = os.path.join(store_folder, 'selected_feature.csv')
-            featureinfo_store_path = os.path.join(store_folder, 'feature_select_info.csv')
-
-            new_data_container.Save(feature_store_path)
-            SaveSelectInfo(new_data_container, featureinfo_store_path, is_merge=False)
-
-            anova_sort_path = os.path.join(store_folder, 'anova_sort.csv')
-            df = pd.DataFrame(data=np.stack((f_value, p_value), axis=1), index=data_container.GetFeatureName(), columns=['F', 'P'])
-            df.to_csv(anova_sort_path)
+            self.SaveInfo(store_folder)
+            self.SaveDataContainer(new_data_container, store_folder)
 
         return new_data_container
 
@@ -238,6 +252,7 @@ class FeatureSelectByRelief(FeatureSelectByAnalysis):
         super(FeatureSelectByRelief, self).__init__(selected_feature_number)
         self.__iter_radio = iter_ratio
         self._weight = None
+        self._selected_features = []
 
     def __SortByValue(self, feature_score):
         feature_list = []
@@ -338,6 +353,21 @@ class FeatureSelectByRelief(FeatureSelectByAnalysis):
         self._weight = weight
         return result
 
+    def SaveDataContainer(self, data_container, store_folder, is_test=False):
+        if is_test:
+            feature_store_path = os.path.join(store_folder, 'selected_feature_testing.csv')
+        else:
+            feature_store_path = os.path.join(store_folder, 'selected_feature_training.csv')
+        data_container.Save(feature_store_path)
+
+    def SaveInfo(self, store_folder):
+        relief_sort_path = os.path.join(store_folder, 'Relief_sort.csv')
+        df = pd.DataFrame(data=self._weight, index=self._selected_features, columns=['weight'])
+        df.to_csv(relief_sort_path)
+
+        featureinfo_store_path = os.path.join(store_folder, 'feature_select_info.csv')
+        SaveSelectInfo(self._selected_features, featureinfo_store_path, is_merge=False)
+
     def GetSelectedFeatureIndex(self, data_container):
         feature_sort_list = self.__SortByRelief(data_container)
         if len(feature_sort_list) < self.GetSelectedFeatureNumber():
@@ -356,22 +386,19 @@ class FeatureSelectByRelief(FeatureSelectByAnalysis):
 
     def Run(self, data_container, store_folder=''):
         new_data_container = self.SelectFeatureByIndex(data_container, self.GetSelectedFeatureIndex(data_container), is_replace=False)
+        self._selected_features = data_container.GetFeatureName()
         if store_folder and os.path.isdir(store_folder):
-            feature_store_path = os.path.join(store_folder, 'selected_feature.csv')
-            featureinfo_store_path = os.path.join(store_folder, 'feature_select_info.csv')
+            self.SaveInfo(store_folder)
+            self.SaveDataContainer(new_data_container, store_folder)
 
-            relief_sort_path = os.path.join(store_folder, 'Relief_sort.csv')
-            df = pd.DataFrame(data=self._weight, index=data_container.GetFeatureName(), columns=['weight'])
-            df.to_csv(relief_sort_path)
-
-            new_data_container.Save(feature_store_path)
-            SaveSelectInfo(new_data_container, featureinfo_store_path, is_merge=False)
         return new_data_container
 
 class FeatureSelectByRFE(FeatureSelectByAnalysis):
     def __init__(self, selected_feature_number=1, classifier=SVC(kernel='linear')):
         super(FeatureSelectByRFE, self).__init__(selected_feature_number)
         self.__classifier = classifier
+        self._rank = None
+        self._selected_features = []
 
     def GetDescription(self):
         text = "Before build the model, we used recursive feature elimination (RFE) to select features. The goal of RFE " \
@@ -391,26 +418,36 @@ class FeatureSelectByRFE(FeatureSelectByAnalysis):
         fs = RFE(self.__classifier, self.GetSelectedFeatureNumber(), step=0.05)
         fs.fit(data, label)
         feature_index = fs.get_support(True)
-        ranks = fs.ranking_
+        self._rank = fs.ranking_
 
-        return feature_index.tolist(), ranks
+        return feature_index.tolist()
 
     def GetName(self):
         return 'RFE'
 
+    def SaveInfo(self, store_folder):
+        rfe_sort_path = os.path.join(store_folder, 'RFE_sort.csv')
+        df = pd.DataFrame(data=self._rank, index=self._selected_features, columns=['rank'])
+        df.to_csv(rfe_sort_path)
+
+        featureinfo_store_path = os.path.join(store_folder, 'feature_select_info.csv')
+        SaveSelectInfo(self._selected_features, featureinfo_store_path, is_merge=False)
+
+    def SaveDataContainer(self, data_container, store_folder, is_test=False):
+        if is_test:
+            feature_store_path = os.path.join(store_folder, 'selected_feature_testing.csv')
+        else:
+            feature_store_path = os.path.join(store_folder, 'selected_feature_training.csv')
+        data_container.Save(feature_store_path)
+
+
     def Run(self, data_container, store_folder=''):
-        selected_index, rank = self.GetSelectedFeatureIndex(data_container)
+        selected_index = self.GetSelectedFeatureIndex(data_container)
         new_data_container = self.SelectFeatureByIndex(data_container, selected_index, is_replace=False)
+        self._selected_features = data_container.GetFeatureName()
         if store_folder and os.path.isdir(store_folder):
-            feature_store_path = os.path.join(store_folder, 'selected_feature.csv')
-            featureinfo_store_path = os.path.join(store_folder, 'feature_select_info.csv')
-
-            new_data_container.Save(feature_store_path)
-            SaveSelectInfo(new_data_container, featureinfo_store_path, is_merge=False)
-
-            rfe_sort_path = os.path.join(store_folder, 'RFE_sort.csv')
-            df = pd.DataFrame(data=rank, index=data_container.GetFeatureName(), columns=['rank'])
-            df.to_csv(rfe_sort_path)
+            self.SaveInfo(store_folder)
+            self.SaveDataContainer(new_data_container, store_folder)
 
         return new_data_container
 
@@ -511,6 +548,14 @@ class FeatureSelectPipeline(FeatureSelector):
             output = fs.Run(input_data_container, store_folder)
             input_data_container = output
         return output
+
+    def SaveInfo(self, store_folder):
+        for fs in self.__selector_list:
+            fs.SaveInfo(store_folder)
+
+    def SaveDataContainer(self, data_container, store_folder, is_test=False):
+        for fs in self.__selector_list:
+            fs.SaveDataContainer(data_container, store_folder, is_test=is_test)
 
 ################################################################
 
