@@ -226,6 +226,7 @@ class RadiomicsFeatureExtractor:
                 self.logger.error('{}{}'.format(content, str(e)))
                 self.error_list.append(case_name)
                 print('{} \n{}'.format(content, e.__str__()))
+                raise e
 
         if store_path:
             self.Save(store_path)
@@ -237,7 +238,7 @@ class RadiomicsFeatureExtractor:
 
     def Save(self, store_path):
         header = copy.deepcopy(self.feature_name_list)
-        header.insert(0, 'CaseName')
+        header.insert(0, 'CaseID')
         with open(store_path, 'w', newline='') as csvfile:
             writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
             writer.writerow(header)

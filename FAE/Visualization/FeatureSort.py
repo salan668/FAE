@@ -144,14 +144,14 @@ def SortRadiomicsFeature(feature_name, value=[], store_path='', is_show=False, f
     sub_feature_name, group, group_name = SeperateRadiomicsFeatures(feature_name)
     FeatureSort(sub_feature_name, group, group_name, value, store_path, is_show=is_show, fig=fig)
 
-def GeneralFeatureSort(feature_name, value=[], store_path='', is_sort=True, max_num=-1, is_show=True, fig=plt.figure()):
+def GeneralFeatureSort(feature_name, value=[], store_path='', is_sort=True, max_num=-1, is_show=True, fig=plt.figure(), reverse=True):
     if not isinstance(value, list):
         value = list(value)
     if value == []:
         value = [len(feature_name) - index for index in range(len(feature_name))]
 
     if is_sort:
-        sort_index = sorted(range(len(value)), key=lambda k: value[k], reverse=True)
+        sort_index = sorted(range(len(value)), key=lambda k: value[k], reverse=reverse)
 
         value = [value[index] for index in sort_index]
         feature_name = [feature_name[index] for index in sort_index]

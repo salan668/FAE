@@ -168,6 +168,24 @@ class FeatureAnalysisPipelines:
     def GetAccuracyMetric(self):
         return self.__accuracy_matrix_dict
 
+    def GetStoreName(self, normalizer_name='', dimension_rediction_name='', feature_selector_name='',
+                     feature_number='', classifer_name=''):
+        case_name = '{}_{}_{}_{}_{}'.format(
+            normalizer_name, dimension_rediction_name, feature_selector_name, feature_number, classifer_name
+        )
+        return case_name
+
+    def SaveOnePipeline(self, store_path, normalizer_name='', dimension_rediction_name='', feature_selector_name='',
+                     feature_number=0, classifer_name='', cv_name=''):
+        with open(store_path, 'w', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(['Normalizer', normalizer_name])
+            writer.writerow(['DimensionReduction', dimension_rediction_name])
+            writer.writerow(['FeatureSelector', feature_selector_name])
+            writer.writerow(['FeatureNumber', feature_number])
+            writer.writerow(['Classifier', classifer_name])
+            writer.writerow(['CrossValidation', cv_name])
+
     def Run(self, train_data_container, test_data_container=DataContainer(), store_folder='', is_hyper_parameter=False):
         column_list = ['sample_number', 'positive_number', 'negative_number',
                        'auc', 'auc 95% CIs', 'auc std', 'accuracy',
@@ -195,27 +213,90 @@ class FeatureAnalysisPipelines:
                     len(self.__feature_selector_num_list)
 
         for normalizer, normalizer_index in zip(self.__normalizer_list, range(len(self.__normalizer_list))):
-            for dimension_reductor, dimension_reductor_index in zip(self._dimension_reduction_list, range(len(self._dimension_reduction_list))):
-                for feature_selector, feature_selector_index in zip(self.__feature_selector_list, range(len(self.__feature_selector_list))):
-                    for classifier, classifier_index in zip(self.__classifier_list, range(len(self.__classifier_list))):
-                        for feature_num, feature_num_index in zip(self.__feature_selector_num_list, range(len(self.__feature_selector_num_list))):
+            normalized_train_data_container = normalizer.Run(train_data_container)
+            if not test_data_container.IsEmpty():
+                normalized_test_data_container = normalizer.Run(test_data_container, is_test=True)
+            else:
+                normalized_test_data_container = test_data_container
+
+            for dimension_reducor, dimension_reductor_index in zip(self._dimension_reduction_list, range(len(self._dimension_reduction_list))):
+                if dimension_reducor:
+                    dr_train_data_container = dimension_reducor.Run(normalized_train_data_container)
+                    if not test_data_container.IsEmpty():
+                        dr_test_data_container = dimension_reducor.Transform(normalized_test_data_container)
+                    else:
+                        dr_test_data_container = normalized_test_data_container
+                else:
+                    dr_train_data_container = normalized_train_data_container
+                    dr_test_data_container = normalized_test_data_container
+
+                for feature_selector, feature_selector_index in zip(self.__feature_selector_list,
+                                                                    range(len(self.__feature_selector_list))):
+                    for feature_num, feature_num_index in zip(self.__feature_selector_num_list,
+                                                              range(len(self.__feature_selector_num_list))):
+                        feature_selector.SetSelectedFeatureNumber(feature_num)
+                        if feature_selector:
+                            fs_train_data_container = feature_selector.Run(dr_train_data_container, store_folder)
+                            if not test_data_container.IsEmpty():
+                                selected_feature_name = fs_train_data_container.GetFeatureName()
+                                fs = FeatureSelector()
+                                fs_test_data_container = fs.SelectFeatureByName(dr_test_data_container,
+                                                                                  selected_feature_name)
+                            else:
+                                fs_test_data_container = dr_test_data_container
+                        else:
+                            fs_train_data_container = dr_train_data_container
+                            fs_test_data_container = dr_test_data_container
+
+                        for classifier, classifier_index in zip(self.__classifier_list, range(len(self.__classifier_list))):
+                            self.__cross_validation.SetClassifier(classifier)
+
                             num += 1
-                            yield normalizer.GetName(), dimension_reductor.GetName(), feature_selector.GetName(), feature_num, \
+                            yield normalizer.GetName(), dimension_reducor.GetName(), feature_selector.GetName(), feature_num, \
                                   classifier.GetName(), num, total_num
 
-                            feature_selector.SetSelectedFeatureNumber(feature_num)
-                            one_pipeline = OnePipeline(normalizer=normalizer,
-                                                       dimension_reduction=dimension_reductor,
-                                                       feature_selector=feature_selector,
-                                                       classifier=classifier,
-                                                       cross_validation=self.__cross_validation)
-                            case_name = one_pipeline.GetStoreName()
+                            case_name = self.GetStoreName(normalizer.GetName(),
+                                                          dimension_reducor.GetName(),
+                                                          feature_selector.GetName(),
+                                                          str(feature_num),
+                                                          classifier.GetName())
                             case_store_folder = os.path.join(store_folder, case_name)
-                            train_cv_metric, val_cv_metric, test_metric, all_train_metric = one_pipeline.Run(train_data_container,
-                                                                                     test_data_container,
-                                                                                     case_store_folder,
-                                                                                     is_hyper_parameter)
-                            
+                            if not os.path.exists(case_store_folder):
+                                os.mkdir(case_store_folder)
+
+                            # Save
+                            normalizer.SaveInfo(case_store_folder, normalized_train_data_container.GetFeatureName())
+                            normalizer.SaveNormalDataContainer(normalized_train_data_container, case_store_folder,
+                                                               is_test=False)
+                            dimension_reducor.SaveInfo(case_store_folder)
+                            dimension_reducor.SaveDataContainer(dr_train_data_container, case_store_folder,
+                                                                is_test=False)
+                            feature_selector.SaveInfo(case_store_folder)
+                            feature_selector.SaveDataContainer(fs_train_data_container, case_store_folder,
+                                                               is_test=False)
+                            if not test_data_container.IsEmpty():
+                                normalizer.SaveNormalDataContainer(normalized_test_data_container, case_store_folder,
+                                                                   is_test=True)
+                                dimension_reducor.SaveDataContainer(dr_test_data_container, case_store_folder,
+                                                                    is_test=True)
+                                feature_selector.SaveDataContainer(fs_test_data_container, case_store_folder,
+                                                                   is_test=True)
+
+                            train_cv_metric, val_cv_metric, test_metric, all_train_metric = self.__cross_validation.Run(
+                                fs_train_data_container,
+                                fs_test_data_container,
+                                case_store_folder,
+                                is_hyper_parameter)
+
+                            self.SaveOnePipeline(os.path.join(case_store_folder, 'pipeline_info.csv'),
+                                                 normalizer.GetName(),
+                                                 dimension_reducor.GetName(),
+                                                 feature_selector.GetName(),
+                                                 feature_num,
+                                                 classifier.GetName(),
+                                                 self.__cross_validation.GetName())
+
+                            # Save Result
                             self.__auc_matrix_dict['train'][normalizer_index,
                                                      dimension_reductor_index, 
                                                      feature_selector_index, 

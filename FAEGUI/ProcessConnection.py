@@ -281,14 +281,14 @@ class ProcessConnection(QWidget, Ui_Process):
     def MakePipelines(self):
         self.__process_normalizer_list = []
         if self.checkNormalizeUnit.isChecked():
-            self.__process_normalizer_list.append(NormalizerUnit())
+            self.__process_normalizer_list.append(NormalizerUnit)
         if self.checkNormalizeZeroCenter.isChecked():
-            self.__process_normalizer_list.append(NormalizerZeroCenter())
+            self.__process_normalizer_list.append(NormalizerZeroCenter)
         if self.checkNormalizeUnitWithZeroCenter.isChecked():
-            self.__process_normalizer_list.append(NormalizerZeroCenterAndUnit())
+            self.__process_normalizer_list.append(NormalizerZeroCenterAndUnit)
         if (not self.checkNormalizeUnit.isChecked()) and (not self.checkNormalizeZeroCenter.isChecked()) and \
                 (not self.checkNormalizeUnitWithZeroCenter.isChecked()):
-            self.__process_normalizer_list.append(NormalizerNone())
+            self.__process_normalizer_list.append(NormalizerNone)
 
         self.__process_dimension_reduction_list = []
         if self.checkPCA.isChecked():

@@ -218,10 +218,10 @@ class CrossValidationLeaveOneOut(CrossValidation):
             np.save(os.path.join(store_folder, 'all_train_predict.npy'), all_train_pred)
             np.save(os.path.join(store_folder, 'all_train_label.npy'), all_train_label)
 
-            with open(os.path.join(store_folder, 'train_cv5_info.csv'), 'w', newline='') as csvfile:
+            with open(os.path.join(store_folder, 'train_loo_info.csv'), 'w', newline='') as csvfile:
                 writer = csv.writer(csvfile)
                 writer.writerows(train_cv_info)
-            with open(os.path.join(store_folder, 'val_cv5_info.csv'), 'w', newline='') as csvfile:
+            with open(os.path.join(store_folder, 'val_loo_info.csv'), 'w', newline='') as csvfile:
                 writer = csv.writer(csvfile)
                 writer.writerows(val_cv_info)
 

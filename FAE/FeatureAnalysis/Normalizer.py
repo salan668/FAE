@@ -5,9 +5,14 @@ import pandas as pd
 from copy import deepcopy
 
 class Normalizer:
-    def __init__(self):
+    def __init__(self, key_name, name, description, method):
         self._slop = np.array([])
         self._interception = np.array([])
+
+        self._key_name = key_name
+        self._name = name
+        self._Method = method
+        self._description = description
 
     def Transform(self, data_container):
         array = data_container.GetArray()
@@ -20,132 +25,70 @@ class Normalizer:
         new_data_container.UpdateFrameByData()
         return new_data_container
 
-    def Save(self, store_path, feature_name):
-        df = pd.DataFrame({ 'feature_name':feature_name, 'slop':self._slop, 'interception':self._interception})
-        df.to_csv(store_path,index=None)
+    def SaveNormalDataContainer(self, data_container, store_folder, is_test=False):
+        if is_test:
+            dataset_type = 'testing'
+        else:
+            dataset_type = 'training'
+        data_container.Save(os.path.join(store_folder, '{}_normalized_{}_feature.csv'.format(self._key_name, dataset_type)))
 
-    def Load(self, file_path):
+    def SaveInfo(self, store_folder, feature_name):
+        df = pd.DataFrame({'feature_name': feature_name, 'slop': self._slop, 'interception': self._interception})
+        df.to_csv(os.path.join(store_folder, '{}_normalization_training.csv'.format(self._key_name)), index=None)
+
+
+    def LoadInfo(self, file_path):
         df = pd.read_csv(file_path)
         self._slop = np.array(df['slop'])
         self._interception = np.array(df['interception'])
 
     @abstractmethod
-    def Run(self, data_container, store_folder, is_test=False):
-        pass
-
-    def GetName(self):
-        pass
-
-class NormalizerNone(Normalizer):
-    def __init__(self):
-        super(NormalizerNone, self).__init__()
-
-    def GetName(self):
-        return 'NormNone'
-
-    def Run(self, data_container, store_folder='', is_test=False):
-        self._slop = np.ones((len(data_container.GetFeatureName()),))
-        self._interception = np.zeros((len(data_container.GetFeatureName()),))
-        if store_folder:
-            store_path = os.path.join(store_folder, 'non_normalized_feature.csv')
-            data_container.Save(store_path)
-
-            self.Save(store_path=os.path.join(store_folder, 'non_normalization.csv'), feature_name=data_container.GetFeatureName())
-
-        return data_container
-
-    def GetDescription(self):
-        text = "We did not apply any normalization method on the feature matrix. "
-        return text
-
-class NormalizerUnit(Normalizer):
-    def __init__(self):
-        super(NormalizerUnit, self).__init__()
-
-    def GetName(self):
-        return 'NormUnit'
-
-    def Run(self, data_container, store_folder='', is_test=False):
+    def Run(self, raw_data_container, store_folder='', is_test=False):
+        data_container = deepcopy(raw_data_container)
         array = data_container.GetArray()
-        if is_test:
-            self.Load(os.path.join(store_folder, 'unit_normalization_training.csv'))
-        else:
-            self._slop = np.linalg.norm(array, axis=0)
-            self._interception = np.zeros_like(self._slop)
-
+        if not is_test:
+            self._slop, self._interception = self._Method(array)
         data_container = self.Transform(data_container)
+
         if store_folder:
-            if not is_test:
-                data_container.Save(os.path.join(store_folder, 'unit_normalized_training_feature.csv'))
-                self.Save(store_path=os.path.join(store_folder, 'unit_normalization_training.csv'), feature_name=data_container.GetFeatureName())
-            else:
-                data_container.Save(os.path.join(store_folder, 'unit_normalized_testing_feature.csv'))
+            self.SaveInfo(store_folder, data_container.GetFeatureName(), self._key_name)
+            self.SaveNormalDataContainer(data_container, store_folder, self._key_name, is_test)
+
         return data_container
 
+    def GetName(self):
+        return self._name
+
     def GetDescription(self):
-        text = "We applied the normalization on the feature matrix. For each feature vector, we calculated the L2 norm " \
+        return self._description
+
+
+def NoneNormalizeFunc(array):
+    return np.ones((array.shape[1], )), np.zeros((array.shape[1], ))
+none_description = "We did not apply any normalization method on the feature matrix. "
+NormalizerNone = Normalizer('non', 'NormNone', none_description, NoneNormalizeFunc)
+
+def UnitNormalizeFunc(array):
+    return np.linalg.norm(array, axis=0), np.zeros((array.shape[1], ))
+unit_description = "We applied the normalization on the feature matrix. For each feature vector, we calculated the L2 norm " \
                "and divided by it. Then the feature vector was mapped to an unit vector. "
-        return text
+NormalizerUnit = Normalizer('unit', 'NormUnit', unit_description, UnitNormalizeFunc)
 
-class NormalizerZeroCenter(Normalizer):
-    def __init__(self):
-        super(NormalizerZeroCenter, self).__init__()
-
-    def GetName(self):
-        return 'Norm0Center'
-
-    def Run(self, data_container, store_folder='', is_test=False):
-        array = data_container.GetArray()
-        if is_test:
-            self.Load(os.path.join(store_folder, 'zero_center_normalization_training.csv'))
-        else:
-            self._slop = np.std(array, axis=0)
-            self._interception = np.mean(array, axis=0)
-
-        data_container = self.Transform(data_container)
-        if store_folder:
-            if not is_test:
-                data_container.Save(os.path.join(store_folder, 'zero_center_normalized_training_feature.csv'))
-                self.Save(store_path=os.path.join(store_folder, 'zero_center_normalization_training.csv'), feature_name=data_container.GetFeatureName())
-            else:
-                data_container.Save(os.path.join(store_folder, 'zero_center_normalized_testing_feature.csv'))
-        return data_container
-
-    def GetDescription(self):
-        text = "We applied the normalization on the feature matrix. For each feature vector, we calculated the mean " \
+def ZNormalizeFunc(array):
+    return np.std(array, axis=0), np.mean(array, axis=0)
+z_description = "We applied the normalization on the feature matrix. For each feature vector, we calculated the mean " \
                "value and the standard deviation. Each feature vector was subtracted by the mean value and was divided " \
                "by the standard deviation. After normalization process, each vector has zero center and unit standard " \
                "deviation. "
-        return text
+NormalizerZeroCenter = Normalizer('zero_center', 'Norm0Center', z_description, ZNormalizeFunc)
 
-class NormalizerZeroCenterAndUnit(Normalizer):
-    def __init__(self):
-        super(NormalizerZeroCenterAndUnit, self).__init__()
 
-    def GetName(self):
-        return 'Norm0CenterUnit'
-
-    def Run(self, data_container, store_folder='', is_test=False):
-        array = data_container.GetArray()
-        if is_test:
-            self.Load(os.path.join(store_folder, 'zero_center_unit_normalization_training.csv'))
-        else:
-            self._slop = np.sum(np.square(array), axis=0)
-            self._interception = np.mean(array, axis=0)
-
-        data_container = self.Transform(data_container)
-        if store_folder:
-            if not is_test:
-                data_container.Save(os.path.join(store_folder, 'zero_center_unit_training_feature.csv'))
-                self.Save(store_path=os.path.join(store_folder, 'zero_center_unit_normalization_training.csv'), feature_name=data_container.GetFeatureName())
-            else:
-                data_container.Save(os.path.join(store_folder, 'zero_center_unit_normalized_testing_feature.csv'))
-        return data_container
-
-    def GetDescription(self):
-        text = "We applied the normalization on the feature matrix.  Each feature vector was subtracted by the mean " \
+def ZCenterNormalizeFunc(array):
+    return np.linalg.norm(array, axis=0), np.mean(array, axis=0)
+z_0_description = "We applied the normalization on the feature matrix.  Each feature vector was subtracted by the mean " \
                "value of the vector and was divided by the length of it. "
-        return text
+NormalizerZeroCenterAndUnit = Normalizer('zero_center_unit', 'Norm0CenterUnit', z_0_description, ZCenterNormalizeFunc)
+
 
 if __name__ == '__main__':
     from FAE.DataContainer.DataContainer import DataContainer

@@ -22,6 +22,13 @@
         <enum>QLayout::SetDefaultConstraint</enum>
        </property>
        <item>
+        <widget class="QPushButton" name="FeatureExtractionButton">
+         <property name="text">
+          <string>FeatureExtraction</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QPushButton" name="buttonLoad">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">

@@ -50,6 +50,101 @@ def AUC_Confidence_Interval(y_true, y_pred, CI_index=0.95):
     # print('AUC is {:.3f}, Confidence interval : [{:0.3f} - {:0.3}]'.format(AUC, confidence_lower, confidence_upper))
     return single_auc, mean_auc, CI, sorted_scores, std_auc
 
+def EstimateMetricCV(cv_info, cv_name, key_word):
+    import math
+
+    if cv_name == 'LeaveOneOut':
+        # x**2 + x - len(cv_info)+1 = 0
+        if key_word == 'train_':
+            cv_num = int((math.sqrt(1+4*(len(cv_info) - 1)) + 1) / 2)
+        elif key_word == 'val_':
+            cv_num = int(len(cv_info) - 1)
+        temp_dict_index = [str(index+1) for index in range(cv_num)]
+
+    if cv_name == '5-Folder':
+        temp_dict_index = [str(index+1) for index in range(5)]
+
+    if cv_name == '10-Folder':
+        temp_dict_index = [str(index+1) for index in range(10)]
+
+    temp_dict = {}
+    for cv_index in temp_dict_index:
+        temp_dict[cv_index + 'Pred'] = []
+        temp_dict[cv_index + 'Label'] = []
+
+    for index in range(len(cv_info)):
+        if index > 1:
+            ##remove first col
+            cv_info_result = cv_info[index]
+            cv_index = cv_info_result[1]
+            temp_dict[cv_index + 'Pred'].append(cv_info_result[2])
+            temp_dict[cv_index + 'Label'].append(cv_info_result[3])
+
+    cv_auc = []
+    for index in temp_dict_index:
+        # if index == '183':
+        pred = temp_dict[index + 'Pred']
+        label = temp_dict[index + 'Label']
+        try:
+            score = roc_auc_score(label, pred)
+            cv_auc.append(score)
+        except:
+            a = index
+            print(a)
+
+
+    return np.std(cv_auc)
+
+def EstimateCVMetirc(cv_info, cv_name, prediction, label, key_word=''):
+    '''
+    Calculate the medical metric according to prediction and the label.
+    :param prediction: The prediction. Dim is 1.
+    :param label: The label. Dim is 1
+    :param key_word: The word to add in front of the metric key. Usually to separate the training data set, validation
+    data set, and the testing data set.
+    :return: A dictionary of the calculated metrics
+    '''
+    if key_word != '':
+        key_word += '_'
+
+    metric = {}
+    metric[key_word + 'sample_number'] = len(label)
+    metric[key_word + 'positive_number'] = np.sum(label)
+    metric[key_word + 'negative_number'] = len(label) - np.sum(label)
+
+    fpr, tpr, threshold = roc_curve(label, prediction)
+    index = np.argmax(1 - fpr + tpr)
+    metric[key_word + 'Youden Index'] = '{:.4f}'.format(threshold[index])
+
+    pred = np.zeros_like(label)
+    pred[prediction >= threshold[index]] = 1
+    C = confusion_matrix(label, pred, labels=[1, 0])
+
+    metric[key_word + 'accuracy'] = '{:.4f}'.format(np.where(pred == label)[0].size / label.size)
+    if np.sum(C[0, :]) < 1e-6:
+        metric[key_word + 'sensitivity'] = 0
+    else:
+        metric[key_word + 'sensitivity'] = '{:.4f}'.format(C[0, 0] / np.sum(C[0, :]))
+    if np.sum(C[1, :]) < 1e-6:
+        metric[key_word + 'specificity'] = 0
+    else:
+        metric[key_word + 'specificity'] = '{:.4f}'.format(C[1, 1]/np.sum(C[1, :]))
+    if np.sum(C[:, 0]) < 1e-6:
+        metric[key_word + 'positive predictive value'] = 0
+    else:
+        metric[key_word + 'positive predictive value'] = '{:.4f}'.format(C[0, 0]/np.sum(C[:, 0]))
+    if np.sum(C[:, 1]) < 1e-6:
+        metric[key_word + 'negative predictive value'] = 0
+    else:
+        metric[key_word + 'negative predictive value'] = '{:.4f}'.format(C[1, 1]/np.sum(C[:, 1]))
+    std = EstimateMetricCV(cv_info, cv_name, key_word)
+    single_auc, mean_auc, ci, score,_ = AUC_Confidence_Interval(label, prediction)
+    metric[key_word + 'auc'] = '{:.4f}'.format(single_auc)
+    metric[key_word + 'auc 95% CIs'] = '[{:.4f}-{:.4f}]'.format(ci[0], ci[1])
+    metric[key_word + 'auc std'] = '{:.4f}'.format(std)
+
+    return metric
+
 def EstimateMetirc(prediction, label, key_word=''):
     '''
     Calculate the medical metric according to prediction and the label.
