@@ -386,7 +386,7 @@ class FeatureSelectByRelief(FeatureSelectByAnalysis):
 
     def Run(self, data_container, store_folder=''):
         new_data_container = self.SelectFeatureByIndex(data_container, self.GetSelectedFeatureIndex(data_container), is_replace=False)
-        self._selected_features = data_container.GetFeatureName()
+        self._selected_features = new_data_container.GetFeatureName()
         if store_folder and os.path.isdir(store_folder):
             self.SaveInfo(store_folder)
             self.SaveDataContainer(new_data_container, store_folder)
@@ -444,7 +444,7 @@ class FeatureSelectByRFE(FeatureSelectByAnalysis):
     def Run(self, data_container, store_folder=''):
         selected_index = self.GetSelectedFeatureIndex(data_container)
         new_data_container = self.SelectFeatureByIndex(data_container, selected_index, is_replace=False)
-        self._selected_features = data_container.GetFeatureName()
+        self._selected_features = new_data_container.GetFeatureName()
         if store_folder and os.path.isdir(store_folder):
             self.SaveInfo(store_folder)
             self.SaveDataContainer(new_data_container, store_folder)

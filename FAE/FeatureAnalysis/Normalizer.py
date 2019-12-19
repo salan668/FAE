@@ -12,7 +12,7 @@ class Normalizer:
         self._key_name = key_name
         self._name = name
         self._Method = method
-        self.description = description
+        self._description = description
 
     def Transform(self, data_container):
         array = data_container.GetArray()
@@ -58,6 +58,9 @@ class Normalizer:
 
     def GetName(self):
         return self._name
+
+    def GetDescription(self):
+        return self._description
 
 
 def NoneNormalizeFunc(array):
