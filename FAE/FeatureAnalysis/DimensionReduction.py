@@ -1,5 +1,6 @@
 from abc import abstractmethod
 import numpy as np
+import pickle
 import os
 from copy import deepcopy
 import pandas as pd
@@ -15,7 +16,7 @@ class DimensionReduction:
         self.__is_transform=is_transform
 
     def SetModel(self, model):
-        self.__model = model
+        self.__model = deepcopy(model)
 
     def GetModel(self):
         return self.__model
@@ -52,6 +53,27 @@ class DimensionReductionByPCA(DimensionReduction):
         pca_sort_path = os.path.join(store_folder, 'pca_sort.csv')
         df = pd.DataFrame(data=self.GetModel().components_, index=self.__pca_feature_name, columns=self.__raw_feature_name)
         df.to_csv(pca_sort_path)
+
+        pca_path = os.path.join(store_folder, 'pca.pickle')
+        if pca_path[-7:] != '.pickle':
+            print('Check the store path. ')
+        else:
+            with open(pca_path, 'wb') as f:
+                pickle.dump(self.GetModel(), f)
+
+    def LoadInfo(self, store_folder):
+        if os.path.isdir(store_folder):
+            pca_path = os.path.join(store_folder, 'pca.pickle')
+        elif os.path.isfile(store_folder):
+            pca_path = store_folder
+
+        if not pca_path.endswith('.pickle'):
+            print('Check the store path. ')
+        else:
+            with open(pca_path, 'rb') as f:
+                pca = pickle.load(f)
+                self.SetModel(pca)
+        super(DimensionReductionByPCA, self).SetRemainedNumber(self.GetModel().components_.shape[0])
 
     def SaveDataContainer(self, data_container, store_folder, is_test=False):
         if is_test:
@@ -113,6 +135,7 @@ class DimensionReductionByPCC(DimensionReduction):
     def __init__(self, threshold=0.999):
         super(DimensionReductionByPCC, self).__init__()
         self.__threshold = threshold
+        #TODO: Remove the __selected_index. This is not necessary.
         self.__selected_index = []
 
         self.__new_feature = []
@@ -127,6 +150,15 @@ class DimensionReductionByPCC(DimensionReduction):
         pca_sort_path = os.path.join(store_folder, 'PCC_sort.csv')
         df = pd.DataFrame(data=self.__new_feature)
         df.to_csv(pca_sort_path)
+
+    def LoadInfo(self, store_folder):
+        if os.path.isdir(store_folder):
+            pcc_path = os.path.join(store_folder, 'PCC_sort.csv')
+        elif os.path.isfile(store_folder):
+            pcc_path = store_folder
+
+        selected_feature_df = pd.read_csv(pcc_path, index_col=0)
+        self.__new_feature = selected_feature_df['0'].values.tolist()
 
     def SaveDataContainer(self, data_container, store_folder, is_test=False):
         if is_test:
@@ -153,6 +185,10 @@ class DimensionReductionByPCC(DimensionReduction):
                 self.__selected_index.append(feature_index)
 
     def Transform(self, data_container):
+        if len(self.__selected_index) == 0 and len(self.__new_feature) > 0:
+            all_featues = data_container.GetFeatureName()
+            self.__selected_index = [all_featues.index(temp) for temp in self.__new_feature]
+        assert(len(self.__selected_index) > 0)
         new_data = data_container.GetArray()[:, self.__selected_index]
         new_feature = [data_container.GetFeatureName()[t] for t in self.__selected_index]
 

@@ -236,7 +236,7 @@ class FeatureAnalysisPipelines:
                                                               range(len(self.__feature_selector_num_list))):
                         feature_selector.SetSelectedFeatureNumber(feature_num)
                         if feature_selector:
-                            fs_train_data_container = feature_selector.Run(dr_train_data_container, store_folder)
+                            fs_train_data_container = feature_selector.Run(dr_train_data_container)
                             if not test_data_container.IsEmpty():
                                 selected_feature_name = fs_train_data_container.GetFeatureName()
                                 fs = FeatureSelector()
@@ -271,7 +271,7 @@ class FeatureAnalysisPipelines:
                             dimension_reducor.SaveInfo(case_store_folder)
                             dimension_reducor.SaveDataContainer(dr_train_data_container, case_store_folder,
                                                                 is_test=False)
-                            feature_selector.SaveInfo(case_store_folder)
+                            feature_selector.SaveInfo(case_store_folder, dr_train_data_container.GetFeatureName())
                             feature_selector.SaveDataContainer(fs_train_data_container, case_store_folder,
                                                                is_test=False)
                             if not test_data_container.IsEmpty():

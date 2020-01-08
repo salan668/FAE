@@ -210,9 +210,9 @@ class FeatureSelectByANOVA(FeatureSelectByAnalysis):
         f_value, p_value = f_classif(data, label)
         return feature_index.tolist(), f_value, p_value
 
-    def SaveInfo(self, store_folder):
+    def SaveInfo(self, store_folder, all_features):
         anova_sort_path = os.path.join(store_folder, 'anova_sort.csv')
-        df = pd.DataFrame(data=np.stack((self._f_value, self._p_value), axis=1), index=self._selected_features,
+        df = pd.DataFrame(data=np.stack((self._f_value, self._p_value), axis=1), index=all_features,
                           columns=['F', 'P'])
         df.to_csv(anova_sort_path)
 
@@ -240,9 +240,9 @@ class FeatureSelectByANOVA(FeatureSelectByAnalysis):
     def Run(self, data_container, store_folder=''):
         selected_index, self._f_value, self._p_value = self.GetSelectedFeatureIndex(data_container)
         new_data_container = self.SelectFeatureByIndex(data_container, selected_index, is_replace=False)
-        self._selected_features = data_container.GetFeatureName()
+        self._selected_features = new_data_container.GetFeatureName()
         if store_folder and os.path.isdir(store_folder):
-            self.SaveInfo(store_folder)
+            self.SaveInfo(store_folder, data_container.GetName())
             self.SaveDataContainer(new_data_container, store_folder)
 
         return new_data_container
@@ -360,9 +360,9 @@ class FeatureSelectByRelief(FeatureSelectByAnalysis):
             feature_store_path = os.path.join(store_folder, 'selected_feature_training.csv')
         data_container.Save(feature_store_path)
 
-    def SaveInfo(self, store_folder):
+    def SaveInfo(self, store_folder, all_features):
         relief_sort_path = os.path.join(store_folder, 'Relief_sort.csv')
-        df = pd.DataFrame(data=self._weight, index=self._selected_features, columns=['weight'])
+        df = pd.DataFrame(data=self._weight, index=all_features, columns=['weight'])
         df.to_csv(relief_sort_path)
 
         featureinfo_store_path = os.path.join(store_folder, 'feature_select_info.csv')
@@ -388,7 +388,7 @@ class FeatureSelectByRelief(FeatureSelectByAnalysis):
         new_data_container = self.SelectFeatureByIndex(data_container, self.GetSelectedFeatureIndex(data_container), is_replace=False)
         self._selected_features = new_data_container.GetFeatureName()
         if store_folder and os.path.isdir(store_folder):
-            self.SaveInfo(store_folder)
+            self.SaveInfo(store_folder, data_container.GetFeatureName())
             self.SaveDataContainer(new_data_container, store_folder)
 
         return new_data_container
@@ -425,9 +425,11 @@ class FeatureSelectByRFE(FeatureSelectByAnalysis):
     def GetName(self):
         return 'RFE'
 
-    def SaveInfo(self, store_folder):
+    def SaveInfo(self, store_folder, all_features):
+        #TODO: There should not have all_features variable
         rfe_sort_path = os.path.join(store_folder, 'RFE_sort.csv')
-        df = pd.DataFrame(data=self._rank, index=self._selected_features, columns=['rank'])
+        assert(self._rank.size == len(all_features))
+        df = pd.DataFrame(data=self._rank, index=all_features, columns=['rank'])
         df.to_csv(rfe_sort_path)
 
         featureinfo_store_path = os.path.join(store_folder, 'feature_select_info.csv')
@@ -446,7 +448,7 @@ class FeatureSelectByRFE(FeatureSelectByAnalysis):
         new_data_container = self.SelectFeatureByIndex(data_container, selected_index, is_replace=False)
         self._selected_features = new_data_container.GetFeatureName()
         if store_folder and os.path.isdir(store_folder):
-            self.SaveInfo(store_folder)
+            self.SaveInfo(store_folder, data_container.GetFeatureName())
             self.SaveDataContainer(new_data_container, store_folder)
 
         return new_data_container
@@ -549,9 +551,9 @@ class FeatureSelectPipeline(FeatureSelector):
             input_data_container = output
         return output
 
-    def SaveInfo(self, store_folder):
+    def SaveInfo(self, store_folder, all_features):
         for fs in self.__selector_list:
-            fs.SaveInfo(store_folder)
+            fs.SaveInfo(store_folder, all_features)
 
     def SaveDataContainer(self, data_container, store_folder, is_test=False):
         for fs in self.__selector_list:
