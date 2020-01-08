@@ -22,6 +22,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.sheet_dict = dict()
         self.logger = eclog(os.path.split(__file__)[-1]).GetLogger()
         self.__is_ui_ready = False
+        self.__is_clear = False
 
         super(VisualizationConnection, self).__init__(parent)
         self.setupUi(self)
@@ -40,7 +41,6 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.tableClinicalStatistic.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.comboSheet.currentIndexChanged.connect(self.UpdateSheet)
         self.checkMaxFeatureNumber.stateChanged.connect(self.UpdateSheet)
-        # self.tableClinicalStatistic.doubleClicked.connect(self.ShowOneResult)
         self.tableClinicalStatistic.itemSelectionChanged.connect(self.ShowOneResult)
 
         # Update ROC canvas
@@ -108,7 +108,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
             self.buttonLoadResult.setEnabled(False)
 
     def ClearAll(self):
-
+        self.__is_clear = True
         self.buttonLoadResult.setEnabled(True)
         self.buttonSave.setEnabled(False)
         self.buttonClearResult.setEnabled(False)
@@ -121,7 +121,6 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.checkPlotCVValidation.setChecked(False)
         self.checkPlotTrain.setChecked(False)
         # self.checkPlotTest.setChecked(False)
-        self.radioContributionFeatureSelector.setChecked(True)
         self.radioContributionFeatureSelector.setChecked(False)
         self.checkMaxFeatureNumber.setChecked(False)
         self.canvasROC.getFigure().clear()
@@ -161,7 +160,6 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.spinContributeFeatureNumber.setValue(1)
 
         self.tableClinicalStatistic.clear()
-
         self.tableClinicalStatistic.setRowCount(0)
         self.tableClinicalStatistic.setColumnCount(0)
         self.tableClinicalStatistic.setHorizontalHeaderLabels(list([]))
@@ -171,6 +169,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self._root_folder = ''
         self.sheet_dict = dict()
         self.__is_ui_ready = False
+        self.__is_clear = False
 
     def Save(self):
         dlg = QFileDialog()
@@ -334,7 +333,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         return index
 
     def UpdatePlot(self):
-        if not self.__is_ui_ready:
+        if (not self.__is_ui_ready) or self.__is_clear:
             return
 
         if self.comboPlotX.count() == 0:
@@ -412,7 +411,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.canvasPlot.draw()
 
     def UpdateContribution(self):
-        if not self.__is_ui_ready:
+        if (not self.__is_ui_ready) or self.__is_clear:
             return
 
         try:
@@ -526,6 +525,11 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.textEditDescription.setPlainText(text)
 
     def UpdateSheet(self):
+        if self.__is_clear:
+            self.comboSheet.setEnabled(False)
+            return None
+
+
         if self.checkMaxFeatureNumber.isChecked():
             self.comboSheet.setEnabled(False)
         else:
@@ -630,6 +634,8 @@ class VisualizationConnection(QWidget, Ui_Visualization):
     def ShowOneResult(self):
         try:
             # for index in self.tableClinicalStatistic.selectedIndexes():
+            if not self.tableClinicalStatistic.selectedIndexes():
+                return None
             index = self.tableClinicalStatistic.selectedIndexes()[0]
             row = index.row()
             one_item = self.tableClinicalStatistic.item(row, 0)
