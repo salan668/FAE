@@ -106,7 +106,7 @@
            <item>
             <widget class="QLabel" name="label_8">
              <property name="text">
-              <string>on validation</string>
+              <string>on val by 1-SE</string>
              </property>
             </widget>
            </item>
@@ -248,6 +248,13 @@
             <widget class="QCheckBox" name="checkPlotTrain">
              <property name="text">
               <string>Train</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="checkPlotOneSE">
+             <property name="text">
+              <string>1-SE</string>
              </property>
             </widget>
            </item>

@@ -2,10 +2,13 @@ import os
 
 import numpy as np
 import pandas as pd
-from scipy.stats import levene, ttest_ind, kstest, mannwhitneyu, chi2_contingency
-from collections import Counter
 import xlrd
 import xlwt
+import copy
+
+from scipy.stats import levene, ttest_ind, kstest, mannwhitneyu, chi2_contingency
+from collections import Counter
+
 
 
 class FeatureStatistic:
@@ -61,24 +64,38 @@ class FeatureStatistic:
 
     @staticmethod
     def _statistic_discrete(train_data, test_data):
+        def class_count(data_array):
+            class_dict = {}
+            class_counter = Counter(data_array)
+            class_array = np.asarray(list(class_counter.keys()))
+            count_array = np.asarray(list(class_counter.values()))
+            for class_index in range(len(class_array)):
+                class_dict[str(class_array[class_index])] = int(count_array[class_index])
+            return class_dict
         # 生成列联表
-        train_class_0, train_class_1 = Counter(train_data).most_common()
-        test_class_0, test_class_1 = Counter(test_data).most_common()
+        train_dict = class_count(train_data)
+        test_dict = class_count(test_data)
 
-        chi2_array = np.array([[np.array(train_class_0[-1]), np.array(train_class_1[-1])],
-                               [np.array(test_class_0[-1]), np.array(test_class_1[-1])]])
+        all_feature_class = [str(i) for i in sorted(list(set(list(train_dict.keys()) + list(test_dict.keys()))))]
 
-        percentage = np.asarray(chi2_array / np.sum(chi2_array, axis=0), dtype=np.float64)
-        data_description = pd.DataFrame(data=np.hstack((chi2_array, percentage)),
-                                        index=['train', 'test'],
-                                        columns=[train_class_0[0], train_class_1[0], 'train P', 'test P'])
+        chi2_array = np.zeros((2, len(all_feature_class)))
+        for sub_feature_index in range(len(all_feature_class)):
+            chi2_array[0, sub_feature_index] = int(train_dict[all_feature_class[sub_feature_index]])
+            chi2_array[1, sub_feature_index] = int(test_dict[all_feature_class[sub_feature_index]])
+        print(chi2_array)
+        # 计算占比
+        percentage_array = copy.copy(chi2_array)
+        percentage_array[0, :] = percentage_array[0, :] / np.sum(percentage_array, axis=1)[0]
+        percentage_array[1, :] = percentage_array[1, :] / np.sum(percentage_array, axis=1)[1]
 
+        print(percentage_array)
+        data_description = pd.DataFrame(data=np.hstack((chi2_array, percentage_array)), index=['train', 'test'],
+                                        columns=all_feature_class*2)
+        print(data_description)
         # 列联表的自由度为1，所以需要chi2_contingency 的修正项，correction置为true
-        a, p_value, b, c = chi2_contingency(chi2_array, correction=True)
+        a, p_value, b, c = chi2_contingency(chi2_array.T, correction=True)
 
         statistic_method = 'chi2_contingency'
-
-
         return data_description, statistic_method,  p_value
 
     def statistic_single_feature(self, feature_name):
@@ -87,7 +104,7 @@ class FeatureStatistic:
         train_set = set(self.train_pd[feature_name])
         test_set = set(self.test_pd[feature_name])
 
-        if len(train_set) > 2 and len(test_set) > 2:  # 数据连续型
+        if len(train_set) > 10 or feature_name in ['age', 'Age']:  # 数据连续型
             data_description, statistic_method,  p_value = self._statistic_continuous(self.train_pd[feature_name],
                                                                                       self.test_pd[feature_name])
 
@@ -103,58 +120,88 @@ class FeatureStatistic:
         xlsx_f = xlwt.Workbook()
         sheet0 = xlsx_f.add_sheet('feature_statistic', cell_overwrite_ok=True)
         sheet0.write(0, 0, 'feature')
-        sheet0.write_merge(0, 0, 1, 2, 'Train')
-        sheet0.write_merge(0, 0, 3, 4, 'Test')
-        sheet0.write(0, 5, 'P-value')
+        sheet0.write(0, 1, 'Train')
+        sheet0.write(0, 2, 'Test')
+        sheet0.write(0, 3, 'P-value')
 
-        col_index = 0
+
         # 如果没有指定特征，就会计算所有的特征分布统计
         if len(self.selected_feature_list) == 0:
             self.selected_feature_list = self.feature_list
-
+        col_index = 1
         for feature_index in range(len(self.selected_feature_list)):
 
             feature_name = self.selected_feature_list[feature_index]
             data_description, statistic_method, p_value = self.statistic_single_feature(feature_name)
+
             if statistic_method == 'chi2_contingency':
-                # 写入统计数据
-                sheet0.write(col_index + 1, 1, 'class ' + str(data_description.columns.tolist()[0]))
-                sheet0.write(col_index + 2, 1, str(float(data_description.get_values()[0, 0])) +
-                             '('+'%.2f%%'%(100*float(data_description.get_values()[0, 2]))+')')
+                data_description_array = data_description.get_values()
+                data_description_columns = data_description.columns.tolist()
+                # data_description_columns前一半是class名称，后一半是class占比
 
-                sheet0.write(col_index + 1, 2, 'class ' + str(data_description.columns.tolist()[1]))
-                sheet0.write(col_index + 2, 2, str(float(data_description.get_values()[0, 1])) +
-                             '('+'%.2f%%'%(100*float(data_description.get_values()[0, 3]))+')')
+                class_list = data_description_columns[: int(len(data_description_columns)/2)]
 
-                sheet0.write(col_index + 1, 3, 'class ' + str(data_description.columns.tolist()[0]))
-                sheet0.write(col_index + 2, 3, str(float(data_description.get_values()[1, 0])) +
-                             '('+'%.2f%%'%(100*float(data_description.get_values()[1, 2]))+')')
-
-                sheet0.write(col_index + 1, 4, 'class ' + str(data_description.columns.tolist()[1]))
-                sheet0.write(col_index + 2, 4, str(float(data_description.get_values()[1, 1])) +
-                             '('+'%.2f%%'%(100*float(data_description.get_values()[1, 3]))+')')
-
-                sheet0.write_merge(col_index + 1, col_index + 2, 0, 0, feature_name)
-                sheet0.write_merge(col_index + 1, col_index + 2, 5, 5, str('%.2f' % p_value))
+                sheet0.write_merge(col_index, col_index + len(class_list)*2-1, 0, 0, feature_name)
+                sheet0.write_merge(col_index, col_index + len(class_list)*2-1, 3, 3, str('%.2f' % p_value))
                 # 占两行
-                col_index += 2
+
+                # 写入统计数据
+                for sub_class_index in range(len(class_list)):
+                    # train columns
+                    sheet0.write(col_index, 1, 'class ' + class_list[sub_class_index])
+                    # test columns
+                    sheet0.write(col_index, 2, 'class ' + class_list[sub_class_index])
+                    col_index += 1
+
+                    sheet0.write(col_index, 1, str(float(data_description_array[0, sub_class_index])) +
+                                 '('+'%.2f%%' % (100*float(data_description_array[0, sub_class_index+len(class_list)]))
+                                 + ')')
+
+                    sheet0.write(col_index, 2,
+                                 str(float(data_description_array[1, sub_class_index])) +
+                                 '('+'%.2f%%' % (100*float(data_description_array[1, sub_class_index+len(class_list)]))
+                                 + ')')
+                    col_index += 1
 
             else:
-                sheet0.write_merge(col_index + 1, col_index + 1, 1, 2, data_description[0])
-                sheet0.write_merge(col_index + 1, col_index + 1, 3, 4, data_description[1])
-                sheet0.write(col_index + 1, 0, feature_name)
-                sheet0.write(col_index + 1, 5, str('%.2f' % p_value))
+                sheet0.write(col_index, 0, feature_name)
+                sheet0.write(col_index, 1, data_description[0])
+                sheet0.write(col_index, 2, data_description[1])
+                sheet0.write(col_index, 3, str('%.2f' % p_value))
                 # 占1行
                 col_index += 1
         # 保存文件
         xlsx_f.save(os.path.join(store_path, 'statistic.xls'))
 
 
+def IterationFromFeature(original_feature_path, store_path):
+    from FAE.DataContainer.DataSeparate import DataSeparate
+    from FAE.DataContainer.DataContainer import DataContainer
+
+    def one_echo(original_feature_path, store_path):
+        data = DataContainer()
+        data.Load(original_feature_path)
+        data_separator = DataSeparate()
+        data_separator.RunByTestingPercentage(data, testing_data_percentage=0.3, store_folder=store_path)
+
+        feature_statistic = FeatureStatistic(store_path)
+        feature_statistic.load_train_test_feature()
+        feature_statistic.difference_between_cohorts(store_path)
+
+        statistics_result = pd.read_excel(os.path.join(store_path, 'statistic.xls'))
+        print(statistics_result['P-value'])
+
+    one_echo(original_feature_path, store_path)
+
+
 if __name__ == '__main__':
-    feature_path = r'D:\hospital\CancerHospital\extract_date\splitted_data_set_by_date_0.6\clinical'
-    store_path = r'D:\hospital\CancerHospital\extract_date\splitted_data_set_by_date_0.6\clinical'
-    quality_list = ['Quality_age', 'Quality_gender', 'Quality_invoved']
-    feature_statistic = FeatureStatistic(feature_path)
-    feature_statistic.load_train_test_feature()
-    feature_statistic.difference_between_cohorts(store_path)
+    # feature_path = r'D:\hospital\CancerHospital\extract_date\0.65\clinical\data_set'
+    # store_path = r'D:\hospital\CancerHospital\extract_date\0.65\clinical\data_set'
+    # quality_list = ['Quality_age', 'Quality_gender', 'Quality_invoved']
+    # feature_statistic = FeatureStatistic(feature_path)
+    # feature_statistic.load_train_test_feature()
+    # feature_statistic.difference_between_cohorts(store_path)
+    feature_path = r'D:\hospital\CancerHospital\without_difference\clinical.csv'
+    store_path = r'D:\hospital\CancerHospital\without_difference'
+    IterationFromFeature(feature_path, store_path)
 
