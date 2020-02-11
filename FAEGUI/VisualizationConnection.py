@@ -395,13 +395,13 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                 show_data.append(temp[tuple(index)].tolist())
                 show_data_std.append(auc_std[tuple(index)].tolist())
                 name_list.append('Train')
-            # if self.checkPlotTest.isChecked():
-            #     temp = deepcopy(self._fae.GetAUCMetric()['test'])
-            #     auc_std = deepcopy(self._fae.GetAUCstdMetric()['test'])
-            #     if temp.size > 0:
-            #         show_data.append(temp[tuple(index)].tolist())
-            #         show_data_std.append(auc_std[tuple(index)].tolist())
-            #         name_list.append('Test')
+            if self.checkPlotTest.isChecked():
+                temp = deepcopy(self._fae.GetAUCMetric()['test'])
+                auc_std = deepcopy(self._fae.GetAUCstdMetric()['test'])
+                if temp.size > 0:
+                    show_data.append(temp[tuple(index)].tolist())
+                    show_data_std.append(auc_std[tuple(index)].tolist())
+                    name_list.append('Test')
 
 
         if len(show_data) > 0:

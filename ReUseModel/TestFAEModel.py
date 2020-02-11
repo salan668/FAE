@@ -61,8 +61,8 @@ def TestNewData(NewDataCsv, model_folder, result_save_path=''):
 
     new_data_container.Load(NewDataCsv)
 
-    feature_selector = FeatureSelector()
-    feature_selector.SelectFeatureByName(new_data_container, train_info['selected_features'], is_replace=True)
+    # feature_selector = FeatureSelector()
+    # feature_selector.SelectFeatureByName(new_data_container, train_info['selected_features'], is_replace=True)
 
     new_data_container = train_info['normalizer'].Transform(new_data_container)
 

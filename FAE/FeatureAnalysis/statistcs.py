@@ -10,7 +10,6 @@ from scipy.stats import levene, ttest_ind, kstest, mannwhitneyu, chi2_contingenc
 from collections import Counter
 
 
-
 class FeatureStatistic:
     def __init__(self, feature_folder, selected_feature_list=[]):
         self.feature_folder = feature_folder
@@ -80,8 +79,16 @@ class FeatureStatistic:
 
         chi2_array = np.zeros((2, len(all_feature_class)))
         for sub_feature_index in range(len(all_feature_class)):
-            chi2_array[0, sub_feature_index] = int(train_dict[all_feature_class[sub_feature_index]])
-            chi2_array[1, sub_feature_index] = int(test_dict[all_feature_class[sub_feature_index]])
+            try:
+                chi2_array[0, sub_feature_index] = int(train_dict[all_feature_class[sub_feature_index]])
+            except:
+                chi2_array[0, sub_feature_index] = int(0)
+
+            try:
+                chi2_array[1, sub_feature_index] = int(test_dict[all_feature_class[sub_feature_index]])
+            # 如果没有该特征就置零
+            except:
+                chi2_array[1, sub_feature_index] = int(0)
         print(chi2_array)
         # 计算占比
         percentage_array = copy.copy(chi2_array)
@@ -98,19 +105,41 @@ class FeatureStatistic:
         statistic_method = 'chi2_contingency'
         return data_description, statistic_method,  p_value
 
-    def statistic_single_feature(self, feature_name):
+    def statistic_single_feature_sets(self, feature_name):
 
         # 判断数据是否连续
         train_set = set(self.train_pd[feature_name])
         test_set = set(self.test_pd[feature_name])
 
-        if len(train_set) > 10 or feature_name in ['age', 'Age']:  # 数据连续型
-            data_description, statistic_method,  p_value = self._statistic_continuous(self.train_pd[feature_name],
-                                                                                      self.test_pd[feature_name])
+        if len(train_set) > 15 or feature_name in ['age', 'Age']:  # 数据连续型
+            data_description, statistic_method,  p_value = self._statistic_continuous(self.train_pd[feature_name].get_values(),
+                                                                                      self.test_pd[feature_name].get_values())
 
         else:  # 数据类型分立
             data_description, statistic_method, p_value = self._statistic_discrete(self.train_pd[feature_name],
                                                                                       self.test_pd[feature_name])
+
+        return data_description, statistic_method, p_value
+
+    def statistic_single_feature_labels(self, feature_name):
+
+        data_pd = pd.concat([self.train_pd, self.test_pd], join='inner')
+
+        label_0pd = data_pd.loc[data_pd['label'] == 0]
+        label_1pd = data_pd.loc[data_pd['label'] == 1]
+        # 判断数据是否连续
+
+        label_0_set = set(label_0pd[feature_name])
+        label_1_set = set(label_1pd[feature_name])
+
+        if len(label_0_set) > 15 or feature_name in ['age', 'Age']:  # 数据连续型
+
+            data_description, statistic_method,  p_value = self._statistic_continuous(label_0pd[feature_name].get_values(),
+                                                                                      label_1pd[feature_name].get_values())
+
+        else:  # 数据类型分立
+            data_description, statistic_method, p_value = self._statistic_discrete(label_0pd[feature_name],
+                                                                                      label_1pd[feature_name])
 
         return data_description, statistic_method, p_value
 
@@ -132,7 +161,7 @@ class FeatureStatistic:
         for feature_index in range(len(self.selected_feature_list)):
 
             feature_name = self.selected_feature_list[feature_index]
-            data_description, statistic_method, p_value = self.statistic_single_feature(feature_name)
+            data_description, statistic_method, p_value = self.statistic_single_feature_sets(feature_name)
 
             if statistic_method == 'chi2_contingency':
                 data_description_array = data_description.get_values()
@@ -171,7 +200,65 @@ class FeatureStatistic:
                 # 占1行
                 col_index += 1
         # 保存文件
-        xlsx_f.save(os.path.join(store_path, 'statistic.xls'))
+        xlsx_f.save(os.path.join(store_path, 'statistics_sets.xls'))
+
+    def difference_between_labels(self, store_path):
+        # 创建xls表格并写入列名
+
+        xlsx_f = xlwt.Workbook()
+        sheet0 = xlsx_f.add_sheet('feature_statistic', cell_overwrite_ok=True)
+        sheet0.write(0, 0, 'feature')
+        sheet0.write(0, 1, 'Label 0')
+        sheet0.write(0, 2, 'Label 1')
+        sheet0.write(0, 3, 'P-value')
+
+        # 如果没有指定特征，就会计算所有的特征分布统计
+        if len(self.selected_feature_list) == 0:
+            self.selected_feature_list = self.feature_list
+        col_index = 1
+        for feature_index in range(len(self.selected_feature_list)):
+
+            feature_name = self.selected_feature_list[feature_index]
+            data_description, statistic_method, p_value = self.statistic_single_feature_labels(feature_name)
+
+            if statistic_method == 'chi2_contingency':
+                data_description_array = data_description.get_values()
+                data_description_columns = data_description.columns.tolist()
+                # data_description_columns前一半是class名称，后一半是class占比
+
+                class_list = data_description_columns[: int(len(data_description_columns)/2)]
+
+                sheet0.write_merge(col_index, col_index + len(class_list)*2-1, 0, 0, feature_name)
+                sheet0.write_merge(col_index, col_index + len(class_list)*2-1, 3, 3, str('%.2f' % p_value))
+                # 占两行
+
+                # 写入统计数据
+                for sub_class_index in range(len(class_list)):
+                    # train columns
+                    sheet0.write(col_index, 1, 'class ' + class_list[sub_class_index])
+                    # test columns
+                    sheet0.write(col_index, 2, 'class ' + class_list[sub_class_index])
+                    col_index += 1
+
+                    sheet0.write(col_index, 1, str(float(data_description_array[0, sub_class_index])) +
+                                 '('+'%.2f%%' % (100*float(data_description_array[0, sub_class_index+len(class_list)]))
+                                 + ')')
+
+                    sheet0.write(col_index, 2,
+                                 str(float(data_description_array[1, sub_class_index])) +
+                                 '('+'%.2f%%' % (100*float(data_description_array[1, sub_class_index+len(class_list)]))
+                                 + ')')
+                    col_index += 1
+
+            else:
+                sheet0.write(col_index, 0, feature_name)
+                sheet0.write(col_index, 1, data_description[0])
+                sheet0.write(col_index, 2, data_description[1])
+                sheet0.write(col_index, 3, str('%.2f' % p_value))
+                # 占1行
+                col_index += 1
+        # 保存文件
+        xlsx_f.save(os.path.join(store_path, 'statistics_labels.xls'))
 
 
 def IterationFromFeature(original_feature_path, store_path):
@@ -182,7 +269,8 @@ def IterationFromFeature(original_feature_path, store_path):
         data = DataContainer()
         data.Load(original_feature_path)
         data_separator = DataSeparate()
-        data_separator.RunByTestingPercentage(data, testing_data_percentage=0.3, store_folder=store_path)
+        train_data_container, test_data_container = \
+            data_separator.RunByTestingPercentage(data, testing_data_percentage=0.3)
 
         feature_statistic = FeatureStatistic(store_path)
         feature_statistic.load_train_test_feature()
@@ -194,14 +282,27 @@ def IterationFromFeature(original_feature_path, store_path):
     one_echo(original_feature_path, store_path)
 
 
+def load_statistics(original_feature_path, statistics_path):
+    original_feature_pd = pd.read_csv(original_feature_path, index_col=0)
+    statistics_pd = pd.read_excel(statistics_path)
+    sign_feature = statistics_pd.loc[statistics_pd['P-value'] < 0.05]
+    sign_feature_list = list(sign_feature['feature'])
+    sign_feature_list.insert(0, 'label')
+    sign_feature_pd = original_feature_pd[sign_feature_list]
+    sign_feature_pd.to_csv(os.path.join(os.path.split(statistics_path)[0], 'selected_feature.csv'))
+
+
+
 if __name__ == '__main__':
     # feature_path = r'D:\hospital\CancerHospital\extract_date\0.65\clinical\data_set'
     # store_path = r'D:\hospital\CancerHospital\extract_date\0.65\clinical\data_set'
     # quality_list = ['Quality_age', 'Quality_gender', 'Quality_invoved']
+
+    feature_path = r'D:\hospital\EENT\New_test\statistics'
+    store_path = r'D:\hospital\EENT\New_test\statistics'
     # feature_statistic = FeatureStatistic(feature_path)
     # feature_statistic.load_train_test_feature()
-    # feature_statistic.difference_between_cohorts(store_path)
-    feature_path = r'D:\hospital\CancerHospital\without_difference\clinical.csv'
-    store_path = r'D:\hospital\CancerHospital\without_difference'
-    IterationFromFeature(feature_path, store_path)
-
+    # feature_statistic.difference_between_labels(store_path)
+    # IterationFromFeature(feature_path, store_path)
+    load_statistics(r'D:\hospital\EENT\New_test\statistics\numeric_feature.csv',
+        r'D:\hospital\EENT\New_test\statistics\statistics_labels.xls')

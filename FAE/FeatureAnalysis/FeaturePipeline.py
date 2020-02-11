@@ -115,6 +115,32 @@ class FeatureAnalysisPipelines:
             temp_row.append(self.__cross_validation.GetName())
             writer.writerow(temp_row)
 
+        index_2_dict = Index2Dict()
+        with open(os.path.join(store_folder, 'pipeline_info.csv'), 'r', newline='') as csvfile:
+            reader = csv.reader(csvfile)
+            for row in reader:
+                if row[0] == 'Normalizer':
+                    self.__normalizer_list = []
+                    for index in row[1:]:
+                        self.__normalizer_list.append(index_2_dict.GetInstantByIndex(index))
+                elif row[0] == 'DimensionReduction':
+                    self._dimension_reduction_list = []
+                    for index in row[1:]:
+                        self._dimension_reduction_list.append(index_2_dict.GetInstantByIndex(index))
+                elif row[0] == 'FeatureSelector':
+                    self.__feature_selector_list = []
+                    for index in row[1:]:
+                        self.__feature_selector_list.append(index_2_dict.GetInstantByIndex(index))
+                elif row[0] == 'FeatureNumber':
+                    self.__feature_selector_num_list = row[1:]
+                elif row[0] == 'Classifier':
+                    self.__classifier_list = []
+                    for index in row[1:]:
+                        self.__classifier_list.append(index_2_dict.GetInstantByIndex(index))
+                elif row[0] == 'CrossValidation':
+                    self.__cross_validation = index_2_dict.GetInstantByIndex(row[1])
+                else:
+                    print('Unknown name.')
     def LoadPipelineInfo(self, store_folder):
         index_2_dict = Index2Dict()
         with open(os.path.join(store_folder, 'pipeline_info.csv'), 'r', newline='') as csvfile:
