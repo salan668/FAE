@@ -67,7 +67,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.checkPlotCVValidation.stateChanged.connect(self.UpdatePlot)
         self.checkPlotTrain.stateChanged.connect(self.UpdatePlot)
         self.checkPlotOneSE.stateChanged.connect(self.UpdatePlot)
-        # self.checkPlotTest.stateChanged.connect(self.UpdatePlot)
+        self.checkPlotTest.stateChanged.connect(self.UpdatePlot)
        #
 
         # Update Contribution canvas
@@ -123,7 +123,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.checkPlotCVValidation.setChecked(False)
         self.checkPlotTrain.setChecked(False)
         self.checkPlotOneSE.setChecked(False)
-        # self.checkPlotTest.setChecked(False)
+        self.checkPlotTest.setChecked(False)
         self.radioContributionFeatureSelector.setChecked(False)
         self.checkMaxFeatureNumber.setChecked(False)
         self.canvasROC.getFigure().clear()
