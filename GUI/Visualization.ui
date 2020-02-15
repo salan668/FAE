@@ -252,6 +252,13 @@
             </widget>
            </item>
            <item>
+            <widget class="QCheckBox" name="checkPlotTest">
+             <property name="text">
+              <string>Test</string>
+             </property>
+            </widget>
+           </item>
+           <item>
             <widget class="QCheckBox" name="checkPlotOneSE">
              <property name="text">
               <string>1-SE</string>

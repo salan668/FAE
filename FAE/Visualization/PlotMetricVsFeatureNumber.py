@@ -74,9 +74,13 @@ def DrawCurve(x, y_list, std_list=[], xlabel='', ylabel='', title='', name_list=
         if len(x) < 21:
             axes.set_xticks(np.linspace(1, len(x), len(x)))
         else:
-            sub_ticks_list = list(np.arange(0, len(x)+1,len(x)/5))
+            sub_ticks_list = list(np.arange(0, len(x)+1, len(x)/5))
             sub_ticks_list[0] = 1
             sub_ticks_list.append(best_auc_feature_number)
+            for delete_index in [best_auc_feature_number-1, best_auc_feature_number-2,
+                                 best_auc_feature_number+1, best_auc_feature_number+2]:
+                if delete_index in sub_ticks_list:
+                    sub_ticks_list.remove(delete_index)
             axes.set_xticks(sorted(sub_ticks_list))
 
     if store_path:
