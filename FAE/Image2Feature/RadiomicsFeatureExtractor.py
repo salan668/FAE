@@ -15,7 +15,7 @@ class RadiomicsFeatureExtractor:
         self.feature_values = []
         self.case_list = []
         self.feature_name_list = []
-        self.extractor = featureextractor.RadiomicsFeaturesExtractor(radiomics_parameter_file)
+        self.extractor = featureextractor.RadiomicsFeatureExtractor(radiomics_parameter_file)
         self.error_list = []
 
         self.logger = eclog(os.path.split(__file__)[-1]).GetLogger()
