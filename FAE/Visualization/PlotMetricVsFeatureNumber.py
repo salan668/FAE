@@ -90,7 +90,7 @@ def DrawCurve(x, y_list, std_list=[], xlabel='', ylabel='', title='', name_list=
         elif store_path[-3:] == 'eps':
             fig.savefig(store_path, dpi=1200, format='eps')
     if is_show:
-       plt.show()
+       axes.show()
 
     return axes
 
