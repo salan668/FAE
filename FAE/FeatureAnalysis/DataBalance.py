@@ -19,22 +19,45 @@ class DataBalance:
     '''
     To deal with the data imbalance.
     '''
-    def __init__(self):
+    def __init__(self, model, name):
+        self._model = model
+        self._name = name
         pass
 
-    def Run(self, data_container, store_path=''):
-        if store_path:
-            if os.path.isdir(store_path):
-                data_container.Save(os.path.join(store_path, 'non_balance_features.csv'))
-            else:
-                data_container.Save(store_path)
+    def GetName(self):
+        return self._name
 
-        return data_container
+    def GetModel(self):
+        return self._model
+
+    @abstractmethod
+    def Run(self, data_container, store_path=''):
+        pass
+
+    @abstractmethod
+    def GetDescription(self):
+        pass
+
+
+class NoneBalance(DataBalance):
+    def __init__(self):
+        super(NoneBalance, self).__init__(None, 'NoneBalance')
+
+    def Run(self, container, store_path=''):
+        if store_path != '':
+            if os.path.isdir(store_path):
+                container.Save(os.path.join(store_path, '{}_features.csv'.format(self._name)))
+            else:
+                container.Save(store_path)
+        return container
+
+    def GetDescription(self):
+        return ''
 
 
 class DownSampling(DataBalance):
     def __init__(self):
-        super(DownSampling, self).__init__()
+        super(DownSampling, self).__init__(RandomUnderSampler(random_state=0), 'DownSampling')
 
     def GetCaseNameFromAllCaseNames(self, data_container, one_case_data):
         one_case_data = np.squeeze(one_case_data)
@@ -50,10 +73,13 @@ class DownSampling(DataBalance):
         print('Not Find Case Name')
         return 'Not Find Case Name'
 
+    def GetDescription(self):
+        return "To Remove the unbalance of the training data set, we sampled the cases to make positive/negative " \
+               "samples balance. "
+
     def Run(self, data_container, store_path=''):
         data, label, feature_name, label_name = data_container.GetData()
-        rus = RandomUnderSampler(random_state=0)
-        data_resampled, label_resampled = rus.fit_sample(data, label)
+        data_resampled, label_resampled = self._model.fit_sample(data, label)
 
         new_case_name = []
         for index in range(data_resampled.shape[0]):
@@ -62,14 +88,14 @@ class DownSampling(DataBalance):
         new_data_container = DataContainer(data_resampled, label_resampled, data_container.GetFeatureName(), new_case_name)
         if store_path != '':
             if os.path.isdir(store_path):
-                new_data_container.Save(os.path.join(store_path, 'downsampling_features.csv'))
+                new_data_container.Save(os.path.join(store_path, '{}_features.csv'.format(self._name)))
             else:
                 new_data_container.Save(store_path)
         return new_data_container
 
 class UpSampling(DataBalance):
     def __init__(self):
-        super(UpSampling, self).__init__()
+        super(UpSampling, self).__init__(RandomOverSampler(random_state=0), 'UpSampling')
 
     def GetCaseNameFromAllCaseNames(self, data_container, one_case_data):
         one_case_data = np.squeeze(one_case_data)
@@ -85,10 +111,13 @@ class UpSampling(DataBalance):
         print('Not Find Case Name')
         return 'Not Find Case Name'
 
+    def GetDescription(self):
+        return "To Remove the unbalance of the training data set, we up-samples by repeating random cases to " \
+               "to make positive/negative samples balance. "
+
     def Run(self, data_container, store_path=''):
         data, label, feature_name, label_name = data_container.GetData()
-        rus = RandomOverSampler(random_state=0)
-        data_resampled, label_resampled = rus.fit_sample(data, label)
+        data_resampled, label_resampled = self._model.fit_sample(data, label)
 
         new_case_name = []
         for index in range(data_resampled.shape[0]):
@@ -98,26 +127,29 @@ class UpSampling(DataBalance):
                                            new_case_name)
         if store_path != '':
             if os.path.isdir(store_path):
-                new_data_container.Save(os.path.join(store_path, 'upsampling_features.csv'))
+                new_data_container.Save(os.path.join(store_path, '{}_features.csv'.format(self._name)))
             else:
                 new_data_container.Save(store_path)
         return new_data_container
 
 class SmoteSampling(DataBalance):
     def __init__(self, **kwargs):
-        super(SmoteSampling, self).__init__()
-        self.__model = SMOTE(**kwargs, random_state=0)
+        super(SmoteSampling, self).__init__(SMOTE(**kwargs, random_state=0), 'SMOTE')
+
+    def GetDescription(self):
+        return "To Remove the unbalance of the training data set, we used the Synthetic Minority Oversampling " \
+               "TEchnique (SMOTE) to make positive/negative samples balance. "
 
     def Run(self, data_container, store_path=''):
         data, label, feature_name, label_name = data_container.GetData()
-        data_resampled, label_resampled = self.__model.fit_sample(data, label)
+        data_resampled, label_resampled = self._model.fit_sample(data, label)
 
         new_case_name = ['Generate' + str(index) for index in range(data_resampled.shape[0])]
         new_data_container = DataContainer(data_resampled, label_resampled, data_container.GetFeatureName(),
                                            new_case_name)
         if store_path != '':
             if os.path.isdir(store_path):
-                new_data_container.Save(os.path.join(store_path, 'smote_features.csv'))
+                new_data_container.Save(os.path.join(store_path, '{}_features.csv'.format(self._name)))
             else:
                 new_data_container.Save(store_path)
         return new_data_container

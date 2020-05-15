@@ -1,65 +1,79 @@
+"""
+All rights reserved.
+--Yang Song
+"""
+import sys
 import shutil
-import numpy as np
-from copy import deepcopy
 
 from PyQt5.QtWidgets import *
 from GUI.Process import Ui_Process
 from PyQt5.QtCore import *
 from Utility.EcLog import eclog
+from FAE.FeatureAnalysis.DataBalance import *
 from FAE.FeatureAnalysis.Normalizer import *
 from FAE.FeatureAnalysis.DimensionReduction import *
 from FAE.FeatureAnalysis.FeatureSelector import *
 from FAE.FeatureAnalysis.Classifier import *
-from FAE.FeatureAnalysis.FeaturePipeline import FeatureAnalysisPipelines
+from FAE.FeatureAnalysis.Pipelines import PipelinesManager
 from FAE.FeatureAnalysis.CrossValidation import *
 
-import os
-import struct
 
 class CVRun(QThread):
     signal = pyqtSignal(str)
 
     def __init__(self):
         super().__init__()
-
         pass
 
     def SetProcessConnectionAndStore_folder(self, process_connection, store_folder):
         self._process_connection = process_connection
-        self._store_folder = store_folder
+        self.store_folder = store_folder
 
     def run(self):
-        for current_normalizer_name, current_dimension_reductor_name, \
-            current_feature_selector_name, curreent_feature_num, \
-            current_classifier_name, num, total_num \
-                in self._process_connection.fae.Run(self._process_connection.training_data_container,
-                                                    self._process_connection.testing_data_container,
-                                                    self._store_folder,
-                                                    self._process_connection.checkHyperParameters.isChecked()):
-            text = self._process_connection.GenerateVerboseTest(current_normalizer_name,
-                                                     current_dimension_reductor_name,
-                                                     current_feature_selector_name,
-                                                     current_classifier_name,
-                                                     curreent_feature_num,
-                                                     num,
-                                                     total_num)
+        try:
+            for total, num in self._process_connection.fae.RunWithoutCV(self._process_connection.training_data_container,
+                                                                        self._process_connection.testing_data_container,
+                                                                        self.store_folder):
+                text = "Model Developing:\n{} / {}".format(num, total)
+                self.signal.emit(text)
+        except Exception as e:
+            print('Thread RunWithoutCV Failed: ', e.__str__())
+            raise Exception
 
-            self.signal.emit(text)  # 反馈信号出去
+        for total, num, group in self._process_connection.fae.RunWithCV(
+                self._process_connection.training_data_container,
+                self.store_folder):
+            text = "Model Developing:\nDone.\n\n" \
+                   "Cross Validation:\nGroup {}: {} / {}".format(int(group) + 1, num, total)
+            self.signal.emit(text)
 
-        self.signal.emit(text + "\n DONE!")
+        for total, num in self._process_connection.fae.MergeCvResult(self.store_folder):
+            text = "Model Developing:\nDone.\n\nCross Validation:\nDone.\n\n" \
+                   "Merging CV Results:\n{} / {}".format(num, total)
+            self.signal.emit(text)
+
+        self._process_connection.fae.SaveAucDict(self.store_folder)
+
+        text = "Model Developing:\nDone.\n\nCross Validation:\nDone.\n\nMerging CV Results:\nDone.\n"
+        self.signal.emit(text)
         self._process_connection.SetStateAllButtonWhenRunning(True)
 
+
 class ProcessConnection(QWidget, Ui_Process):
+    close_signal = pyqtSignal(bool)
+
     def __init__(self, parent=None):
         self.training_data_container = DataContainer()
         self.testing_data_container = DataContainer()
         self.logger = eclog(os.path.split(__file__)[-1]).GetLogger()
-        self.fae = FeatureAnalysisPipelines(logger=self.logger)
+        self.fae = PipelinesManager(logger=self.logger)
         self.__process_normalizer_list = []
         self.__process_dimension_reduction_list = []
         self.__process_feature_selector_list = []
         self.__process_feature_number_list = []
         self.__process_classifier_list = []
+
+        self.thread = CVRun()
 
         super(ProcessConnection, self).__init__(parent)
         self.setupUi(self)
@@ -67,9 +81,15 @@ class ProcessConnection(QWidget, Ui_Process):
         self.buttonLoadTrainingData.clicked.connect(self.LoadTrainingData)
         self.buttonLoadTestingData.clicked.connect(self.LoadTestingData)
 
-        self.checkNormalizeUnit.clicked.connect(self.UpdatePipelineText)
-        self.checkNormalizeZeroCenter.clicked.connect(self.UpdatePipelineText)
-        self.checkNormalizeUnitWithZeroCenter.clicked.connect(self.UpdatePipelineText)
+        self.radioNoneBalance.clicked.connect(self.UpdatePipelineText)
+        self.radioDownSampling.clicked.connect(self.UpdatePipelineText)
+        self.radioUpSampling.clicked.connect(self.UpdatePipelineText)
+        self.radioSmote.clicked.connect(self.UpdatePipelineText)
+
+        self.checkNormalizeNone.clicked.connect(self.UpdatePipelineText)
+        self.checkNormalizeMinMax.clicked.connect(self.UpdatePipelineText)
+        self.checkNormalizeZscore.clicked.connect(self.UpdatePipelineText)
+        self.checkNormalizeMean.clicked.connect(self.UpdatePipelineText)
         self.checkNormalizationAll.clicked.connect(self.SelectAllNormalization)
 
         self.checkPCA.clicked.connect(self.UpdatePipelineText)
@@ -80,6 +100,7 @@ class ProcessConnection(QWidget, Ui_Process):
         self.spinBoxMaxFeatureNumber.valueChanged.connect(self.MaxFeatureNumberChange)
 
         self.checkANOVA.clicked.connect(self.UpdatePipelineText)
+        self.checkKW.clicked.connect(self.UpdatePipelineText)
         self.checkRFE.clicked.connect(self.UpdatePipelineText)
         self.checkRelief.clicked.connect(self.UpdatePipelineText)
         # self.checkMRMR.clicked.connect(self.UpdatePipelineText)
@@ -106,9 +127,14 @@ class ProcessConnection(QWidget, Ui_Process):
         self.UpdatePipelineText()
         self.SetStateButtonBeforeLoading(False)
 
+    def closeEvent(self, QCloseEvent):
+        self.close_signal.emit(True)
+        QCloseEvent.accept()
+
     def LoadTrainingData(self):
         dlg = QFileDialog()
-        file_name, _ = dlg.getOpenFileName(self, 'Open CSV file', directory=r'C:\MyCode\FAE\Example', filter="csv files (*.csv)")
+        file_name, _ = dlg.getOpenFileName(self, 'Open CSV file', directory=r'C:\MyCode\FAE\Example',
+                                           filter="csv files (*.csv)")
         try:
             self.training_data_container.Load(file_name)
             self.SetStateButtonBeforeLoading(True)
@@ -117,12 +143,11 @@ class ProcessConnection(QWidget, Ui_Process):
             self.logger.info('Open CSV file ' + file_name + ' succeed.')
         except OSError as reason:
             self.logger.log('Open SCV file Error, The reason is ' + str(reason))
-            print('出错啦！' + str(reason))
+            print('Load Error！' + str(reason))
         except ValueError:
             self.logger.error('Open SCV file ' + file_name + ' Failed. because of value error.')
             QMessageBox.information(self, 'Error',
                                     'The selected training data mismatch.')
-
 
     def LoadTestingData(self):
         dlg = QFileDialog()
@@ -131,17 +156,18 @@ class ProcessConnection(QWidget, Ui_Process):
             self.testing_data_container.Load(file_name)
             self.lineEditTestingData.setText(file_name)
             self.UpdateDataDescription()
-            self.logger.info('Loading testing data ' + file_name + ' succeed.' )
+            self.logger.info('Loading testing data ' + file_name + ' succeed.')
         except OSError as reason:
             self.logger.log('Open SCV file Error, The reason is ' + str(reason))
-            print('出错啦！' + str(reason))
+            print('ERROR！' + str(reason))
         except ValueError:
             self.logger.error('Open SCV file ' + file_name + ' Failed. because of value error.')
             QMessageBox.information(self, 'Error',
                                     'The selected testing data mismatch.')
 
-    def GenerateVerboseTest(self, normalizer_name, dimension_reduction_name, feature_selector_name, classifier_name, feature_num,
-                       current_num, total_num):
+    def GenerateVerboseTest(self, normalizer_name, dimension_reduction_name, feature_selector_name, classifier_name,
+                            feature_num,
+                            current_num, total_num):
 
         def FormatOneLine(the_name, the_list):
             """
@@ -156,55 +182,63 @@ class ProcessConnection(QWidget, Ui_Process):
             list_string = ", ".join([temp.GetName() for temp in the_list])
             return name_string + list_string + ", "
 
-    
         text_list = ["Current:"]
 
         text_list.append(FormatOneLine(normalizer_name,
-                            self.__process_normalizer_list))
-        
+                                       self.__process_normalizer_list))
+
         text_list.append(FormatOneLine(dimension_reduction_name,
-                            self.__process_dimension_reduction_list))
+                                       self.__process_dimension_reduction_list))
 
         text_list.append(FormatOneLine(feature_selector_name,
-                            self.__process_feature_selector_list))
+                                       self.__process_feature_selector_list))
 
-        text_list.append("Feature Number: {:d} / [{:d}-{:d}]".format(feature_num, 
-                                                                    self.spinBoxMinFeatureNumber.value(), 
-                                                                    self.spinBoxMaxFeatureNumber.value()))
+        text_list.append("Feature Number: {:d} / [{:d}-{:d}]".format(feature_num,
+                                                                     self.spinBoxMinFeatureNumber.value(),
+                                                                     self.spinBoxMaxFeatureNumber.value()))
 
         text_list.append(FormatOneLine(classifier_name,
-                            self.__process_classifier_list))
+                                       self.__process_classifier_list))
 
         text_list.append("Total process: {:d} / {:d}".format(current_num, total_num))
         return "\n".join(text_list)
 
     def SetStateAllButtonWhenRunning(self, state):
+        if state:
+            self.thread.exit()
         self.buttonLoadTrainingData.setEnabled(state)
         self.buttonLoadTestingData.setEnabled(state)
-        
+
         self.SetStateButtonBeforeLoading(state)
 
     def SetStateButtonBeforeLoading(self, state):
         self.buttonRun.setEnabled(state)
-        
-        self.checkNormalizeUnit.setEnabled(state)
-        self.checkNormalizeZeroCenter.setEnabled(state)
-        self.checkNormalizeUnitWithZeroCenter.setEnabled(state)
+
+        self.radioNoneBalance.setEnabled(state)
+        self.radioUpSampling.setEnabled(state)
+        self.radioDownSampling.setEnabled(state)
+        self.radioSmote.setEnabled(state)
+
+        self.checkNormalizeNone.setEnabled(state)
+        self.checkNormalizeMinMax.setEnabled(state)
+        self.checkNormalizeZscore.setEnabled(state)
+        self.checkNormalizeMean.setEnabled(state)
         self.checkNormalizationAll.setEnabled(state)
-        
+
         self.checkPCA.setEnabled(state)
         self.checkRemoveSimilarFeatures.setEnabled(state)
         self.checkPreprocessAll.setEnabled(state)
-        
+
         self.checkANOVA.setEnabled(state)
+        self.checkKW.setEnabled(state)
         self.checkRFE.setEnabled(state)
         self.checkRelief.setEnabled(state)
         # self.checkMRMR.setEnabled(state)
         self.checkFeatureSelectorAll.setEnabled(state)
-        
+
         self.spinBoxMinFeatureNumber.setEnabled(state)
         self.spinBoxMaxFeatureNumber.setEnabled(state)
-        
+
         self.checkSVM.setEnabled(state)
         self.checkAE.setEnabled(state)
         self.checkLDA.setEnabled(state)
@@ -236,32 +270,32 @@ class ProcessConnection(QWidget, Ui_Process):
             store_folder = dlg.selectedFiles()[0]
             if len(os.listdir(store_folder)) > 0:
                 reply = QMessageBox.question(self, 'Continue?',
-                                             'The folder is not empty, if you click Yes, the data would be clear in this folder', QMessageBox.Yes, QMessageBox.No)
+                                             'The folder is not empty, if you click Yes, the data would be clear in this folder',
+                                             QMessageBox.Yes, QMessageBox.No)
                 if reply == QMessageBox.Yes:
-                    for file in os.listdir(store_folder):
-                        if os.path.isdir(os.path.join(store_folder, file)):
-                            shutil.rmtree(os.path.join(store_folder, file))
-                        else:
-                            os.remove(os.path.join(store_folder, file))
+                    try:
+                        for file in os.listdir(store_folder):
+                            if os.path.isdir(os.path.join(store_folder, file)):
+                                shutil.rmtree(os.path.join(store_folder, file))
+                            else:
+                                os.remove(os.path.join(store_folder, file))
+                    except PermissionError:
+                        QMessageBox().about(self, 'Warning', 'Is there any opened files?')
+                        return
+                    except OSError:
+                        QMessageBox().about(self, 'Warning', 'Is there any opened files?')
+                        return
                 else:
                     return
 
-            self.textEditVerbose.setText(store_folder)
             if self.MakePipelines():
-                thread = CVRun()
-                thread.moveToThread(QThread())
-                thread.SetProcessConnectionAndStore_folder(self, store_folder)
+                # self.thread = CVRun()
+                self.thread.moveToThread(QThread())
+                self.thread.SetProcessConnectionAndStore_folder(self, store_folder)
 
-                thread.signal.connect(self.textEditVerbose.setPlainText)
-                thread.start()
+                self.thread.signal.connect(self.textEditVerbose.setPlainText)
+                self.thread.start()
                 self.SetStateAllButtonWhenRunning(False)
-
-                hidden_file_path = os.path.join(store_folder, '.FAEresult4129074093819729087')
-                with open(hidden_file_path, 'wb') as file:
-                    pass
-                file_hidden = os.popen('attrib +h '+ hidden_file_path)
-                file_hidden.close()
-
             else:
                 QMessageBox.about(self, 'Pipeline Error', 'Pipeline must include Classifier and CV method')
                 self.logger.error('Make pipeline failed. Pipeline must include Classfier and CV method.')
@@ -279,16 +313,26 @@ class ProcessConnection(QWidget, Ui_Process):
         self.UpdatePipelineText()
 
     def MakePipelines(self):
+        if self.radioNoneBalance.isChecked():
+            data_balance = NoneBalance()
+        elif self.radioDownSampling.isChecked():
+            data_balance = DownSampling()
+        elif self.radioUpSampling.isChecked():
+            data_balance = UpSampling()
+        elif self.radioSmote.isChecked():
+            data_balance = SmoteSampling()
+        else:
+            return False
+
         self.__process_normalizer_list = []
-        if self.checkNormalizeUnit.isChecked():
-            self.__process_normalizer_list.append(NormalizerUnit)
-        if self.checkNormalizeZeroCenter.isChecked():
-            self.__process_normalizer_list.append(NormalizerZeroCenter)
-        if self.checkNormalizeUnitWithZeroCenter.isChecked():
-            self.__process_normalizer_list.append(NormalizerZeroCenterAndUnit)
-        if (not self.checkNormalizeUnit.isChecked()) and (not self.checkNormalizeZeroCenter.isChecked()) and \
-                (not self.checkNormalizeUnitWithZeroCenter.isChecked()):
+        if self.checkNormalizeNone.isChecked():
             self.__process_normalizer_list.append(NormalizerNone)
+        if self.checkNormalizeMinMax.isChecked():
+            self.__process_normalizer_list.append(NormalizerMinMax)
+        if self.checkNormalizeZscore.isChecked():
+            self.__process_normalizer_list.append(NormalizerZscore)
+        if self.checkNormalizeMean.isChecked():
+            self.__process_normalizer_list.append(NormalizerMean)
 
         self.__process_dimension_reduction_list = []
         if self.checkPCA.isChecked():
@@ -298,15 +342,18 @@ class ProcessConnection(QWidget, Ui_Process):
 
         self.__process_feature_selector_list = []
         if self.checkANOVA.isChecked():
-            self.__process_feature_selector_list.append(FeatureSelectPipeline([FeatureSelectByANOVA()]))
+            self.__process_feature_selector_list.append(FeatureSelectByANOVA())
+        if self.checkKW.isChecked():
+            self.__process_feature_selector_list.append(FeatureSelectByKruskalWallis())
         if self.checkRFE.isChecked():
-            self.__process_feature_selector_list.append(FeatureSelectPipeline([FeatureSelectByRFE()]))
+            self.__process_feature_selector_list.append(FeatureSelectByRFE())
         if self.checkRelief.isChecked():
-            self.__process_feature_selector_list.append(FeatureSelectPipeline([FeatureSelectByRelief()]))
+            self.__process_feature_selector_list.append(FeatureSelectByRelief())
         # if self.checkMRMR.isChecked():
-        #     self.__process_feature_selector_list.append(FeatureSelectPipeline([FeatureSelectByMrmr()]))
+        #     self.__process_feature_selector_list.append(eatureSelectByMrmr())
 
-        self.__process_feature_number_list = np.arange(self.spinBoxMinFeatureNumber.value(), self.spinBoxMaxFeatureNumber.value() + 1).tolist()
+        self.__process_feature_number_list = np.arange(self.spinBoxMinFeatureNumber.value(),
+                                                       self.spinBoxMaxFeatureNumber.value() + 1).tolist()
 
         self.__process_classifier_list = []
         if self.checkSVM.isChecked():
@@ -334,21 +381,22 @@ class ProcessConnection(QWidget, Ui_Process):
             return False
 
         if self.radio5folder.isChecked():
-            cv = CrossValidation5Folder()
+            cv = CrossValidation5Fold
         elif self.radio10Folder.isChecked():
-            cv = CrossValidation10Folder()
+            cv = CrossValidation10Fold
         elif self.radioLOO.isChecked():
-            cv = CrossValidationLeaveOneOut()
+            cv = CrossValidationLOO
         else:
             return False
 
-        self.fae.SetNormalizerList(self.__process_normalizer_list)
-        self.fae.SetDimensionReductionList(self.__process_dimension_reduction_list)
-        self.fae.SetFeatureSelectorList(self.__process_feature_selector_list)
-        self.fae.SetFeatureNumberList(self.__process_feature_number_list)
-        self.fae.SetClassifierList(self.__process_classifier_list)
-        self.fae.SetCrossValition(cv)
-        self.fae.GenerateMetircDict()
+        self.fae.balance = data_balance
+        self.fae.normalizer_list = self.__process_normalizer_list
+        self.fae.dimension_reduction_list = self.__process_dimension_reduction_list
+        self.fae.feature_selector_list = self.__process_feature_selector_list
+        self.fae.feature_selector_num_list = self.__process_feature_number_list
+        self.fae.classifier_list = self.__process_classifier_list
+        self.fae.cv = cv
+        self.fae.GenerateAucDict()
 
         return True
 
@@ -356,10 +404,12 @@ class ProcessConnection(QWidget, Ui_Process):
         show_text = ""
         if self.training_data_container.GetArray().size > 0:
             show_text += "The number of training cases: {:d}\n".format(len(self.training_data_container.GetCaseName()))
-            show_text += "The number of training features: {:d}\n".format(len(self.training_data_container.GetFeatureName()))
+            show_text += "The number of training features: {:d}\n".format(
+                len(self.training_data_container.GetFeatureName()))
             if len(np.unique(self.training_data_container.GetLabel())) == 2:
                 positive_number = len(
-                    np.where(self.training_data_container.GetLabel() == np.max(self.training_data_container.GetLabel()))[0])
+                    np.where(
+                        self.training_data_container.GetLabel() == np.max(self.training_data_container.GetLabel()))[0])
                 negative_number = len(self.training_data_container.GetLabel()) - positive_number
                 assert (positive_number + negative_number == len(self.training_data_container.GetLabel()))
                 show_text += "The number of training positive samples: {:d}\n".format(positive_number)
@@ -386,14 +436,17 @@ class ProcessConnection(QWidget, Ui_Process):
 
         normalization_text = 'Normalization:\n'
         normalizer_num = 0
-        if self.checkNormalizeUnit.isChecked():
-            normalization_text += "Normalize unit\n"
+        if self.checkNormalizeNone.isChecked():
+            normalization_text += "Normalize None\n"
             normalizer_num += 1
-        if self.checkNormalizeZeroCenter.isChecked():
-            normalization_text += "Normalize zero center\n"
+        if self.checkNormalizeMinMax.isChecked():
+            normalization_text += "Normalize Min-Max\n"
             normalizer_num += 1
-        if self.checkNormalizeUnitWithZeroCenter.isChecked():
-            normalization_text += "Normalize unit with zero center\n"
+        if self.checkNormalizeZscore.isChecked():
+            normalization_text += "Normalize Z-score\n"
+            normalizer_num += 1
+        if self.checkNormalizeMean.isChecked():
+            normalization_text += "Normalize Mean\n"
             normalizer_num += 1
         if normalizer_num == 0:
             normalizer_num = 1
@@ -405,7 +458,7 @@ class ProcessConnection(QWidget, Ui_Process):
             preprocess_test += "PCA\n"
             dimension_reduction_num += 1
         if self.checkRemoveSimilarFeatures.isChecked():
-            preprocess_test += "Remove Similary Features\n"
+            preprocess_test += "Pearson Correlation (0.99)\n"
             dimension_reduction_num += 1
         if dimension_reduction_num == 0:
             dimension_reduction_num = 1
@@ -432,11 +485,13 @@ class ProcessConnection(QWidget, Ui_Process):
         # if self.checkMRMR.isChecked():
         #     feature_selection_text += "mRMR\n"
         #     feature_selector_num += 1
+        if self.checkKW.isChecked():
+            feature_selection_text += "KW\n"
+            feature_selector_num += 1
         if feature_selector_num == 0:
             feature_selection_text += "None\n"
             feature_selector_num = 1
         self.listOnePipeline.addItem(feature_selection_text)
-
 
         classifier_text = 'Classifier:\n'
         classifier_num = 0
@@ -456,7 +511,7 @@ class ProcessConnection(QWidget, Ui_Process):
             classifier_text += "Logistic Regression\n"
             classifier_num += 1
         if self.checkLRLasso.isChecked():
-            classifier_text += "Logistic Regression with Lasso\n"
+            classifier_text += "LASSO\n"
             classifier_num += 1
         if self.checkAdaboost.isChecked():
             classifier_text += "Adaboost\n"
@@ -477,26 +532,29 @@ class ProcessConnection(QWidget, Ui_Process):
 
         cv_method = "Cross Validation:\n"
         if self.radio5folder.isChecked():
-            cv_method += "5-Folder\n"
+            cv_method += "5-Fold\n"
         elif self.radio10Folder.isChecked():
-            cv_method += "10-folder\n"
+            cv_method += "10-fold\n"
         elif self.radioLOO.isChecked():
             cv_method += "LeaveOneOut\n"
 
         self.listOnePipeline.addItem(cv_method)
 
         self.listOnePipeline.addItem("Total number of pipelines is:\n{:d}"
-                                     .format(normalizer_num * dimension_reduction_num * feature_selector_num * feature_num * classifier_num))
+                                     .format(
+            normalizer_num * dimension_reduction_num * feature_selector_num * feature_num * classifier_num))
 
     def SelectAllNormalization(self):
         if self.checkNormalizationAll.isChecked():
-            self.checkNormalizeZeroCenter.setChecked(True)
-            self.checkNormalizeUnitWithZeroCenter.setChecked(True)
-            self.checkNormalizeUnit.setChecked(True)
+            self.checkNormalizeNone.setChecked(True)
+            self.checkNormalizeMinMax.setChecked(True)
+            self.checkNormalizeZscore.setChecked(True)
+            self.checkNormalizeMean.setChecked(True)
         else:
-            self.checkNormalizeZeroCenter.setChecked(False)
-            self.checkNormalizeUnitWithZeroCenter.setChecked(False)
-            self.checkNormalizeUnit.setChecked(False)
+            self.checkNormalizeNone.setChecked(False)
+            self.checkNormalizeMinMax.setChecked(False)
+            self.checkNormalizeZscore.setChecked(False)
+            self.checkNormalizeMean.setChecked(False)
 
         self.UpdatePipelineText()
 
@@ -513,11 +571,13 @@ class ProcessConnection(QWidget, Ui_Process):
     def SelectAllFeatureSelector(self):
         if self.checkFeatureSelectorAll.isChecked():
             self.checkANOVA.setChecked(True)
+            self.checkKW.setChecked(True)
             self.checkRFE.setChecked(True)
             self.checkRelief.setChecked(True)
             # self.checkMRMR.setChecked(True)
         else:
             self.checkANOVA.setChecked(False)
+            self.checkKW.setChecked(False)
             self.checkRFE.setChecked(False)
             self.checkRelief.setChecked(False)
             # self.checkMRMR.setChecked(False)
@@ -549,3 +609,9 @@ class ProcessConnection(QWidget, Ui_Process):
             self.checkNaiveBayes.setChecked(False)
 
         self.UpdatePipelineText()
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    main_frame = ProcessConnection()
+    main_frame.show()
+    sys.exit(app.exec_())

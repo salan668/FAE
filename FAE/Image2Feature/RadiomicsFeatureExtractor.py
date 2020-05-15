@@ -17,8 +17,7 @@ class RadiomicsFeatureExtractor:
         self.feature_name_list = []
         self.extractor = featureextractor.RadiomicsFeatureExtractor(radiomics_parameter_file)
         self.error_list = []
-
-        self.logger = eclog(os.path.split(__file__)[-1]).GetLogger()
+        self._file_name = os.path.split(__file__)
 
         self.__has_label = has_label
         self.__is_ignore_tolerence = ignore_tolerence
@@ -64,7 +63,7 @@ class RadiomicsFeatureExtractor:
         roi_candidate = glob.glob(os.path.join(case_folder, roi_key_path))
         roi_candidate = [one for one in roi_candidate if 'nii' in one]
         if len(roi_candidate) != 1:
-            self.logger.error('Check the ROI file path of case: ' + case_folder)
+            eclog(self._file_name).LogError('Check the ROI file path of case: ' + case_folder)
             return None
         roi_file_path = roi_candidate[0]
 
@@ -86,7 +85,7 @@ class RadiomicsFeatureExtractor:
             for one_roi_key in roi_key:
                 sequence_candidate = self._RemoveKeyFromPathList(sequence_candidate, one_roi_key)
             if len(sequence_candidate) != 1:
-                self.logger.error('Check the data file path of case: ' + sequence_key_path)
+                eclog(self._file_name).LogError('Check the data file path of case: ' + sequence_key_path)
                 return None
             sequence_file_path = sequence_candidate[0]
 
@@ -142,7 +141,7 @@ class RadiomicsFeatureExtractor:
         roi_candidate = [one for one in roi_candidate if 'nii' in one]
 
         if len(roi_candidate) != 1:
-            self.logger.error('Check the ROI file path of case: ' + case_folder)
+            eclog(self._file_name).LogError('Check the ROI file path of case: ' + case_folder)
             return None
         roi_file_path = roi_candidate[0]
 
@@ -167,7 +166,7 @@ class RadiomicsFeatureExtractor:
                 sequence_candidate = self._RemoveKeyFromPathList(sequence_candidate, one_roi_key)
 
             if len(sequence_candidate) != 1:
-                self.logger.error('Check the data file path of case: ' + sequence_key_path)
+                eclog(self._file_name).LogError('Check the data file path of case: ' + sequence_key_path)
                 return None
             sequence_file_path = sequence_candidate[0]
 
@@ -223,7 +222,7 @@ class RadiomicsFeatureExtractor:
 
             except Exception as e:
                 content = 'In FeatureExtractor, {} extracted failed: '.format(case_name)
-                self.logger.error('{}{}'.format(content, str(e)))
+                eclog(self._file_name).LogError('{}{}'.format(content, str(e)))
                 self.error_list.append(case_name)
                 print('{} \n{}'.format(content, e.__str__()))
                 raise e

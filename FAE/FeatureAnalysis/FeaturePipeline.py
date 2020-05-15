@@ -17,9 +17,10 @@ import numpy as np
 from copy import deepcopy
 
 class FeatureAnalysisPipelines:
-    def __init__(self, normalizer_list=[], dimension_reduction_list=[], feature_selector_list=[],
+    def __init__(self, balancer=None, normalizer_list=[], dimension_reduction_list=[], feature_selector_list=[],
                  feature_selector_num_list=[], classifier_list=[], cross_validation=None, is_hyper_parameter=False,
                  logger=None):
+        self.__balance = balancer
         self.__normalizer_list = normalizer_list
         self._dimension_reduction_list = dimension_reduction_list
         self.__feature_selector_list = feature_selector_list
@@ -31,6 +32,10 @@ class FeatureAnalysisPipelines:
 
         self.GenerateMetircDict()
 
+    def SetBalancer(self, balance):
+        self.__balance = balance
+    def GetBalancer(self):
+        return self.__balance
     def SetNormalizerList(self, normalizer_list):
         self.__normalizer_list = normalizer_list
     def GetNormalizerList(self):
@@ -63,6 +68,7 @@ class FeatureAnalysisPipelines:
     def LoadAll(self, store_folder):
         self.LoadMetricDict(store_folder)
         self.LoadPipelineInfo(store_folder)
+        return True
 
     def GenerateMetircDict(self):
         try:
@@ -79,6 +85,8 @@ class FeatureAnalysisPipelines:
     def SavePipelineInfo(self, store_folder):
         with open(os.path.join(store_folder, 'pipeline_info.csv'), 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
+
+            writer.writerow(['Balance', self.__balance.GetName()])
 
             temp_row = []
             temp_row.append('Normalizer')
@@ -120,7 +128,9 @@ class FeatureAnalysisPipelines:
         with open(os.path.join(store_folder, 'pipeline_info.csv'), 'r', newline='') as csvfile:
             reader = csv.reader(csvfile)
             for row in reader:
-                if row[0] == 'Normalizer':
+                if row[0] == 'Balance':
+                    self.__balance = index_2_dict.GetInstantByIndex(row[1])
+                elif row[0] == 'Normalizer':
                     self.__normalizer_list = []
                     for index in row[1:]:
                         self.__normalizer_list.append(index_2_dict.GetInstantByIndex(index))
@@ -186,7 +196,8 @@ class FeatureAnalysisPipelines:
             writer.writerow(['Classifier', classifer_name])
             writer.writerow(['CrossValidation', cv_name])
 
-    def Run(self, train_data_container, test_data_container=DataContainer(), store_folder='', is_hyper_parameter=False):
+    def Run(self, train_data_container, test_data_container=DataContainer(), store_folder='',
+            is_hyper_parameter=False):
         column_list = ['sample_number', 'positive_number', 'negative_number',
                        'auc', 'auc 95% CIs', 'auc std', 'accuracy',
                        'Youden Index', 'sensitivity', 'specificity',
@@ -212,6 +223,7 @@ class FeatureAnalysisPipelines:
                     len(self.__classifier_list) * \
                     len(self.__feature_selector_num_list)
 
+        #TODO: Replace with enumerate
         for normalizer, normalizer_index in zip(self.__normalizer_list, range(len(self.__normalizer_list))):
             normalized_train_data_container = normalizer.Run(train_data_container)
             if not test_data_container.IsEmpty():
@@ -286,7 +298,8 @@ class FeatureAnalysisPipelines:
                                 fs_train_data_container,
                                 fs_test_data_container,
                                 case_store_folder,
-                                is_hyper_parameter)
+                                is_hyper_parameter,
+                                self.__balance)
 
                             self.SaveOnePipeline(os.path.join(case_store_folder, 'pipeline_info.csv'),
                                                  normalizer.GetName(),
@@ -298,9 +311,9 @@ class FeatureAnalysisPipelines:
 
                             # Save Result
                             self.__auc_matrix_dict['train'][normalizer_index,
-                                                     dimension_reductor_index, 
-                                                     feature_selector_index, 
-                                                     feature_num_index, 
+                                                     dimension_reductor_index,
+                                                     feature_selector_index,
+                                                     feature_num_index,
                                                      classifier_index] = train_cv_metric['train_auc']
                             self.__auc_std_matrix_dict['train'][normalizer_index,
                                                      dimension_reductor_index,
@@ -362,6 +375,13 @@ class FeatureAnalysisPipelines:
                                     test_df.to_csv(store_path)
 
                                 self.SaveMetricDict(store_folder)
+
+        if store_folder:
+            hidden_file_path = os.path.join(store_folder, '.FAEresult4129074093819729087')
+            with open(hidden_file_path, 'wb') as file:
+                pass
+            file_hidden = os.popen('attrib +h ' + hidden_file_path)
+            file_hidden.close()
 
 class OnePipeline:
     def __init__(self, normalizer=None, dimension_reduction=None, feature_selector=None, classifier=None, cross_validation=None):
@@ -480,14 +500,21 @@ class OnePipeline:
         return train_cv_metric, val_cv_metric, test_metric, all_train_metric
 
 if __name__ == '__main__':
-    print(os.getcwd())
+    index_dict = Index2Dict()
 
-    data_container = DataContainer()
-    file_path = os.path.abspath(r'..\..\Example\numeric_feature.csv')
-    print(file_path)
-    data_container.Load(file_path)
+    train = DataContainer()
+    test = DataContainer()
+    train.Load(r'..\..\Demo\zero_center_normalized_training_feature.csv')
+    test.Load(r'..\..\Demo\zero_center_normalized_testing_feature.csv')
 
-    temp = OnePipeline(normalizer=NormalizerZeroCenterAndUnit(), feature_selector=FeatureSelectPipeline([RemoveCosSimilarityFeatures(), FeatureSelectByANOVA(10)]),
-                       classifier=SVM(), cross_validation=CrossValidation('5-folder'))
-    temp.Run(data_container, store_folder=r'..\..\Example\one_pipeline')
+    faps = FeatureAnalysisPipelines(balancer=index_dict.GetInstantByIndex('NoneBalance'),
+                                    normalizer_list=[index_dict.GetInstantByIndex('None')],
+                                    dimension_reduction_list=[index_dict.GetInstantByIndex('PCC')],
+                                    feature_selector_list=[index_dict.GetInstantByIndex('RFE')],
+                                    feature_selector_num_list=[15],
+                                    classifier_list=[index_dict.GetInstantByIndex('LR')],
+                                    cross_validation=index_dict.GetInstantByIndex('5-Folder'))
 
+    for temp in faps.Run(train, test, store_folder=r'..\..\Demo\db2-2'):
+        print(temp)
+    print('Done')

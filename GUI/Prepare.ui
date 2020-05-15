@@ -6,14 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1025</width>
-    <height>820</height>
+    <width>1069</width>
+    <height>697</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>Data Preparation</string>
   </property>
-  <layout class="QGridLayout" name="totalLayout">
+  <layout class="QGridLayout" name="gridLayout_4">
    <item row="0" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0">
      <item>
@@ -21,13 +21,6 @@
        <property name="sizeConstraint">
         <enum>QLayout::SetDefaultConstraint</enum>
        </property>
-       <item>
-        <widget class="QPushButton" name="FeatureExtractionButton">
-         <property name="text">
-          <string>FeatureExtraction</string>
-         </property>
-        </widget>
-       </item>
        <item>
         <widget class="QPushButton" name="buttonLoad">
          <property name="sizePolicy">
@@ -43,7 +36,7 @@
           </size>
          </property>
          <property name="text">
-          <string>Load</string>
+          <string>Load Feature Matrix</string>
          </property>
         </widget>
        </item>
@@ -55,10 +48,16 @@
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>300</height>
+          </size>
+         </property>
          <property name="maximumSize">
           <size>
            <width>16777215</width>
-           <height>200</height>
+           <height>16777215</height>
           </size>
          </property>
          <property name="font">
@@ -91,6 +90,9 @@
            <layout class="QVBoxLayout" name="verticalLayout_2">
             <item>
              <widget class="QRadioButton" name="radioRemoveNonvalidCases">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
               <property name="text">
                <string>Remove non-valid Cases</string>
               </property>
@@ -98,6 +100,9 @@
             </item>
             <item>
              <widget class="QRadioButton" name="radioRemoveNonvalidFeatures">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
               <property name="text">
                <string>Remove non-valid Features</string>
               </property>
@@ -121,101 +126,134 @@
        <item>
         <widget class="QGroupBox" name="groupSeparate">
          <property name="title">
-          <string>Separate Train and Test</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_2">
-          <item row="0" column="0">
-           <layout class="QVBoxLayout" name="verticalLayout_3">
-            <item>
-             <widget class="QLabel" name="label">
-              <property name="text">
-               <string>Percentage of Testing data</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="loadTestingReference">
-              <property name="text">
-               <string>Load Testing Dataset</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="clearTestingReference">
-              <property name="text">
-               <string>Clear Testing Dataset</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QDoubleSpinBox" name="spinBoxSeparate">
-              <property name="decimals">
-               <number>1</number>
-              </property>
-              <property name="maximum">
-               <double>1.000000000000000</double>
-              </property>
-              <property name="singleStep">
-               <double>0.100000000000000</double>
-              </property>
-              <property name="value">
-               <double>0.300000000000000</double>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="checkSeparate">
-              <property name="text">
-               <string>Separate Train And Test</string>
-              </property>
-              <property name="tristate">
-               <bool>false</bool>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="groupBox_3">
-         <property name="title">
-          <string>Balance Data</string>
+          <string>Split into Train and Test</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_3">
           <item row="0" column="0">
            <layout class="QVBoxLayout" name="verticalLayout_4">
             <item>
-             <widget class="QRadioButton" name="radioNoneBalance">
-              <property name="text">
-               <string>None Balance</string>
-              </property>
-              <property name="checked">
-               <bool>true</bool>
-              </property>
-             </widget>
+             <layout class="QGridLayout" name="gridLayout_2">
+              <item row="0" column="0">
+               <widget class="QRadioButton" name="radioSplitRandom">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="text">
+                 <string>Random</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QRadioButton" name="radioSplitRef">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="text">
+                 <string>Testing Ref</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <layout class="QVBoxLayout" name="verticalLayout_3">
+                <item>
+                 <layout class="QHBoxLayout" name="horizontalLayout_2">
+                  <item>
+                   <widget class="QLabel" name="label">
+                    <property name="text">
+                     <string>Test Percent</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QDoubleSpinBox" name="spinBoxSeparate">
+                    <property name="enabled">
+                     <bool>false</bool>
+                    </property>
+                    <property name="decimals">
+                     <number>1</number>
+                    </property>
+                    <property name="maximum">
+                     <double>1.000000000000000</double>
+                    </property>
+                    <property name="singleStep">
+                     <double>0.100000000000000</double>
+                    </property>
+                    <property name="value">
+                     <double>0.300000000000000</double>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item>
+                 <widget class="QCheckBox" name="checkUseClinicRef">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                  <property name="text">
+                   <string>Clinic Ref</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="loadClinicRef">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                  <property name="text">
+                   <string>Load Clinic Ref</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="clearClinicRef">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                  <property name="text">
+                   <string>Clear Clinic Ref</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item row="1" column="1">
+               <widget class="QSplitter" name="splitter">
+                <property name="orientation">
+                 <enum>Qt::Vertical</enum>
+                </property>
+                <widget class="QPushButton" name="loadTestingReference">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
+                 <property name="text">
+                  <string>Load Testing Ref</string>
+                 </property>
+                </widget>
+                <widget class="QPushButton" name="clearTestingReference">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
+                 <property name="text">
+                  <string>Clear Testing Ref</string>
+                 </property>
+                </widget>
+               </widget>
+              </item>
+             </layout>
             </item>
             <item>
-             <widget class="QRadioButton" name="radioUpSampling">
-              <property name="text">
-               <string>UpSampling</string>
+             <spacer name="verticalSpacer_2">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
               </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QRadioButton" name="radioDownSampling">
-              <property name="text">
-               <string>DownSampling</string>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
               </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QRadioButton" name="radioSmote">
-              <property name="text">
-               <string>SMOTE</string>
-              </property>
-             </widget>
+             </spacer>
             </item>
            </layout>
           </item>
@@ -227,6 +265,18 @@
          <property name="enabled">
           <bool>false</bool>
          </property>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>60</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Adobe Devanagari</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
          <property name="text">
           <string>Check and Save</string>
          </property>
@@ -235,7 +285,14 @@
       </layout>
      </item>
      <item>
-      <widget class="QTableWidget" name="tableFeature"/>
+      <widget class="QTableWidget" name="tableFeature">
+       <property name="minimumSize">
+        <size>
+         <width>600</width>
+         <height>0</height>
+        </size>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>

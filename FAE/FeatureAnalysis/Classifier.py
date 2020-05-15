@@ -136,14 +136,14 @@ class SVM(Classifier):
                "it was easier to explain the coefficients of the features for the final model. "
         return text
 
-    def Save(self, store_path):
-        if not os.path.isdir(store_path):
+    def Save(self, store_folder):
+        if not os.path.isdir(store_folder):
             print('The store function of SVM must be a folder path')
             return
 
         # Save the coefficients
         try:
-            coef_path = os.path.join(store_path, 'SVM_coef.csv')
+            coef_path = os.path.join(store_folder, 'SVM_coef.csv')
             df = pd.DataFrame(data=np.transpose(self.GetModel().coef_), index=self._data_container.GetFeatureName(), columns=['Coef'])
             df.to_csv(coef_path)
         except Exception as e:
@@ -153,7 +153,7 @@ class SVM(Classifier):
 
         #Save the intercept_
         try:
-            intercept_path = os.path.join(store_path, 'SVM_intercept.csv')
+            intercept_path = os.path.join(store_folder, 'SVM_intercept.csv')
             intercept_df = pd.DataFrame(data=(self.GetModel().intercept_).reshape(1, 1), index=['intercept'], columns=['value'])
             intercept_df.to_csv(intercept_path)
         except Exception as e:
@@ -161,7 +161,7 @@ class SVM(Classifier):
             self.logger.error('{}{}'.format(content, str(e)))
             print('{} \n{}'.format(content, e.__str__()))
 
-        super(SVM, self).Save(store_path)
+        super(SVM, self).Save(store_folder)
 
 class LDA(Classifier):
     def __init__(self, **kwargs):
@@ -328,7 +328,8 @@ class LR(Classifier):
         if 'solver' in kwargs.keys():
             super(LR, self).SetModel(LogisticRegression(penalty='none', **kwargs))
         else:
-            super(LR, self).SetModel(LogisticRegression(penalty='none', solver='saga', tol=0.01, **kwargs))
+            super(LR, self).SetModel(LogisticRegression(penalty='none', solver='saga', tol=0.01,
+                                                        random_state=42, **kwargs))
 
 
     def GetName(self):
@@ -377,7 +378,8 @@ class LRLasso(Classifier):
         if 'solver' in kwargs.keys():
             super(LRLasso, self).SetModel(LogisticRegression(penalty='l1', **kwargs))
         else:
-            super(LRLasso, self).SetModel(LogisticRegression(penalty='l1', solver='liblinear', **kwargs))
+            super(LRLasso, self).SetModel(LogisticRegression(penalty='l1', solver='liblinear',
+                                                             random_state=42, **kwargs))
 
     def GetName(self):
         return 'LRLasso'

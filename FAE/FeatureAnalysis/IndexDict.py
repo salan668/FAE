@@ -1,31 +1,41 @@
+from FAE.FeatureAnalysis.DataBalance import *
 from FAE.FeatureAnalysis.Normalizer import *
 from FAE.FeatureAnalysis.DimensionReduction import *
 from FAE.FeatureAnalysis.FeatureSelector import *
 from FAE.FeatureAnalysis.Classifier import *
 from FAE.FeatureAnalysis.CrossValidation import *
 
-from copy import deepcopy
 
 class Index2Dict:
     def __init__(self):
         pass
 
     def GetInstantByIndex(self, name):
+        if name == NoneBalance().GetName():
+            return NoneBalance()
+        elif name == UpSampling().GetName():
+            return UpSampling()
+        elif name == DownSampling().GetName():
+            return DownSampling()
+        elif name == SmoteSampling().GetName():
+            return SmoteSampling()
 
-        if name == NormalizerNone.GetName():
+        elif name == NormalizerNone.GetName():
             return NormalizerNone
-        elif name == NormalizerUnit.GetName():
-            return NormalizerUnit
-        elif name == NormalizerZeroCenter.GetName():
-            return NormalizerZeroCenter
-        elif name == NormalizerZeroCenterAndUnit.GetName():
-            return NormalizerZeroCenterAndUnit
+        elif name == NormalizerMinMax.GetName():
+            return NormalizerMinMax
+        elif name == NormalizerZscore.GetName():
+            return NormalizerZscore
+        elif name == NormalizerMean.GetName():
+            return NormalizerMean
+
         elif name == DimensionReductionByPCA().GetName():
             return DimensionReductionByPCA()
         elif name == 'Cos':
             return DimensionReductionByPCC()
         elif name == DimensionReductionByPCC().GetName():
             return DimensionReductionByPCC()
+
         elif name == FeatureSelectByRelief().GetName():
             return FeatureSelectByRelief()
         elif name == FeatureSelectByANOVA().GetName():
@@ -34,6 +44,9 @@ class Index2Dict:
             return FeatureSelectByRFE()
         elif name == FeatureSelectByMrmr().GetName():
             return FeatureSelectByMrmr()
+        elif name == FeatureSelectByKruskalWallis().GetName():
+            return FeatureSelectByKruskalWallis()
+
         elif name == SVM().GetName():
             return SVM()
         elif name == LDA().GetName():
@@ -54,9 +67,10 @@ class Index2Dict:
             return LR()
         elif name == LRLasso().GetName():
             return LRLasso()
-        elif name == CrossValidationLeaveOneOut().GetName():
-            return CrossValidationLeaveOneOut()
-        elif name == CrossValidation5Folder().GetName():
-            return CrossValidation5Folder()
-        elif name == CrossValidation10Folder().GetName():
-            return CrossValidation10Folder()
+
+        elif name == CrossValidation5Fold.GetName():
+            return CrossValidation5Fold
+        elif name == CrossValidation10Fold.GetName():
+            return CrossValidation10Fold
+        elif name == CrossValidationLOO.GetName():
+            return CrossValidationLOO

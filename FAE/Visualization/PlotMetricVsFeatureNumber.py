@@ -1,6 +1,12 @@
+"""
+All rights reserved.
+--Yang Song
+"""
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
+
+from Utility.Constants import CV_VAL
 
 color_list = sns.color_palette('deep') + sns.color_palette('bright')
 
@@ -38,7 +44,7 @@ def DrawCurve(x, y_list, std_list=[], xlabel='', ylabel='', title='', name_list=
         for index in range(len(y_list)):
             sub_y_list = y_list[index]
             sub_std_list = std_list[index]
-            if name_list[index] == 'CV Validation':
+            if name_list[index] == CV_VAL:
                 axes.errorbar(x, sub_y_list, yerr=sub_std_list, fmt='-o',
                               color=color_list[index], elinewidth=2, capsize=4, alpha=0.7, marker='.', label='CV Validation')
                 if one_se:

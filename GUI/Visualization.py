@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'Visualization.ui'
+# Form implementation generated from reading ui file 'D:\MyCode\FeatureAnalysisPro\GUI\Visualization.ui'
 #
-# Created by: PyQt5 UI code generator 5.13.0
+# Created by: PyQt5 UI code generator 5.11.3
 #
 # WARNING! All changes made in this file will be lost!
 
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_Visualization(object):
     def setupUi(self, Visualization):
@@ -40,6 +38,7 @@ class Ui_Visualization(object):
         self.buttonSave.setObjectName("buttonSave")
         self.verticalLayout.addWidget(self.buttonSave)
         self.buttonGenerateDescription = QtWidgets.QPushButton(Visualization)
+        self.buttonGenerateDescription.setEnabled(False)
         self.buttonGenerateDescription.setObjectName("buttonGenerateDescription")
         self.verticalLayout.addWidget(self.buttonGenerateDescription)
         self.horizontalLayout_2.addLayout(self.verticalLayout)
@@ -228,7 +227,7 @@ class Ui_Visualization(object):
 
     def retranslateUi(self, Visualization):
         _translate = QtCore.QCoreApplication.translate
-        Visualization.setWindowTitle(_translate("Visualization", "Form"))
+        Visualization.setWindowTitle(_translate("Visualization", "Visualization"))
         self.buttonLoadResult.setText(_translate("Visualization", "Load"))
         self.buttonClearResult.setText(_translate("Visualization", "Clear"))
         self.buttonSave.setText(_translate("Visualization", "Save Figure"))
@@ -253,4 +252,5 @@ class Ui_Visualization(object):
         self.label_4.setText(_translate("Visualization", "Feature Contribution"))
         self.radioContributionFeatureSelector.setText(_translate("Visualization", "Feature Selector"))
         self.radioContributionClassifier.setText(_translate("Visualization", "Classifier"))
+
 from MatplotlibWidget import MatplotlibWidget

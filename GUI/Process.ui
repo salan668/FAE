@@ -11,13 +11,13 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>Model Exploration</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">
-    <layout class="QHBoxLayout" name="horizontalLayout_5">
+    <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0,0,0,0">
+      <layout class="QVBoxLayout" name="verticalLayout_10">
        <item>
         <widget class="QGroupBox" name="groupBox">
          <property name="title">
@@ -82,6 +82,85 @@
         </widget>
        </item>
        <item>
+        <layout class="QVBoxLayout" name="verticalLayout_9">
+         <item>
+          <widget class="QLabel" name="label_3">
+           <property name="text">
+            <string>Data Description</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QTextEdit" name="textEditDescription"/>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <item>
+          <widget class="QLabel" name="label_5">
+           <property name="text">
+            <string>Verbose</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QTextEdit" name="textEditVerbose"/>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0,0,0">
+       <item>
+        <widget class="QGroupBox" name="groupBox_3">
+         <property name="title">
+          <string>Balance Data</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_9">
+          <item row="0" column="0">
+           <layout class="QVBoxLayout" name="verticalLayout_6">
+            <item>
+             <widget class="QRadioButton" name="radioNoneBalance">
+              <property name="text">
+               <string>None Balance</string>
+              </property>
+              <property name="checked">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="radioUpSampling">
+              <property name="text">
+               <string>UpSampling</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="radioDownSampling">
+              <property name="text">
+               <string>DownSampling</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="radioSmote">
+              <property name="text">
+               <string>SMOTE</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
         <widget class="QGroupBox" name="groupNormalization">
          <property name="title">
           <string>Normalization</string>
@@ -97,23 +176,23 @@
              </widget>
             </item>
             <item>
-             <widget class="QCheckBox" name="checkNormalizeUnit">
+             <widget class="QCheckBox" name="checkNormalizeMinMax">
               <property name="text">
-               <string>Normalize to unit</string>
+               <string>MinMax Normalization</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QCheckBox" name="checkNormalizeZeroCenter">
+             <widget class="QCheckBox" name="checkNormalizeZscore">
               <property name="text">
-               <string>Normalize to 0-center</string>
+               <string>Z-Score Normalization</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QCheckBox" name="checkNormalizeUnitWithZeroCenter">
+             <widget class="QCheckBox" name="checkNormalizeMean">
               <property name="text">
-               <string>Normalize to unit with 0-center</string>
+               <string>Mean Normalization</string>
               </property>
               <property name="checked">
                <bool>true</bool>
@@ -170,7 +249,7 @@
          <property name="title">
           <string>Feature Selector</string>
          </property>
-         <layout class="QGridLayout" name="gridLayout_3">
+         <layout class="QGridLayout" name="gridLayout_8">
           <item row="0" column="0">
            <layout class="QVBoxLayout" name="verticalLayout_8">
             <item>
@@ -209,35 +288,45 @@
              </layout>
             </item>
             <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_8">
-              <item>
+             <layout class="QGridLayout" name="gridLayout_3">
+              <item row="0" column="0">
                <widget class="QCheckBox" name="checkANOVA">
                 <property name="text">
                  <string>ANOVA</string>
+                </property>
+                <property name="checked">
+                 <bool>false</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QCheckBox" name="checkKW">
+                <property name="text">
+                 <string>KW</string>
                 </property>
                 <property name="checked">
                  <bool>true</bool>
                 </property>
                </widget>
               </item>
-              <item>
+              <item row="0" column="2">
+               <widget class="QCheckBox" name="checkFeatureSelectorAll">
+                <property name="text">
+                 <string>All Feature Selector</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
                <widget class="QCheckBox" name="checkRFE">
                 <property name="text">
                  <string>RFE</string>
                 </property>
                </widget>
               </item>
-              <item>
+              <item row="1" column="1">
                <widget class="QCheckBox" name="checkRelief">
                 <property name="text">
                  <string>Relief</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QCheckBox" name="checkFeatureSelectorAll">
-                <property name="text">
-                 <string>All Feature Selector</string>
                 </property>
                </widget>
               </item>
@@ -385,6 +474,24 @@
          </layout>
         </widget>
        </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_12">
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_11">
+         <item>
+          <widget class="QLabel" name="label_4">
+           <property name="text">
+            <string>Pipeline Description</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QListWidget" name="listOnePipeline"/>
+         </item>
+        </layout>
+       </item>
        <item>
         <widget class="QPushButton" name="buttonRun">
          <property name="minimumSize">
@@ -397,51 +504,6 @@
           <string>Run and Save</string>
          </property>
         </widget>
-       </item>
-      </layout>
-     </item>
-     <item>
-      <layout class="QVBoxLayout" name="verticalLayout_2">
-       <item>
-        <widget class="QLabel" name="label_5">
-         <property name="text">
-          <string>Pipeline Description:</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QListWidget" name="listOnePipeline"/>
-       </item>
-      </layout>
-     </item>
-     <item>
-      <layout class="QVBoxLayout" name="verticalLayout_6">
-       <item>
-        <widget class="QLabel" name="label_3">
-         <property name="text">
-          <string>Data Description</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QTextEdit" name="textEditDescription"/>
-       </item>
-       <item>
-        <widget class="Line" name="line_2">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="label_4">
-         <property name="text">
-          <string>Verbose</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QTextEdit" name="textEditVerbose"/>
        </item>
       </layout>
      </item>

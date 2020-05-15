@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>Visualization</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_4">
    <item row="0" column="0">
@@ -55,6 +55,9 @@
          </item>
          <item>
           <widget class="QPushButton" name="buttonGenerateDescription">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="text">
             <string>Generate Description</string>
            </property>

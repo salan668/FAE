@@ -30,7 +30,7 @@ class DataContainer:
         self.__case_name = case_name
         self.__label = label
         self._array = array
-        self.logger = eclog(os.path.split(__file__)[-1]).GetLogger()
+       # self.logger = eclog(os.path.split(__file__)[-1]).GetLogger()
 
         if array.size != 0 and label.size != 0:
             self.UpdateFrameByData()
@@ -122,6 +122,7 @@ class DataContainer:
 
 
     def Load(self, file_path):
+        assert(os.path.exists(file_path))
         self.__init__()
         try:
             self.__df = pd.read_csv(file_path, header=0, index_col=0)

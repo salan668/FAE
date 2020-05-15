@@ -1,6 +1,12 @@
+"""
+All rights reserved.
+--Yang Song, Apr 8th, 2020.
+"""
 import numpy as np
 from random import shuffle
 from sklearn.metrics import roc_auc_score, roc_curve, confusion_matrix
+
+from Utility.Constants import *
 
 def AUC_Confidence_Interval(y_true, y_pred, CI_index=0.95):
     '''
@@ -192,5 +198,55 @@ def EstimateMetirc(prediction, label, key_word=''):
     metric[key_word + 'auc'] = '{:.4f}'.format(single_auc)
     metric[key_word + 'auc 95% CIs'] = '[{:.4f}-{:.4f}]'.format(ci[0], ci[1])
     metric[key_word + 'auc std'] = '{:.4f}'.format(std)
+
+    return metric
+
+def EstimatePrediction(prediction, label, key_word=''):
+    '''
+        Calculate the medical metric according to prediction and the label.
+        :param prediction: The prediction. Dim is 1.
+        :param label: The label. Dim is 1
+        :param key_word: The word to add in front of the metric key. Usually to separate the training data set, validation
+        data set, and the testing data set.
+        :return: A dictionary of the calculated metrics
+        '''
+    if key_word != '':
+        key_word += '_'
+
+    metric = {}
+    metric[key_word + NUMBER] = len(label)
+    metric[key_word + POS_NUM] = np.sum(label)
+    metric[key_word + NEG_NUM] = len(label) - np.sum(label)
+
+    fpr, tpr, threshold = roc_curve(label, prediction)
+    index = np.argmax(1 - fpr + tpr)
+    metric[key_word + YI] = '{:.4f}'.format(threshold[index])
+
+    pred = np.zeros_like(label)
+    pred[prediction >= threshold[index]] = 1
+    C = confusion_matrix(label, pred, labels=[1, 0])
+
+    metric[key_word + ACC] = '{:.4f}'.format(np.where(pred == label)[0].size / label.size)
+    if np.sum(C[0, :]) < 1e-6:
+        metric[key_word + SEN] = 0
+    else:
+        metric[key_word + SEN] = '{:.4f}'.format(C[0, 0] / np.sum(C[0, :]))
+    if np.sum(C[1, :]) < 1e-6:
+        metric[key_word + SPE] = 0
+    else:
+        metric[key_word + SPE] = '{:.4f}'.format(C[1, 1] / np.sum(C[1, :]))
+    if np.sum(C[:, 0]) < 1e-6:
+        metric[key_word + PPV] = 0
+    else:
+        metric[key_word + PPV] = '{:.4f}'.format(C[0, 0] / np.sum(C[:, 0]))
+    if np.sum(C[:, 1]) < 1e-6:
+        metric[key_word + NPV] = 0
+    else:
+        metric[key_word + NPV] = '{:.4f}'.format(C[1, 1] / np.sum(C[:, 1]))
+
+    single_auc, mean_auc, ci, score, std = AUC_Confidence_Interval(label, prediction)
+    metric[key_word + AUC] = '{:.4f}'.format(single_auc)
+    metric[key_word + AUC_CI] = '[{:.4f}-{:.4f}]'.format(ci[0], ci[1])
+    metric[key_word + AUC_STD] = '{:.4f}'.format(std)
 
     return metric

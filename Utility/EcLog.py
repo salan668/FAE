@@ -1,9 +1,25 @@
 import logging
 import copy
 from logging.handlers import RotatingFileHandler
+import threading
 
-class eclog(object):
+class Singleton(object):
+    _instance_lock = threading.Lock()
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def __new__(cls, *args, **kwargs):
+        if not hasattr(cls, '_instance'):
+            with Singleton._instance_lock:
+                if not hasattr(cls, '_instance'):
+                    Singleton._instance = super().__new__(cls)
+
+        return Singleton._instance
+
+class eclog(Singleton):
     def __init__(self, file):
+        Singleton.__init__(self)
         self.eclogger = logging.getLogger(file)
         self.eclogger.setLevel(level=logging.DEBUG)
         if not self.eclogger.handlers:
@@ -24,8 +40,13 @@ class eclog(object):
     def GetLogger(self):
         return self.eclogger
 
+    #def LogInfo(self, info):
+     #   self.eclogger.info(info)
+
+   # def LogError(self, info):
+     #   self.eclogger.error(info)
 
 if __name__ == '__main__':
-    logger = eclog('temp.log')
-    new_logger = copy.deepcopy(logger)
-    new_logger.GetLogger().error('test')
+    #eclog("t").LogInfo('test')
+    #eclog("t").LogError('error test')
+    eclog("t").GetLogger().error('test')
