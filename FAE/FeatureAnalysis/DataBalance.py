@@ -4,13 +4,12 @@ Yang SONG, songyangmri@gmail.com
 '''
 
 import numpy as np
-from random import shuffle
 import os
-import pandas as pd
 from abc import abstractmethod
 
 from imblearn.under_sampling import RandomUnderSampler
 from imblearn.over_sampling import RandomOverSampler, SMOTE
+from imblearn.combine import SMOTEENN, SMOTETomek
 
 from FAE.DataContainer.DataContainer import DataContainer
 
@@ -93,6 +92,7 @@ class DownSampling(DataBalance):
                 new_data_container.Save(store_path)
         return new_data_container
 
+
 class UpSampling(DataBalance):
     def __init__(self):
         super(UpSampling, self).__init__(RandomOverSampler(random_state=0), 'UpSampling')
@@ -132,6 +132,7 @@ class UpSampling(DataBalance):
                 new_data_container.Save(store_path)
         return new_data_container
 
+
 class SmoteSampling(DataBalance):
     def __init__(self, **kwargs):
         super(SmoteSampling, self).__init__(SMOTE(**kwargs, random_state=0), 'SMOTE')
@@ -155,3 +156,33 @@ class SmoteSampling(DataBalance):
         return new_data_container
 
 
+class SmoteTomekSampling(DataBalance):
+    def __init__(self, **kwargs):
+        super(SmoteTomekSampling, self).__init__(SMOTETomek(**kwargs, random_state=0), 'SMOTETomek')
+
+    def GetDescription(self):
+        return "To Remove the unbalance of the training data set, we applied an Tomek link after the " \
+               "Synthetic Minority Oversampling TEchnique (SMOTE) to make positive/negative samples balance. "
+
+    def Run(self, data_container, store_path=''):
+        data, label, feature_name, label_name = data_container.GetData()
+        data_resampled, label_resampled = self._model.fit_sample(data, label)
+
+        new_case_name = ['Generate' + str(index) for index in range(data_resampled.shape[0])]
+        new_data_container = DataContainer(data_resampled, label_resampled, data_container.GetFeatureName(),
+                                           new_case_name)
+        if store_path != '':
+            if os.path.isdir(store_path):
+                new_data_container.Save(os.path.join(store_path, '{}_features.csv'.format(self._name)))
+            else:
+                new_data_container.Save(store_path)
+        return new_data_container
+
+
+if __name__ == '__main__':
+    dc = DataContainer()
+    dc.Load(r'..\..\Example\numeric_feature.csv')
+    print(dc.GetArray().shape, np.sum(dc.GetLabel()))
+    b = SmoteEnnSampling()
+    new = b.Run(dc)
+    print(new.GetArray().shape, np.sum(new.GetLabel()))
