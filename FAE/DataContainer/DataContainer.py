@@ -10,6 +10,7 @@ from copy import deepcopy
 
 import numpy as np
 import pandas as pd
+from Utility.Constants import REMOVE_CASE, REMOVE_FEATURE, REMOVE_NONE
 
 from Utility.EcLog import eclog
 
@@ -78,7 +79,7 @@ class DataContainer:
         return True
 
     def IsEmpty(self):
-        if self._array.size > 0:
+        if self.__df.size > 0:
             return False
         else:
             return True
@@ -124,12 +125,13 @@ class DataContainer:
         except Exception as e:
             print('Check the CSV file path: LoadWithNonNumeirc: \n{}'.format(e.__str__()))
 
-    def Load(self, file_path):
+    def Load(self, file_path, is_update=True):
         assert(os.path.exists(file_path))
         self.__init__()
         try:
             self.__df = pd.read_csv(file_path, header=0, index_col=0)
-            self.UpdateDataByFrame()
+            if is_update:
+                self.UpdateDataByFrame()
             return True
         except Exception as e:
             print('Check the CSV file path: {}: \n{}'.format(file_path, e.__str__()))
@@ -162,15 +164,20 @@ class DataContainer:
         if 'label' in self.__feature_name:
             label_name = 'label'
             index = self.__feature_name.index('label')
+            self.__feature_name.pop(index)
+            self.__label = np.asarray(self.__df[label_name].values, dtype=np.int)
+            self._array = np.asarray(self.__df[self.__feature_name].values, dtype=np.float64)
+            return True
         elif 'Label' in self.__feature_name:
             label_name = 'Label'
             index = self.__feature_name.index('Label')
+            self.__feature_name.pop(index)
+            self.__label = np.asarray(self.__df[label_name].values, dtype=np.int)
+            self._array = np.asarray(self.__df[self.__feature_name].values, dtype=np.float64)
+            return True
         else:
             print('No "label" in the index')
-            index = np.nan
-        self.__feature_name.pop(index)
-        self.__label = np.asarray(self.__df[label_name].values, dtype=np.int)
-        self._array = np.asarray(self.__df[self.__feature_name].values, dtype=np.float64)
+            return False
 
     def UpdateFrameByData(self):
         data = np.concatenate((self.__label[..., np.newaxis], self._array), axis=1)
@@ -180,7 +187,7 @@ class DataContainer:
 
         self.__df = pd.DataFrame(data=data, index=index, columns=header)
 
-    def GetInvalidFrame(self, store_path=''):
+    def RemoveInvalid(self, store_path='', remove_index=REMOVE_NONE):
         array = []
         invalid_case, invalid_feature = [], []
         for case_index in range(self.__df.shape[0]):
@@ -198,56 +205,26 @@ class DataContainer:
         invalid_feature = list(set(invalid_feature))
         invalid_df = self.__df.iloc[invalid_case, invalid_feature]
 
-        if store_path:
+        if store_path and invalid_df.size > 0:
             invalid_df.to_csv(store_path)
 
-        return invalid_df
+        if remove_index == REMOVE_CASE:
+            self.__df.drop(index=invalid_df.index, inplace=True)
+            if not self.UpdateDataByFrame():
+                return False
+        elif remove_index == REMOVE_FEATURE:
+            self.__df.drop(axis=1, columns=invalid_df.columns, inplace=True)
+            if not self.UpdateDataByFrame():
+                return False
 
-    def RemoveInvalidFeatures(self):
-        removed_index = []
-        for index in range(len(self.__feature_name)):
-            vector = self._array[:, index]
-            if np.where(np.isnan(vector))[0].size > 0:
-                removed_index.append(index)
-
-        # Remove the feature name
-        removed_feature_name = [self.__feature_name[index] for index in removed_index]
-        for feature_name in removed_feature_name:
-            self.__feature_name.remove(feature_name)
-
-        new_array = np.delete(self._array, removed_index, axis=1)
-        self._array = new_array.astype(np.float64)
-
-        self.UpdateFrameByData()
-
-    def RemoveInvalidCases(self):
-        removed_index = []
-        for index in range(len(self.__case_name)):
-            vector = self._array[index, :]
-            if np.where(np.isnan(vector))[0].size > 0:
-                removed_index.append(index)
-                continue
-            if self.__label[index] != 0 and self.__label[index] != 1:
-                removed_index.append(index)
-
-        # Remove the case name
-        removed_case_name = [self.__case_name[index] for index in removed_index]
-        for case_name in removed_case_name:
-            self.__case_name.remove(case_name)
-
-        new_array = np.delete(self._array, removed_index, axis=0)
-        self._array = new_array.astype(np.float64)
-        new_label = np.delete(self.__label, removed_index, axis=0)
-        self.__label = new_label
-
-        self.UpdateFrameByData()
+        return True
 
     def LoadAndGetData(self, file_path):
         self.Load(file_path)
         return self.GetData()
+
     def GetData(self):
         return self._array, self.__label, self.__feature_name, self.__case_name
-
     def GetFrame(self): return self.__df
     def GetArray(self): return self._array
     def GetLabel(self): return self.__label
@@ -274,9 +251,11 @@ class DataContainer:
 def main():
     data = DataContainer()
     data.Load(r'C:\Users\yangs\Desktop\invalid_demo.csv')
+    # data.Load(r'C:\Users\yangs\Desktop\valid_demo.csv')
     print(data.GetFrame())
-    d = data.GetInvalidContainer()
-    print(d.GetFrame())
+    data.RemoveInvalid(remove_index=REMOVE_CASE)
+    print(data.GetFrame())
+
 
 if __name__ == '__main__':
     main()

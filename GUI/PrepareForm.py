@@ -10,6 +10,7 @@ from Utility.EcLog import eclog
 from FAE.DataContainer.DataContainer import DataContainer
 from FAE.DataContainer import DataSeparate
 from FAE.FeatureAnalysis.FeatureSelector import RemoveSameFeatures
+from Utility.Constants import REMOVE_CASE, REMOVE_FEATURE, REMOVE_NONE
 
 
 class PrepareConnection(QWidget, Ui_Prepare):
@@ -22,7 +23,7 @@ class PrepareConnection(QWidget, Ui_Prepare):
         self._filename = os.path.split(__file__)[-1]
 
         self.buttonLoad.clicked.connect(self.LoadData)
-        self.buttonRemove.clicked.connect(self.RemoveNonValidValue)
+        self.buttonRemoveAndExport.clicked.connect(self.RemoveInvalidValue)
 
         self.__testing_ref_data_container = DataContainer()
         self.__clinical_ref = pd.DataFrame()
@@ -42,12 +43,8 @@ class PrepareConnection(QWidget, Ui_Prepare):
         QCloseEvent.accept()
 
     def UpdateTable(self):
-        if self.data_container.GetArray().size == 0:
-            return
-
-        self.tableFeature.setRowCount(len(self.data_container.GetCaseName()))
-        header_name = deepcopy(self.data_container.GetFeatureName())
-        header_name.insert(0, 'Label')
+        self.tableFeature.setRowCount(self.data_container.GetFrame().shape[0])
+        header_name = deepcopy(self.data_container.GetFrame().columns)
 
         min_col = np.min([len(header_name), 100])
         if min_col == 100:
@@ -56,36 +53,57 @@ class PrepareConnection(QWidget, Ui_Prepare):
 
         self.tableFeature.setColumnCount(min_col)
         self.tableFeature.setHorizontalHeaderLabels(header_name)
-        self.tableFeature.setVerticalHeaderLabels(list(map(str, self.data_container.GetCaseName())))
+        self.tableFeature.setVerticalHeaderLabels(list(map(str, self.data_container.GetFrame().index)))
 
-        for row_index in range(len(self.data_container.GetCaseName())):
+        for row_index in range(self.data_container.GetFrame().shape[0]):
             for col_index in range(min_col):
-                if col_index == 0:
+                if col_index < 99:
                     self.tableFeature.setItem(row_index, col_index,
-                                              QTableWidgetItem(str(self.data_container.GetLabel()[row_index])))
-                elif col_index < 99:
-                    self.tableFeature.setItem(row_index, col_index,
-                                              QTableWidgetItem(str(self.data_container.GetArray()[row_index, col_index - 1])))
+                                              QTableWidgetItem(str(
+                                                  self.data_container.GetFrame().iloc[row_index, col_index])))
                 else:
                     self.tableFeature.setItem(row_index, col_index,
                                               QTableWidgetItem('...'))
 
-        text = "The number of cases: {:d}\n".format(len(self.data_container.GetCaseName()))
-        text += "The number of features: {:d}\n".format(len(self.data_container.GetFeatureName()))
-        if len(np.unique(self.data_container.GetLabel())) == 2:
-            positive_number = len(np.where(self.data_container.GetLabel() == np.max(self.data_container.GetLabel()))[0])
-            negative_number = len(self.data_container.GetLabel()) - positive_number
-            assert (positive_number + negative_number == len(self.data_container.GetLabel()))
-            text += "The number of positive samples: {:d}\n".format(positive_number)
-            text += "The number of negative samples: {:d}\n".format(negative_number)
+        text = "The number of cases: {:d}\n".format(self.data_container.GetFrame().shape[0])
+        # To process Label temporally
+        if 'label' in self.data_container.GetFrame().columns:
+            label_name = 'label'
+            text += "The number of features: {:d}\n".format(self.data_container.GetFrame().shape[1] - 1)
+        elif 'Label' in self.data_container.GetFrame().columns:
+            label_name = 'Label'
+            text += "The number of features: {:d}\n".format(self.data_container.GetFrame().shape[1] - 1)
+        else:
+            label_name = ''
+            text += "The number of features: {:d}\n".format(self.data_container.GetFrame().shape[1])
+        if label_name:
+            labels = np.asarray(self.data_container.GetFrame()[label_name].values, dtype=np.int)
+            if len(np.unique(labels)) == 2:
+                positive_number = len(np.where(labels == np.max(labels))[0])
+                negative_number = len(labels) - positive_number
+                assert (positive_number + negative_number == len(labels))
+                text += "The number of positive samples: {:d}\n".format(positive_number)
+                text += "The number of negative samples: {:d}\n".format(negative_number)
         self.textInformation.setText(text)
+
+    def SetButtonsState(self, state):
+        self.buttonRemoveAndExport.setEnabled(state)
+        self.buttonSave.setEnabled(state)
+        self.checkExport.setEnabled(state)
+        self.radioRemoveNone.setEnabled(state)
+        self.radioRemoveNonvalidCases.setEnabled(state)
+        self.radioRemoveNonvalidFeatures.setEnabled(state)
+        self.radioSplitRandom.setEnabled(state)
+        self.radioSplitRef.setEnabled(state)
 
     def LoadData(self):
         dlg = QFileDialog()
         file_name, _ = dlg.getOpenFileName(self, 'Open SCV file', filter="csv files (*.csv)")
         try:
-            self.data_container.Load(file_name)
-            print(eclog(file_name))
+            if self.data_container.Load(file_name, is_update=False):
+                self.UpdateTable()
+                self.SetButtonsState(True)
+
         except OSError as reason:
             eclog(self._filename).GetLogger().error('Load CSV Error: {}'.format(reason))
             QMessageBox.about(self, 'Load data Error', reason.__str__())
@@ -93,14 +111,6 @@ class PrepareConnection(QWidget, Ui_Prepare):
         except ValueError:
             eclog(self._filename).GetLogger().error('Open CSV Error: {}'.format(file_name))
             QMessageBox.information(self, 'Error', 'The selected data file mismatch.')
-        self.UpdateTable()
-
-        self.buttonRemove.setEnabled(True)
-        self.buttonSave.setEnabled(True)
-        self.radioRemoveNonvalidCases.setEnabled(True)
-        self.radioRemoveNonvalidFeatures.setEnabled(True)
-        self.radioSplitRandom.setEnabled(True)
-        self.radioSplitRef.setEnabled(True)
 
     def LoadTestingReferenceDataContainer(self):
         dlg = QFileDialog()
@@ -152,13 +162,21 @@ class PrepareConnection(QWidget, Ui_Prepare):
         self.loadClinicRef.setEnabled(True)
         self.clearClinicRef.setEnabled(False)
 
-    def RemoveNonValidValue(self):
-        if self.radioRemoveNonvalidCases.isChecked():
-            self.data_container.RemoveInvalidCases()
-        elif self.radioRemoveNonvalidFeatures.isChecked():
-            self.data_container.RemoveInvalidFeatures()
+    def RemoveInvalidValue(self):
+        if not self.data_container.IsEmpty():
+            if self.checkExport.isChecked():
+                folder_name = QFileDialog.getExistingDirectory(self, "Save Invalid data")
+                store_path = os.path.join(folder_name, 'invalid_feature.csv')
+            else:
+                store_path = ''
 
-        self.UpdateTable()
+            if self.radioRemoveNone.isChecked():
+                self.data_container.RemoveInvalid(store_path=store_path, remove_index=REMOVE_NONE)
+            if self.radioRemoveNonvalidCases.isChecked():
+                self.data_container.RemoveInvalid(store_path=store_path, remove_index=REMOVE_CASE)
+            elif self.radioRemoveNonvalidFeatures.isChecked():
+                self.data_container.RemoveInvalid(store_path=store_path, remove_index=REMOVE_FEATURE)
+            self.UpdateTable()
 
     def ChangeSeparateMethod(self):
         if self.radioSplitRandom.isChecked():
@@ -210,39 +228,40 @@ class PrepareConnection(QWidget, Ui_Prepare):
             remove_features_with_same_value = RemoveSameFeatures()
             self.data_container = remove_features_with_same_value.Run(self.data_container)
 
-            folder_name = QFileDialog.getExistingDirectory(self, "Save data")
-            if folder_name != '':
-                data_separate = DataSeparate.DataSeparate()
-                try:
-                    if self.__testing_ref_data_container.IsEmpty():
-                        testing_data_percentage = self.spinBoxSeparate.value()
-                        if self.__clinical_ref.size == 0:
-                            training_data_container, _, = \
-                                data_separate.RunByTestingPercentage(self.data_container,
-                                                                     testing_data_percentage,
-                                                                     store_folder=folder_name)
+            if self.radioSplitRandom.isChecked() or self.radioSplitRef.isChecked():
+                folder_name = QFileDialog.getExistingDirectory(self, "Save data")
+                if folder_name != '':
+                    data_separate = DataSeparate.DataSeparate()
+                    try:
+                        if self.__testing_ref_data_container.IsEmpty():
+                            testing_data_percentage = self.spinBoxSeparate.value()
+                            if self.__clinical_ref.size == 0:
+                                training_data_container, _, = \
+                                    data_separate.RunByTestingPercentage(self.data_container,
+                                                                         testing_data_percentage,
+                                                                         store_folder=folder_name)
+                            else:
+                                training_data_container, _, = \
+                                    data_separate.RunByTestingPercentage(self.data_container,
+                                                                         testing_data_percentage,
+                                                                         clinic_df=self.__clinical_ref,
+                                                                         store_folder=folder_name)
                         else:
                             training_data_container, _, = \
-                                data_separate.RunByTestingPercentage(self.data_container,
-                                                                     testing_data_percentage,
-                                                                     clinic_df=self.__clinical_ref,
-                                                                     store_folder=folder_name)
-                    else:
-                        training_data_container, _, = \
-                            data_separate.RunByTestingReference(self.data_container,
-                                                                self.__testing_ref_data_container,
-                                                                folder_name)
-                        if training_data_container.IsEmpty():
-                            QMessageBox.information(self, 'Error',
-                                                    'The testing data does not mismatch, please check the testing data '
-                                                    'really exists in current data')
-                            return None
-                    os.system("explorer.exe {:s}".format(os.path.normpath(folder_name)))
-                except Exception as e:
-                    content = 'PrepareConnection, splitting failed: '
-                    eclog(self._filename).GetLogger().error('Split Error:  ' + e.__str__())
-                    QMessageBox.about(self, content, e.__str__())
-
+                                data_separate.RunByTestingReference(self.data_container,
+                                                                    self.__testing_ref_data_container,
+                                                                    folder_name)
+                            if training_data_container.IsEmpty():
+                                QMessageBox.information(self, 'Error',
+                                                        'The testing data does not mismatch, please check the testing data '
+                                                        'really exists in current data')
+                                return None
+                        os.system("explorer.exe {:s}".format(os.path.normpath(folder_name)))
+                    except Exception as e:
+                        content = 'PrepareConnection, splitting failed: '
+                        eclog(self._filename).GetLogger().error('Split Error:  ' + e.__str__())
+                        QMessageBox.about(self, content, e.__str__())
 
             else:
                 file_name, _ = QFileDialog.getSaveFileName(self, "Save data", filter="csv files (*.csv)")
+                self.data_container.Save(file_name)

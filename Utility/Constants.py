@@ -7,6 +7,10 @@ FEATURE_NUMBER = 'FeatureNumber'
 CLASSIFIER = 'Classifier'
 CROSS_VALIDATION = 'CrossValidation'
 
+REMOVE_NONE = 'RemoveNone'
+REMOVE_CASE = 'RemoveCase'
+REMOVE_FEATURE = 'RemoveFeature'
+
 # Metric Key
 NUMBER = 'Number'
 POS_NUM = 'PosNum'

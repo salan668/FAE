@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1069</width>
-    <height>697</height>
+    <height>746</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -83,18 +83,31 @@
           </size>
          </property>
          <property name="title">
-          <string>Remove non-valid value</string>
+          <string>Remove Invalid value</string>
          </property>
          <layout class="QGridLayout" name="gridLayout">
           <item row="0" column="0">
            <layout class="QVBoxLayout" name="verticalLayout_2">
+            <item>
+             <widget class="QRadioButton" name="radioRemoveNone">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="text">
+               <string>RadioButton</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
             <item>
              <widget class="QRadioButton" name="radioRemoveNonvalidCases">
               <property name="enabled">
                <bool>false</bool>
               </property>
               <property name="text">
-               <string>Remove non-valid Cases</string>
+               <string>Remove Invalid Cases</string>
               </property>
              </widget>
             </item>
@@ -104,19 +117,33 @@
                <bool>false</bool>
               </property>
               <property name="text">
-               <string>Remove non-valid Features</string>
+               <string>Remove Invalid Features</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QPushButton" name="buttonRemove">
-              <property name="enabled">
-               <bool>false</bool>
-              </property>
-              <property name="text">
-               <string>Remove</string>
-              </property>
-             </widget>
+             <layout class="QHBoxLayout" name="horizontalLayout_3">
+              <item>
+               <widget class="QCheckBox" name="checkExport">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="text">
+                 <string>Export Infomation</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="buttonRemoveAndExport">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="text">
+                 <string>Remove</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </item>
            </layout>
           </item>
@@ -241,19 +268,6 @@
                </widget>
               </item>
              </layout>
-            </item>
-            <item>
-             <spacer name="verticalSpacer_2">
-              <property name="orientation">
-               <enum>Qt::Vertical</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>20</width>
-                <height>40</height>
-               </size>
-              </property>
-             </spacer>
             </item>
            </layout>
           </item>
