@@ -154,9 +154,9 @@ class PrepareConnection(QWidget, Ui_Prepare):
 
     def RemoveNonValidValue(self):
         if self.radioRemoveNonvalidCases.isChecked():
-            self.data_container.RemoveUneffectiveCases()
+            self.data_container.RemoveInvalidCases()
         elif self.radioRemoveNonvalidFeatures.isChecked():
-            self.data_container.RemoveUneffectiveFeatures()
+            self.data_container.RemoveInvalidFeatures()
 
         self.UpdateTable()
 
@@ -194,14 +194,14 @@ class PrepareConnection(QWidget, Ui_Prepare):
             QMessageBox.warning(self, "Warning", "There is no data", QMessageBox.Ok)
         elif not self.data_container.IsBinaryLabel():
             QMessageBox.warning(self, "Warning", "There are not 2 Labels", QMessageBox.Ok)
-            non_valid_number_index = self.data_container.FindNonValidLabelIndex()
+            non_valid_number_index = self.data_container.FindInvalidLabelIndex()
             old_edit_triggers = self.tableFeature.editTriggers()
             self.tableFeature.setEditTriggers(QAbstractItemView.CurrentChanged)
             self.tableFeature.setCurrentCell(non_valid_number_index, 0)
             self.tableFeature.setEditTriggers(old_edit_triggers)
-        elif self.data_container.HasNonValidNumber():
+        elif self.data_container.HasInvalidNumber():
             QMessageBox.warning(self, "Warning", "There are nan items", QMessageBox.Ok)
-            non_valid_number_index = self.data_container.FindNonValidNumberIndex()
+            non_valid_number_index = self.data_container.FindInvalidNumberIndex()
             old_edit_triggers = self.tableFeature.editTriggers()
             self.tableFeature.setEditTriggers(QAbstractItemView.CurrentChanged)
             self.tableFeature.setCurrentCell(non_valid_number_index[0], non_valid_number_index[1]+1)

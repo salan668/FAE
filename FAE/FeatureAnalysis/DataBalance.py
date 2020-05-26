@@ -183,6 +183,6 @@ if __name__ == '__main__':
     dc = DataContainer()
     dc.Load(r'..\..\Example\numeric_feature.csv')
     print(dc.GetArray().shape, np.sum(dc.GetLabel()))
-    b = SmoteEnnSampling()
+    b = SmoteTomekSampling()
     new = b.Run(dc)
     print(new.GetArray().shape, np.sum(new.GetLabel()))

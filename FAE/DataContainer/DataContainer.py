@@ -30,7 +30,6 @@ class DataContainer:
         self.__case_name = case_name
         self.__label = label
         self._array = array
-       # self.logger = eclog(os.path.split(__file__)[-1]).GetLogger()
 
         if array.size != 0 and label.size != 0:
             self.UpdateFrameByData()
@@ -44,22 +43,30 @@ class DataContainer:
                                          deepcopy(self.GetCaseName()))
         return copy_data_container
 
-
     def __IsNumber(self, input_data):
+        result = False
         try:
             float(input_data)
-            return True
+            result = True
         except ValueError:
             pass
 
-        try:
-            import unicodedata
-            unicodedata.numeric(input_data)
-            return True
-        except (TypeError, ValueError):
-            pass
+        if result:
+            temp = float(input_data)
+            if np.isnan(temp):
+                return False
+            if np.isinf(temp):
+                return False
 
-        return False
+        if not result:
+            try:
+                import unicodedata
+                unicodedata.numeric(input_data)
+                result = True
+            except (TypeError, ValueError):
+                pass
+
+        return result
 
     def IsValidNumber(self, input_data):
         if not self.__IsNumber(input_data):
@@ -79,19 +86,19 @@ class DataContainer:
     def IsBinaryLabel(self):
         return len(np.unique(self.__label)) == 2
 
-    def FindNonValidLabelIndex(self):
+    def FindInvalidLabelIndex(self):
         for index in range(self.__label.shape[0]):
             if self.__label[index] != 0 and self.__label[index] != 1:
                 return index
 
-    def HasNonValidNumber(self):
+    def HasInvalidNumber(self):
         array_flat = self._array.flatten()
         for index in range(self._array.size):
             if not self.IsValidNumber(array_flat[index]):
                 return True
         return False
 
-    def FindNonValidNumberIndex(self):
+    def FindInvalidNumberIndex(self):
         for index0 in range(self._array.shape[0]):
             for index1 in range(self._array.shape[1]):
                 if not self.IsValidNumber(self._array[index0,index1]):
@@ -108,18 +115,14 @@ class DataContainer:
             self.__df = pd.read_csv(file_path, header=0)
             self.UpdateDataByFrame()
         except Exception as e:
-            # self.logger.error('LoadWitoutCase:  ' + str(e))
             print('Check the CSV file path: LoadWithoutCase: \n{}'.format(e.__str__()))
-
 
     def LoadwithNonNumeric(self, file_path):
         self.__init__()
         try:
             self.__df = pd.read_csv(file_path, header=0, index_col=0)
         except Exception as e:
-            # self.logger.error('LoadWithNonNumeirc:  ' + str(e))
             print('Check the CSV file path: LoadWithNonNumeirc: \n{}'.format(e.__str__()))
-
 
     def Load(self, file_path):
         assert(os.path.exists(file_path))
@@ -127,17 +130,18 @@ class DataContainer:
         try:
             self.__df = pd.read_csv(file_path, header=0, index_col=0)
             self.UpdateDataByFrame()
-            return
+            return True
         except Exception as e:
-            # self.logger.error('Load:  ' + str(e))
             print('Check the CSV file path: {}: \n{}'.format(file_path, e.__str__()))
 
         try:
             self.__df = LoadCSVwithChineseInPandas(file_path, header=0, index_col=0)
             self.UpdateDataByFrame()
+            return True
         except Exception as e:
-            # self.logger.error('Load Chinese CSV:  ' + str(e))
             print('Check the CSV file path: {}: \n{}'.format(file_path, e.__str__()))
+
+        return False
 
     def ShowInformation(self):
         print('The number of cases is ', str(len(self.__case_name)))
@@ -176,7 +180,30 @@ class DataContainer:
 
         self.__df = pd.DataFrame(data=data, index=index, columns=header)
 
-    def RemoveUneffectiveFeatures(self):
+    def GetInvalidFrame(self, store_path=''):
+        array = []
+        invalid_case, invalid_feature = [], []
+        for case_index in range(self.__df.shape[0]):
+            sub_array = []
+            for feature_index in range(self.__df.shape[1]):
+                if self.__IsNumber(self.__df.iloc[case_index, feature_index]):
+                    sub_array.append(True)
+                else:
+                    sub_array.append(False)
+                    invalid_case.append(case_index)
+                    invalid_feature.append(feature_index)
+            array.append(sub_array)
+
+        invalid_case = list(set(invalid_case))
+        invalid_feature = list(set(invalid_feature))
+        invalid_df = self.__df.iloc[invalid_case, invalid_feature]
+
+        if store_path:
+            invalid_df.to_csv(store_path)
+
+        return invalid_df
+
+    def RemoveInvalidFeatures(self):
         removed_index = []
         for index in range(len(self.__feature_name)):
             vector = self._array[:, index]
@@ -193,7 +220,7 @@ class DataContainer:
 
         self.UpdateFrameByData()
 
-    def RemoveUneffectiveCases(self):
+    def RemoveInvalidCases(self):
         removed_index = []
         for index in range(len(self.__case_name)):
             vector = self._array[index, :]
@@ -236,7 +263,7 @@ class DataContainer:
             self.__df = frame
         else:
             if len(frame.index.tolist()) != self.__label.size:
-                print('Check the number of fram and the number of labels.')
+                print('Check the number of frame and the number of labels.')
                 return None
             frame.insert(0, 'label', np.asarray(self.__label, dtype=int))
             self.__df = frame
@@ -245,11 +272,11 @@ class DataContainer:
 
 
 def main():
-    import copy
     data = DataContainer()
-    data.Load(r'C:\Users\yangs\Desktop\fae_test\data_noncontrast_original.csv')
-    new_data = copy.deepcopy(data)
-    new_data.ShowInformation()
+    data.Load(r'C:\Users\yangs\Desktop\invalid_demo.csv')
+    print(data.GetFrame())
+    d = data.GetInvalidContainer()
+    print(d.GetFrame())
 
 if __name__ == '__main__':
     main()
