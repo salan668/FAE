@@ -110,3 +110,8 @@ Example/
 
 # vscode setting
 .vscode/settings.json
+GUI/Process.py
+GUI/FeatureExtraction2.py
+GUI/Prepare.py
+GUI/HomePage.py
+GUI/Visualization.py
