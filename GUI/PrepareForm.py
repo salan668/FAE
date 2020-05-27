@@ -44,7 +44,7 @@ class PrepareConnection(QWidget, Ui_Prepare):
 
     def UpdateTable(self):
         self.tableFeature.setRowCount(self.data_container.GetFrame().shape[0])
-        header_name = deepcopy(self.data_container.GetFrame().columns)
+        header_name = deepcopy(list(self.data_container.GetFrame().columns))
 
         min_col = np.min([len(header_name), 100])
         if min_col == 100:
