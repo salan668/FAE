@@ -1,0 +1,15 @@
+{
+"UpSampling": 0,
+"DownSampling": 0,
+"SMOTE": 0,
+"SMOTETomek": 0,
+
+"SVM": 0,
+"RF": 0,
+"AE": 0,
+"AB": 0,
+"DT": 0,
+"GP": 0,
+"LR": 0,
+"LRLasso": 0
+}
