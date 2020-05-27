@@ -9,9 +9,11 @@ from abc import abstractmethod
 
 from imblearn.under_sampling import RandomUnderSampler
 from imblearn.over_sampling import RandomOverSampler, SMOTE
-from imblearn.combine import SMOTEENN, SMOTETomek
+from imblearn.combine import SMOTETomek
 
 from FAE.DataContainer.DataContainer import DataContainer
+from Utility.Constants import BALANCE_UP_SAMPLING, BALANCE_DOWN_SAMPLING, BALANCE_SMOTE, BALANCE_SMOTE_TOMEK
+from FAE.HyperParameterConfig.HyperParamManager import RANDOM_SEED
 
 
 class DataBalance:
@@ -56,7 +58,8 @@ class NoneBalance(DataBalance):
 
 class DownSampling(DataBalance):
     def __init__(self):
-        super(DownSampling, self).__init__(RandomUnderSampler(random_state=0), 'DownSampling')
+        super(DownSampling, self).__init__(RandomUnderSampler(random_state=RANDOM_SEED[BALANCE_DOWN_SAMPLING]),
+                                           BALANCE_DOWN_SAMPLING)
 
     def GetCaseNameFromAllCaseNames(self, data_container, one_case_data):
         one_case_data = np.squeeze(one_case_data)
@@ -95,7 +98,8 @@ class DownSampling(DataBalance):
 
 class UpSampling(DataBalance):
     def __init__(self):
-        super(UpSampling, self).__init__(RandomOverSampler(random_state=0), 'UpSampling')
+        super(UpSampling, self).__init__(RandomOverSampler(random_state=RANDOM_SEED[BALANCE_UP_SAMPLING]),
+                                         BALANCE_UP_SAMPLING)
 
     def GetCaseNameFromAllCaseNames(self, data_container, one_case_data):
         one_case_data = np.squeeze(one_case_data)
@@ -135,7 +139,7 @@ class UpSampling(DataBalance):
 
 class SmoteSampling(DataBalance):
     def __init__(self, **kwargs):
-        super(SmoteSampling, self).__init__(SMOTE(**kwargs, random_state=0), 'SMOTE')
+        super(SmoteSampling, self).__init__(SMOTE(**kwargs, random_state=RANDOM_SEED[BALANCE_SMOTE]), BALANCE_SMOTE)
 
     def GetDescription(self):
         return "To Remove the unbalance of the training data set, we used the Synthetic Minority Oversampling " \
@@ -158,7 +162,8 @@ class SmoteSampling(DataBalance):
 
 class SmoteTomekSampling(DataBalance):
     def __init__(self, **kwargs):
-        super(SmoteTomekSampling, self).__init__(SMOTETomek(**kwargs, random_state=0), 'SMOTETomek')
+        super(SmoteTomekSampling, self).__init__(SMOTETomek(**kwargs, random_state=RANDOM_SEED[BALANCE_SMOTE_TOMEK]),
+                                                 BALANCE_SMOTE_TOMEK)
 
     def GetDescription(self):
         return "To Remove the unbalance of the training data set, we applied an Tomek link after the " \

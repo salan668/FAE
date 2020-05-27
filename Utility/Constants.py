@@ -1,4 +1,4 @@
-# Key
+# Pipeline Key
 BALANCE = 'Balance'
 NORMALIER = 'Normalizer'
 DIMENSION_REDUCTION = 'DimensionReduction'
@@ -10,6 +10,22 @@ CROSS_VALIDATION = 'CrossValidation'
 REMOVE_NONE = 'RemoveNone'
 REMOVE_CASE = 'RemoveCase'
 REMOVE_FEATURE = 'RemoveFeature'
+
+# Data Balance Key
+BALANCE_UP_SAMPLING = 'UpSampling'
+BALANCE_DOWN_SAMPLING = 'DownSampling'
+BALANCE_SMOTE = 'SMOTE'
+BALANCE_SMOTE_TOMEK = 'SMOTETomek'
+
+# Classifier Key
+CLASSIFIER_LR = 'LR'
+CLASSIFIER_SVM = 'SVM'
+CLASSIFIER_RF = 'RF'
+CLASSIFIER_AE = 'AE'
+CLASSIFIER_AB = 'AB'
+CLASSIFIER_DT = 'DT'
+CLASSIFIER_GP = 'GP'
+CLASSIFIER_LRLasso = 'LRLasso'
 
 # Metric Key
 NUMBER = 'Number'
