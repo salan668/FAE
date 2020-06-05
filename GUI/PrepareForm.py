@@ -99,34 +99,36 @@ class PrepareConnection(QWidget, Ui_Prepare):
     def LoadData(self):
         dlg = QFileDialog()
         file_name, _ = dlg.getOpenFileName(self, 'Open SCV file', filter="csv files (*.csv)")
-        try:
-            if self.data_container.Load(file_name, is_update=False):
-                self.UpdateTable()
-                self.SetButtonsState(True)
+        if file_name:
+            try:
+                if self.data_container.Load(file_name, is_update=False):
+                    self.UpdateTable()
+                    self.SetButtonsState(True)
 
-        except OSError as reason:
-            eclog(self._filename).GetLogger().error('Load CSV Error: {}'.format(reason))
-            QMessageBox.about(self, 'Load data Error', reason.__str__())
-            print('Error！' + str(reason))
-        except ValueError:
-            eclog(self._filename).GetLogger().error('Open CSV Error: {}'.format(file_name))
-            QMessageBox.information(self, 'Error', 'The selected data file mismatch.')
+            except OSError as reason:
+                eclog(self._filename).GetLogger().error('Load CSV Error: {}'.format(reason))
+                QMessageBox.about(self, 'Load data Error', reason.__str__())
+                print('Error！' + str(reason))
+            except ValueError:
+                eclog(self._filename).GetLogger().error('Open CSV Error: {}'.format(file_name))
+                QMessageBox.information(self, 'Error', 'The selected data file mismatch.')
 
     def LoadTestingReferenceDataContainer(self):
         dlg = QFileDialog()
         file_name, _ = dlg.getOpenFileName(self, 'Open SCV file', filter="csv files (*.csv)")
-        try:
-            self.__testing_ref_data_container.Load(file_name)
-            self.loadTestingReference.setEnabled(False)
-            self.clearTestingReference.setEnabled(True)
-            self.spinBoxSeparate.setEnabled(False)
-        except OSError as reason:
-            eclog(self._filename).GetLogger().error('Load Testing Ref Error: {}'.format(reason))
-            print('Error！' + str(reason))
-        except ValueError:
-            eclog(self._filename).GetLogger().error('Open CSV Error: {}'.format(file_name))
-            QMessageBox.information(self, 'Error',
-                                    'The selected data file mismatch.')
+        if file_name:
+            try:
+                self.__testing_ref_data_container.Load(file_name)
+                self.loadTestingReference.setEnabled(False)
+                self.clearTestingReference.setEnabled(True)
+                self.spinBoxSeparate.setEnabled(False)
+            except OSError as reason:
+                eclog(self._filename).GetLogger().error('Load Testing Ref Error: {}'.format(reason))
+                print('Error！' + str(reason))
+            except ValueError:
+                eclog(self._filename).GetLogger().error('Open CSV Error: {}'.format(file_name))
+                QMessageBox.information(self, 'Error',
+                                        'The selected data file mismatch.')
 
     def ClearTestingReferenceDataContainer(self):
         del self.__testing_ref_data_container
@@ -138,23 +140,24 @@ class PrepareConnection(QWidget, Ui_Prepare):
     def LoadClinicalRef(self):
         dlg = QFileDialog()
         file_name, _ = dlg.getOpenFileName(self, 'Open SCV file', filter="csv files (*.csv)")
-        try:
-            self.__clinical_ref = pd.read_csv(file_name, index_col=0)
-            if list(self.__clinical_ref.index) != self.data_container.GetCaseName():
+        if file_name:
+            try:
+                self.__clinical_ref = pd.read_csv(file_name, index_col=0)
+                if list(self.__clinical_ref.index) != self.data_container.GetCaseName():
+                    QMessageBox.information(self, 'Error',
+                                            'The index of clinical features is not consistent to the data')
+                    return None
+                self.loadClinicRef.setEnabled(False)
+                self.clearClinicRef.setEnabled(True)
+            except OSError as reason:
+                eclog(self._filename).GetLogger().error('Load Clinical Ref Error: {}'.format(reason))
                 QMessageBox.information(self, 'Error',
-                                        'The index of clinical features is not consistent to the data')
-                return None
-            self.loadClinicRef.setEnabled(False)
-            self.clearClinicRef.setEnabled(True)
-        except OSError as reason:
-            eclog(self._filename).GetLogger().error('Load Clinical Ref Error: {}'.format(reason))
-            QMessageBox.information(self, 'Error',
-                                    'Can not Open the Files')
-        except ValueError:
-            eclog(self._filename).GetLogger().error('OpenCSV Error: {}'.format(file_name))
-            QMessageBox.information(self, 'Error',
-                                    'The selected data file mismatch.')
-        return None
+                                        'Can not Open the Files')
+            except ValueError:
+                eclog(self._filename).GetLogger().error('OpenCSV Error: {}'.format(file_name))
+                QMessageBox.information(self, 'Error',
+                                        'The selected data file mismatch.')
+            return None
 
     def ClearClinicalRef(self):
         del self.__clinical_ref
@@ -264,4 +267,5 @@ class PrepareConnection(QWidget, Ui_Prepare):
 
             else:
                 file_name, _ = QFileDialog.getSaveFileName(self, "Save data", filter="csv files (*.csv)")
-                self.data_container.Save(file_name)
+                if file_name:
+                    self.data_container.Save(file_name)

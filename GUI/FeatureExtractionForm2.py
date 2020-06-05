@@ -181,6 +181,8 @@ class FeatureExtractionForm(QWidget):
             dlg = QFileDialog()
             file_name, _ = dlg.getSaveFileName(self, 'Save CSV feature files', 'features.csv',
                                                filter="CSV files (*.csv)")
+            if not file_name:
+                return None
 
             self.ui.plainTextOutput.setPlainText('Checking Files ...')
             QApplication.processEvents()

@@ -135,35 +135,37 @@ class ProcessConnection(QWidget, Ui_Process):
         dlg = QFileDialog()
         file_name, _ = dlg.getOpenFileName(self, 'Open CSV file', directory=r'C:\MyCode\FAE\Example',
                                            filter="csv files (*.csv)")
-        try:
-            self.training_data_container.Load(file_name)
-            self.SetStateButtonBeforeLoading(True)
-            self.lineEditTrainingData.setText(file_name)
-            self.UpdateDataDescription()
-            self.logger.info('Open CSV file ' + file_name + ' succeed.')
-        except OSError as reason:
-            self.logger.log('Open SCV file Error, The reason is ' + str(reason))
-            print('Load Error！' + str(reason))
-        except ValueError:
-            self.logger.error('Open SCV file ' + file_name + ' Failed. because of value error.')
-            QMessageBox.information(self, 'Error',
-                                    'The selected training data mismatch.')
+        if file_name:
+            try:
+                self.training_data_container.Load(file_name)
+                self.SetStateButtonBeforeLoading(True)
+                self.lineEditTrainingData.setText(file_name)
+                self.UpdateDataDescription()
+                self.logger.info('Open CSV file ' + file_name + ' succeed.')
+            except OSError as reason:
+                self.logger.log('Open SCV file Error, The reason is ' + str(reason))
+                print('Load Error！' + str(reason))
+            except ValueError:
+                self.logger.error('Open SCV file ' + file_name + ' Failed. because of value error.')
+                QMessageBox.information(self, 'Error',
+                                        'The selected training data mismatch.')
 
     def LoadTestingData(self):
         dlg = QFileDialog()
         file_name, _ = dlg.getOpenFileName(self, 'Open CSV file', filter="csv files (*.csv)")
-        try:
-            self.testing_data_container.Load(file_name)
-            self.lineEditTestingData.setText(file_name)
-            self.UpdateDataDescription()
-            self.logger.info('Loading testing data ' + file_name + ' succeed.')
-        except OSError as reason:
-            self.logger.log('Open SCV file Error, The reason is ' + str(reason))
-            print('ERROR！' + str(reason))
-        except ValueError:
-            self.logger.error('Open SCV file ' + file_name + ' Failed. because of value error.')
-            QMessageBox.information(self, 'Error',
-                                    'The selected testing data mismatch.')
+        if file_name:
+            try:
+                self.testing_data_container.Load(file_name)
+                self.lineEditTestingData.setText(file_name)
+                self.UpdateDataDescription()
+                self.logger.info('Loading testing data ' + file_name + ' succeed.')
+            except OSError as reason:
+                self.logger.log('Open SCV file Error, The reason is ' + str(reason))
+                print('ERROR！' + str(reason))
+            except ValueError:
+                self.logger.error('Open SCV file ' + file_name + ' Failed. because of value error.')
+                QMessageBox.information(self, 'Error',
+                                        'The selected testing data mismatch.')
 
     def GenerateVerboseTest(self, normalizer_name, dimension_reduction_name, feature_selector_name, classifier_name,
                             feature_num,
