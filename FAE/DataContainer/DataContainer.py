@@ -31,11 +31,10 @@ class DataContainer:
         self.__case_name = case_name
         self.__label = label
         self._array = array
+        self.__df = pd.DataFrame()
 
         if array.size != 0 and label.size != 0:
             self.UpdateFrameByData()
-        else:
-            self.__df = None
 
     def __deepcopy__(self, memodict={}):
         copy_data_container = type(self)(deepcopy(self.GetArray()),
