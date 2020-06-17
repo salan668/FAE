@@ -3,6 +3,7 @@ Feb 2, 2019.
 Yang SONG, songyangmri@gmail.com
 '''
 
+import pandas as pd
 from copy import deepcopy
 from FAE.DataContainer.DataContainer import DataContainer
 
@@ -25,8 +26,6 @@ class FeatureEncodingOneHot():
 
 
 if __name__ == '__main__':
-    import pandas as pd
-
     data = DataContainer()
     data.Load(r'c:\Users\yangs\Desktop\test.csv')
     info = data.GetFrame()

@@ -5,6 +5,7 @@ from GUI.HomePageForm import HomePageForm
 
 
 if __name__ == '__main__':
+    sys._enablelegacywindowsfsencoding()
     app = QApplication(sys.argv)
     # app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
     main_frame = HomePageForm()
