@@ -28,7 +28,7 @@ class Normalizer:
 
         if store_folder:
             assert(len(store_key) > 0)
-            self.SaveNormalDataContainer(data_container, store_folder, store_key)
+            self.SaveNormalDataContainer(new_data_container, store_folder, store_key)
 
         return new_data_container
 

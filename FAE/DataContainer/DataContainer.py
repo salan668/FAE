@@ -224,11 +224,11 @@ class DataContainer:
 
     def GetData(self):
         return self._array, self.__label, self.__feature_name, self.__case_name
-    def GetFrame(self): return self.__df
-    def GetArray(self): return self._array
-    def GetLabel(self): return self.__label
-    def GetFeatureName(self): return self.__feature_name
-    def GetCaseName(self): return self.__case_name
+    def GetFrame(self): return deepcopy(self.__df)
+    def GetArray(self): return deepcopy(self._array)
+    def GetLabel(self): return deepcopy(self.__label)
+    def GetFeatureName(self): return deepcopy(self.__feature_name)
+    def GetCaseName(self): return deepcopy(self.__case_name)
 
     def SetArray(self, array): self._array = array.astype(np.float64)
     def SetLabel(self, label):self.__label = np.asarray(label, dtype=np.int)
