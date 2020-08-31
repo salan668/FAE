@@ -12,8 +12,6 @@ import numpy as np
 import pandas as pd
 from Utility.Constants import REMOVE_CASE, REMOVE_FEATURE, REMOVE_NONE
 
-from Utility.EcLog import eclog
-
 
 def LoadCSVwithChineseInPandas(file_path, **kwargs):
     if 'encoding' not in kwargs.keys():
@@ -248,12 +246,7 @@ class DataContainer:
 
 
 def main():
-    data = DataContainer()
-    data.Load(r'C:\Users\yangs\Desktop\invalid_demo.csv')
-    # data.Load(r'C:\Users\yangs\Desktop\valid_demo.csv')
-    print(data.GetFrame())
-    data.RemoveInvalid(remove_index=REMOVE_CASE)
-    print(data.GetFrame())
+    pass
 
 
 if __name__ == '__main__':

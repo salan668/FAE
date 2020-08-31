@@ -94,7 +94,7 @@
                <bool>false</bool>
               </property>
               <property name="text">
-               <string>RadioButton</string>
+               <string>No Remove</string>
               </property>
               <property name="checked">
                <bool>true</bool>

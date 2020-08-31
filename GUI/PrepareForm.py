@@ -10,7 +10,7 @@ from Utility.EcLog import eclog
 from FAE.DataContainer.DataContainer import DataContainer
 from FAE.DataContainer import DataSeparate
 from FAE.FeatureAnalysis.FeatureSelector import RemoveSameFeatures
-from Utility.Constants import REMOVE_CASE, REMOVE_FEATURE, REMOVE_NONE
+from Utility.Constants import REMOVE_CASE, REMOVE_FEATURE
 
 
 class PrepareConnection(QWidget, Ui_Prepare):
@@ -173,8 +173,6 @@ class PrepareConnection(QWidget, Ui_Prepare):
             else:
                 store_path = ''
 
-            if self.radioRemoveNone.isChecked():
-                self.data_container.RemoveInvalid(store_path=store_path, remove_index=REMOVE_NONE)
             if self.radioRemoveNonvalidCases.isChecked():
                 self.data_container.RemoveInvalid(store_path=store_path, remove_index=REMOVE_CASE)
             elif self.radioRemoveNonvalidFeatures.isChecked():
