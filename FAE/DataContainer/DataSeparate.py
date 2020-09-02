@@ -35,8 +35,8 @@ class OneFeatureStatistics(object):
         description = {}
         _, description['p-value'] = mannwhitneyu(array1, array2)
         description['method'] = 'Mann-Whitney'
-        description['description'] = ['{:.2f}±{:.2f}'.format(np.mean(array1), np.std(array1)),
-                                      '{:.2f}±{:.2f}'.format(np.mean(array2), np.std(array2))]
+        description['description'] = ['{:.2f}+-{:.2f}'.format(np.mean(array1), np.std(array1)),
+                                      '{:.2f}+-{:.2f}'.format(np.mean(array2), np.std(array2))]
         return description
 
     def _CompareCategoricalFeatures(self, array1, array2):

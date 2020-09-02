@@ -15,9 +15,11 @@ Welcome any issues and PR.
 The Windows 64 version was release here https://drive.google.com/open?id=1htts7YsfaxKtN1NeDcNU4iksXfjr_XyK
 (Alternative link is: https://pan.baidu.com/s/1ha66TajeoT6dA-a4Qdt8fA)
 
-## Getting Started
+If FAE could help in your research, please refer to  
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+> Y. Song, J. Zhang, Y. Zhang, Y. Hou, X. Yan, Y. Wang, M. Zhou, Y. Yao, G. Yang. FeAture Explorer (FAE): A tool for developing and comparing radiomics models. PLoS One. 2020. DOI: https://doi.org/10.1371/journal.pone.0237587
+
+## Getting Started
 
 ### Pre-install
 The below modules must be installed first to make the FAE work. 

@@ -25,11 +25,11 @@ class DataContainer:
     accept DataContainer and return a new DataContainer.
     '''
     def __init__(self, array=np.array([]), label=np.array([]), feature_name=[], case_name=[]):
-        self.__feature_name = feature_name
-        self.__case_name = case_name
-        self.__label = label
+        self._feature_name = feature_name
+        self._case_name = case_name
+        self._label = label
         self._array = array
-        self.__df = pd.DataFrame()
+        self._df = pd.DataFrame()
 
         if array.size != 0 and label.size != 0:
             self.UpdateFrameByData()
@@ -76,41 +76,41 @@ class DataContainer:
         return True
 
     def IsEmpty(self):
-        if self.__df.size > 0:
+        if self._df.size > 0:
             return False
         else:
             return True
 
     def IsBinaryLabel(self):
-        return len(np.unique(self.__label)) == 2
+        return len(np.unique(self._label)) == 2
 
     def FindInvalidLabelIndex(self):
-        for index in range(self.__label.shape[0]):
-            if self.__label[index] != 0 and self.__label[index] != 1:
+        for index in range(self._label.shape[0]):
+            if self._label[index] != 0 and self._label[index] != 1:
                 return index
 
     def HasInvalidNumber(self):
-        array_flat = self._array.flatten()
-        for index in range(self._array.size):
-            if not self.IsValidNumber(array_flat[index]):
-                return True
+        for row_index in range(self._df.shape[0]):
+            for col_index in range(self._df.shape[1]):
+                if not self.IsValidNumber(self._df.iloc[row_index, col_index]):
+                    return True
         return False
 
     def FindInvalidNumberIndex(self):
-        for index0 in range(self._array.shape[0]):
-            for index1 in range(self._array.shape[1]):
-                if not self.IsValidNumber(self._array[index0,index1]):
-                    return index0, index1
+        for row_index in range(self._df.shape[0]):
+            for col_index in range(self._df.shape[1]):
+                if not self.IsValidNumber(self._df.iloc[row_index, col_index]):
+                    return row_index, col_index
         return None, None
 
     def Save(self, store_path):
         self.UpdateFrameByData()
-        self.__df.to_csv(store_path, index='CaseID')
+        self._df.to_csv(store_path, index='CaseID')
 
     def LoadWithoutCase(self, file_path):
         self.__init__()
         try:
-            self.__df = pd.read_csv(file_path, header=0)
+            self._df = pd.read_csv(file_path, header=0)
             self.UpdateDataByFrame()
         except Exception as e:
             print('Check the CSV file path: LoadWithoutCase: \n{}'.format(e.__str__()))
@@ -118,7 +118,7 @@ class DataContainer:
     def LoadwithNonNumeric(self, file_path):
         self.__init__()
         try:
-            self.__df = pd.read_csv(file_path, header=0, index_col=0)
+            self._df = pd.read_csv(file_path, header=0, index_col=0)
         except Exception as e:
             print('Check the CSV file path: LoadWithNonNumeirc: \n{}'.format(e.__str__()))
 
@@ -126,7 +126,7 @@ class DataContainer:
         assert(os.path.exists(file_path))
         self.__init__()
         try:
-            self.__df = pd.read_csv(file_path, header=0, index_col=0)
+            self._df = pd.read_csv(file_path, header=0, index_col=0)
             if is_update:
                 self.UpdateDataByFrame()
             return True
@@ -134,7 +134,7 @@ class DataContainer:
             print('Check the CSV file path: {}: \n{}'.format(file_path, e.__str__()))
 
         try:
-            self.__df = LoadCSVwithChineseInPandas(file_path, header=0, index_col=0)
+            self._df = LoadCSVwithChineseInPandas(file_path, header=0, index_col=0)
             self.UpdateDataByFrame()
             return True
         except Exception as e:
@@ -143,54 +143,54 @@ class DataContainer:
         return False
 
     def ShowInformation(self):
-        print('The number of cases is ', str(len(self.__case_name)))
-        print('The number of features is ', str(len(self.__feature_name)))
-        print('The cases are: ', self.__case_name)
-        print('The features are: ', self.__feature_name)
+        print('The number of cases is ', str(len(self._case_name)))
+        print('The number of features is ', str(len(self._feature_name)))
+        print('The cases are: ', self._case_name)
+        print('The features are: ', self._feature_name)
 
-        if len(np.unique(self.__label)) == 2:
-            positive_number = len(np.where(self.__label == np.max(self.__label))[0])
-            negative_number = len(self.__label) - positive_number
-            assert(positive_number + negative_number == len(self.__label))
+        if len(np.unique(self._label)) == 2:
+            positive_number = len(np.where(self._label == np.max(self._label))[0])
+            negative_number = len(self._label) - positive_number
+            assert(positive_number + negative_number == len(self._label))
             print('The number of positive samples is ', str(positive_number))
             print('The number of negative samples is ', str(negative_number))
 
     def UpdateDataByFrame(self):
-        self.__case_name = list(self.__df.index)
-        self.__feature_name = list(self.__df.columns)
-        if 'label' in self.__feature_name:
+        self._case_name = list(self._df.index)
+        self._feature_name = list(self._df.columns)
+        if 'label' in self._feature_name:
             label_name = 'label'
-            index = self.__feature_name.index('label')
-            self.__feature_name.pop(index)
-            self.__label = np.asarray(self.__df[label_name].values, dtype=np.int)
-            self._array = np.asarray(self.__df[self.__feature_name].values, dtype=np.float64)
+            index = self._feature_name.index('label')
+            self._feature_name.pop(index)
+            self._label = np.asarray(self._df[label_name].values, dtype=np.int)
+            self._array = np.asarray(self._df[self._feature_name].values, dtype=np.float64)
             return True
-        elif 'Label' in self.__feature_name:
+        elif 'Label' in self._feature_name:
             label_name = 'Label'
-            index = self.__feature_name.index('Label')
-            self.__feature_name.pop(index)
-            self.__label = np.asarray(self.__df[label_name].values, dtype=np.int)
-            self._array = np.asarray(self.__df[self.__feature_name].values, dtype=np.float64)
+            index = self._feature_name.index('Label')
+            self._feature_name.pop(index)
+            self._label = np.asarray(self._df[label_name].values, dtype=np.int)
+            self._array = np.asarray(self._df[self._feature_name].values, dtype=np.float64)
             return True
         else:
             print('No "label" in the index')
             return False
 
     def UpdateFrameByData(self):
-        data = np.concatenate((self.__label[..., np.newaxis], self._array), axis=1)
-        header = copy.deepcopy(self.__feature_name)
+        data = np.concatenate((self._label[..., np.newaxis], self._array), axis=1)
+        header = copy.deepcopy(self._feature_name)
         header.insert(0, 'label')
-        index = self.__case_name
+        index = self._case_name
 
-        self.__df = pd.DataFrame(data=data, index=index, columns=header)
+        self._df = pd.DataFrame(data=data, index=index, columns=header)
 
     def RemoveInvalid(self, store_path='', remove_index=REMOVE_NONE):
         array = []
         invalid_case, invalid_feature = [], []
-        for case_index in range(self.__df.shape[0]):
+        for case_index in range(self._df.shape[0]):
             sub_array = []
-            for feature_index in range(self.__df.shape[1]):
-                if self.__IsNumber(self.__df.iloc[case_index, feature_index]):
+            for feature_index in range(self._df.shape[1]):
+                if self.__IsNumber(self._df.iloc[case_index, feature_index]):
                     sub_array.append(True)
                 else:
                     sub_array.append(False)
@@ -200,17 +200,17 @@ class DataContainer:
 
         invalid_case = list(set(invalid_case))
         invalid_feature = list(set(invalid_feature))
-        invalid_df = self.__df.iloc[invalid_case, invalid_feature]
+        invalid_df = self._df.iloc[invalid_case, invalid_feature]
 
         if store_path and invalid_df.size > 0:
             invalid_df.to_csv(store_path)
 
         if remove_index == REMOVE_CASE:
-            self.__df.drop(index=invalid_df.index, inplace=True)
+            self._df.drop(index=invalid_df.index, inplace=True)
             if not self.UpdateDataByFrame():
                 return False
         elif remove_index == REMOVE_FEATURE:
-            self.__df.drop(axis=1, columns=invalid_df.columns, inplace=True)
+            self._df.drop(axis=1, columns=invalid_df.columns, inplace=True)
             if not self.UpdateDataByFrame():
                 return False
 
@@ -221,26 +221,26 @@ class DataContainer:
         return self.GetData()
 
     def GetData(self):
-        return self._array, self.__label, self.__feature_name, self.__case_name
-    def GetFrame(self): return deepcopy(self.__df)
+        return self._array, self._label, self._feature_name, self._case_name
+    def GetFrame(self): return deepcopy(self._df)
     def GetArray(self): return deepcopy(self._array)
-    def GetLabel(self): return deepcopy(self.__label)
-    def GetFeatureName(self): return deepcopy(self.__feature_name)
-    def GetCaseName(self): return deepcopy(self.__case_name)
+    def GetLabel(self): return deepcopy(self._label)
+    def GetFeatureName(self): return deepcopy(self._feature_name)
+    def GetCaseName(self): return deepcopy(self._case_name)
 
     def SetArray(self, array): self._array = array.astype(np.float64)
-    def SetLabel(self, label):self.__label = np.asarray(label, dtype=np.int)
-    def SetFeatureName(self, feature_name): self.__feature_name = feature_name
-    def SetCaseName(self, case_name): self.__case_name = case_name
+    def SetLabel(self, label):self._label = np.asarray(label, dtype=np.int)
+    def SetFeatureName(self, feature_name): self._feature_name = feature_name
+    def SetCaseName(self, case_name): self._case_name = case_name
     def SetFrame(self, frame):
         if 'label' in list(frame.columns) or 'Label' in list(frame.columns):
-            self.__df = frame
+            self._df = frame
         else:
-            if len(frame.index.tolist()) != self.__label.size:
+            if len(frame.index.tolist()) != self._label.size:
                 print('Check the number of frame and the number of labels.')
                 return None
-            frame.insert(0, 'label', np.asarray(self.__label, dtype=int))
-            self.__df = frame
+            frame.insert(0, 'label', np.asarray(self._label, dtype=int))
+            self._df = frame
 
         self.UpdateDataByFrame()
 

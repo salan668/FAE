@@ -198,7 +198,7 @@ class FeatureExtractionForm(QWidget):
             QApplication.processEvents()
 
             UpdateRadiomicsConfig()
-            extractor = MyFeatureExtractor('RadiomicsParams.yaml')
+            extractor = MyFeatureExtractor('RadiomicsParams.yaml', ignore_tolerance=True)
 
             series_matchers, roi_matcher = self._GetImageAndRoiMatcher()
             name_list, matcher_list = [], []
