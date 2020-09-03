@@ -218,6 +218,9 @@ class FeatureExtractionForm(QWidget):
                 self.ui.plainTextOutput.appendPlainText('{} Done ({}/{})\n'.format(case_name, index, total_cases))
                 QApplication.processEvents()
 
+            self.ui.plainTextOutput.appendPlainText('Done\n'.format(case_name, index, total_cases))
+            QApplication.processEvents()
+
         except Exception as e:
             print(e.__str__())
 
