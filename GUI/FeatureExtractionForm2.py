@@ -32,6 +32,12 @@ class FeatureExtractionForm(QWidget):
         self.ui.buttonAddOne.clicked.connect(self.AddOnePattern)
         self.ui.buttonRemoveOne.clicked.connect(self.RemoveOnePattern)
         self.ui.buttonRun.clicked.connect(self.Run)
+        self.ui.UseExistConfigcheckBox.clicked.connect(self.UseExitingConfig)
+        self.ui.ConfigPushButton.clicked.connect(self.BrowseRadiomicsFeatureCofigFile)
+        self.ui.CofnigLineEdit.setText(r'D:\research\exampleMR_NoResampling.yaml')
+        self.ui.CofnigLineEdit.setEnabled(False)
+        self.ui.ConfigPushButton.setEnabled(False)
+
 
     def closeEvent(self, event):
         self.close_signal.emit(True)
@@ -167,6 +173,18 @@ class FeatureExtractionForm(QWidget):
             for ctrl in feature_classes_ctrl:
                 ctrl.setChecked(ctrl.text() in feature_classes)
 
+    def UseExitingConfig(self):
+         use_exist = self.ui.UseExistConfigcheckBox.isChecked()
+         self.ui.CofnigLineEdit.setEnabled(use_exist)
+         self.ui.ConfigPushButton.setEnabled(use_exist)
+
+    def BrowseRadiomicsFeatureCofigFile(self):
+        dlg = QFileDialog()
+        file_name, _ = dlg.getOpenFileName(self, 'Open Radiomics Config file', directory=r'D:\research',
+                                           filter="Config (*.yaml)")
+        if file_name:
+            self._radiomics_file = file_name
+
     def Run(self):
         try:
             def UpdateRadiomicsConfig():
@@ -198,7 +216,10 @@ class FeatureExtractionForm(QWidget):
             QApplication.processEvents()
 
             UpdateRadiomicsConfig()
-            extractor = MyFeatureExtractor('RadiomicsParams.yaml')
+            if self.ui.UseExistConfigcheckBox.isChecked():
+                extractor = MyFeatureExtractor('RadiomicsParams.yaml')
+            else:
+                extractor = MyFeatureExtractor()
 
             series_matchers, roi_matcher = self._GetImageAndRoiMatcher()
             name_list, matcher_list = [], []

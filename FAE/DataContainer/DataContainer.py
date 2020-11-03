@@ -144,6 +144,26 @@ class DataContainer:
 
         return False
 
+    def LoadWithoutLabel(self, file_path, is_update=True):
+        assert (os.path.exists(file_path))
+        self.__init__()
+        try:
+            self.__df = pd.read_csv(file_path, header=0, index_col=0)
+            if is_update:
+                self.UpdateDataByFrame(emu_label=True)
+            return True
+        except Exception as e:
+            print('Check the CSV file path: {}: \n{}'.format(file_path, e.__str__()))
+
+        try:
+            self.__df = LoadCSVwithChineseInPandas(file_path, header=0, index_col=0)
+            self.UpdateDataByFrame()
+            return True
+        except Exception as e:
+            print('Check the CSV file path: {}: \n{}'.format(file_path, e.__str__()))
+
+        return False
+
     def ShowInformation(self):
         print('The number of cases is ', str(len(self.__case_name)))
         print('The number of features is ', str(len(self.__feature_name)))
@@ -157,26 +177,28 @@ class DataContainer:
             print('The number of positive samples is ', str(positive_number))
             print('The number of negative samples is ', str(negative_number))
 
-    def UpdateDataByFrame(self):
+    def UpdateDataByFrame(self, emu_label=False):
         self.__case_name = list(self.__df.index)
         self.__feature_name = list(self.__df.columns)
+        label_name = ''
         if 'label' in self.__feature_name:
             label_name = 'label'
-            index = self.__feature_name.index('label')
-            self.__feature_name.pop(index)
-            self.__label = np.asarray(self.__df[label_name].values, dtype=np.int)
-            self._array = np.asarray(self.__df[self.__feature_name].values, dtype=np.float64)
-            return True
         elif 'Label' in self.__feature_name:
             label_name = 'Label'
-            index = self.__feature_name.index('Label')
-            self.__feature_name.pop(index)
-            self.__label = np.asarray(self.__df[label_name].values, dtype=np.int)
-            self._array = np.asarray(self.__df[self.__feature_name].values, dtype=np.float64)
-            return True
         else:
+            if emu_label:
+                self._array = np.asarray(self.__df[self.__feature_name].values, dtype=np.float64)
+                self.__label = np.asarray(np.zeros(len(self.__case_name), dtype=int))
+                return True
             print('No "label" in the index')
             return False
+
+        index = self.__feature_name.index(label_name)
+        self.__feature_name.pop(index)
+        self.__label = np.asarray(self.__df[label_name].values, dtype=np.int)
+        self._array = np.asarray(self.__df[self.__feature_name].values, dtype=np.float64)
+        return True
+
 
     def UpdateFrameByData(self):
         data = np.concatenate((self.__label[..., np.newaxis], self._array), axis=1)
