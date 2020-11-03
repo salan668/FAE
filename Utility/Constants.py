@@ -54,6 +54,6 @@ TEST = 'test'
 VERSION_NAME = 'Version'
 MAJOR = 0
 MINOR = 3
-PATCH = 5
+PATCH = 6
 VERSION = '{}.{}.{}'.format(MAJOR, MINOR, PATCH)
 ACCEPT_VERSION = ['0.3.0', '0.3.1', '0.3.2', '0.3.3', '0.3.4', '0.3.5', '0.3.6']

@@ -6,7 +6,6 @@ from PyQt5 import QtCore, QtGui
 
 from Utility.EcLog import eclog
 from GUI.HomePage import Ui_HomePage
-# from GUI.FeatureExtractionForm import FeatureExtractionForm
 from GUI.FeatureExtractionForm2 import FeatureExtractionForm
 from GUI.PrepareForm import PrepareConnection
 from GUI.ProcessForm import ProcessConnection
@@ -27,7 +26,9 @@ class HomePageForm(QDialog, Ui_HomePage):
             "Guang Yang (gyang@phy.ecnu.edu.cn)\n\n "
             "Shanghai Key Laboratory of Magnetic Resonance\n"
             "East China Normal University\n"
-            "3663, Zhongshan North Road. Shanghai, China, 200062".format(VERSION)
+            "3663, Zhongshan North Road. Shanghai, China, 200062\n\n"
+            "Please refer to \"Song, Yang et al. FeAture Explorer (FAE):\n"
+            "A tool for developing and comparing radiomics models. PLoS ONE 15 (2020)\"".format(VERSION)
         )
 
         self.feature_extraction = FeatureExtractionForm()

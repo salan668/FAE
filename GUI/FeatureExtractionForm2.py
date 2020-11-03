@@ -219,7 +219,7 @@ class FeatureExtractionForm(QWidget):
             if self.ui.UseExistConfigcheckBox.isChecked():
                 extractor = MyFeatureExtractor('RadiomicsParams.yaml')
             else:
-                extractor = MyFeatureExtractor()
+                extractor = MyFeatureExtractor('RadiomicsParams.yaml', ignore_tolerance=True)
 
             series_matchers, roi_matcher = self._GetImageAndRoiMatcher()
             name_list, matcher_list = [], []
@@ -238,6 +238,9 @@ class FeatureExtractionForm(QWidget):
                                                       store_path=file_name):
                 self.ui.plainTextOutput.appendPlainText('{} Done ({}/{})\n'.format(case_name, index, total_cases))
                 QApplication.processEvents()
+
+            self.ui.plainTextOutput.appendPlainText('Done\n'.format(case_name, index, total_cases))
+            QApplication.processEvents()
 
         except Exception as e:
             print(e.__str__())

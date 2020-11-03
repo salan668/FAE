@@ -10,7 +10,7 @@ from Utility.EcLog import eclog
 from FAE.DataContainer.DataContainer import DataContainer
 from FAE.DataContainer import DataSeparate
 from FAE.FeatureAnalysis.FeatureSelector import RemoveSameFeatures
-from Utility.Constants import REMOVE_CASE, REMOVE_FEATURE, REMOVE_NONE
+from Utility.Constants import REMOVE_CASE, REMOVE_FEATURE
 
 
 class PrepareConnection(QWidget, Ui_Prepare):
@@ -101,7 +101,7 @@ class PrepareConnection(QWidget, Ui_Prepare):
         file_name, _ = dlg.getOpenFileName(self, 'Open SCV file', filter="csv files (*.csv)")
         if file_name:
             try:
-                if self.data_container.Load(file_name, is_update=True):
+                if self.data_container.Load(file_name, is_update=False):
                     self.UpdateTable()
                     self.SetButtonsState(True)
 
@@ -143,7 +143,7 @@ class PrepareConnection(QWidget, Ui_Prepare):
         if file_name:
             try:
                 self.__clinical_ref = pd.read_csv(file_name, index_col=0)
-                if list(self.__clinical_ref.index) != self.data_container.GetCaseName():
+                if list(self.__clinical_ref.index) != list(self.data_container.GetFrame().index):
                     QMessageBox.information(self, 'Error',
                                             'The index of clinical features is not consistent to the data')
                     return None
@@ -168,13 +168,15 @@ class PrepareConnection(QWidget, Ui_Prepare):
     def RemoveInvalidValue(self):
         if not self.data_container.IsEmpty():
             if self.checkExport.isChecked():
-                folder_name = QFileDialog.getExistingDirectory(self, "Save Invalid data")
-                store_path = os.path.join(folder_name, 'invalid_feature.csv')
+                dlg = QFileDialog()
+                store_path, _ = dlg.getSaveFileName(self, 'Save CSV feature files', 'features.csv',
+                                                   filter="CSV files (*.csv)")
+
+                # folder_name = QFileDialog.getExistingDirectory(self, "Save Invalid data")
+                # store_path = os.path.join(folder_name, 'invalid_feature.csv')
             else:
                 store_path = ''
 
-            if self.radioRemoveNone.isChecked():
-                self.data_container.RemoveInvalid(store_path=store_path, remove_index=REMOVE_NONE)
             if self.radioRemoveNonvalidCases.isChecked():
                 self.data_container.RemoveInvalid(store_path=store_path, remove_index=REMOVE_CASE)
             elif self.radioRemoveNonvalidFeatures.isChecked():
@@ -213,59 +215,61 @@ class PrepareConnection(QWidget, Ui_Prepare):
     def CheckAndSave(self):
         if self.data_container.IsEmpty():
             QMessageBox.warning(self, "Warning", "There is no data", QMessageBox.Ok)
-        elif not self.data_container.IsBinaryLabel():
-            QMessageBox.warning(self, "Warning", "There are not 2 Labels", QMessageBox.Ok)
-            non_valid_number_index = self.data_container.FindInvalidLabelIndex()
-            old_edit_triggers = self.tableFeature.editTriggers()
-            self.tableFeature.setEditTriggers(QAbstractItemView.CurrentChanged)
-            self.tableFeature.setCurrentCell(non_valid_number_index, 0)
-            self.tableFeature.setEditTriggers(old_edit_triggers)
-        elif self.data_container.HasInvalidNumber():
+            return None
+
+        if self.data_container.HasInvalidNumber():
             QMessageBox.warning(self, "Warning", "There are nan items", QMessageBox.Ok)
             non_valid_number_index = self.data_container.FindInvalidNumberIndex()
             old_edit_triggers = self.tableFeature.editTriggers()
             self.tableFeature.setEditTriggers(QAbstractItemView.CurrentChanged)
-            self.tableFeature.setCurrentCell(non_valid_number_index[0], non_valid_number_index[1]+1)
+            self.tableFeature.setCurrentCell(non_valid_number_index[0], non_valid_number_index[1])
             self.tableFeature.setEditTriggers(old_edit_triggers)
-        else:
-            remove_features_with_same_value = RemoveSameFeatures()
-            self.data_container = remove_features_with_same_value.Run(self.data_container)
+            return None
 
-            if self.radioSplitRandom.isChecked() or self.radioSplitRef.isChecked():
-                folder_name = QFileDialog.getExistingDirectory(self, "Save data")
-                if folder_name != '':
-                    data_separate = DataSeparate.DataSeparate()
-                    try:
-                        if self.__testing_ref_data_container.IsEmpty():
-                            testing_data_percentage = self.spinBoxSeparate.value()
-                            if self.__clinical_ref.size == 0:
-                                training_data_container, _, = \
-                                    data_separate.RunByTestingPercentage(self.data_container,
-                                                                         testing_data_percentage,
-                                                                         store_folder=folder_name)
-                            else:
-                                training_data_container, _, = \
-                                    data_separate.RunByTestingPercentage(self.data_container,
-                                                                         testing_data_percentage,
-                                                                         clinic_df=self.__clinical_ref,
-                                                                         store_folder=folder_name)
+        self.data_container.UpdateDataByFrame()
+
+        if not self.data_container.IsBinaryLabel():
+            QMessageBox.warning(self, "Warning", "There are not 2 Labels", QMessageBox.Ok)
+            return None
+
+        remove_features_with_same_value = RemoveSameFeatures()
+        self.data_container = remove_features_with_same_value.Run(self.data_container)
+
+        if self.radioSplitRandom.isChecked() or self.radioSplitRef.isChecked():
+            folder_name = QFileDialog.getExistingDirectory(self, "Save data")
+            if folder_name != '':
+                data_separate = DataSeparate.DataSeparate()
+                try:
+                    if self.__testing_ref_data_container.IsEmpty():
+                        testing_data_percentage = self.spinBoxSeparate.value()
+                        if self.__clinical_ref.size == 0:
+                            training_data_container, _, = \
+                                data_separate.RunByTestingPercentage(self.data_container,
+                                                                     testing_data_percentage,
+                                                                     store_folder=folder_name)
                         else:
                             training_data_container, _, = \
-                                data_separate.RunByTestingReference(self.data_container,
-                                                                    self.__testing_ref_data_container,
-                                                                    folder_name)
-                            if training_data_container.IsEmpty():
-                                QMessageBox.information(self, 'Error',
-                                                        'The testing data does not mismatch, please check the testing data '
-                                                        'really exists in current data')
-                                return None
-                        os.system("explorer.exe {:s}".format(os.path.normpath(folder_name)))
-                    except Exception as e:
-                        content = 'PrepareConnection, splitting failed: '
-                        eclog(self._filename).GetLogger().error('Split Error:  ' + e.__str__())
-                        QMessageBox.about(self, content, e.__str__())
+                                data_separate.RunByTestingPercentage(self.data_container,
+                                                                     testing_data_percentage,
+                                                                     clinic_df=self.__clinical_ref,
+                                                                     store_folder=folder_name)
+                    else:
+                        training_data_container, _, = \
+                            data_separate.RunByTestingReference(self.data_container,
+                                                                self.__testing_ref_data_container,
+                                                                folder_name)
+                        if training_data_container.IsEmpty():
+                            QMessageBox.information(self, 'Error',
+                                                    'The testing data does not mismatch, please check the testing data '
+                                                    'really exists in current data')
+                            return None
+                    os.system("explorer.exe {:s}".format(os.path.normpath(folder_name)))
+                except Exception as e:
+                    content = 'PrepareConnection, splitting failed: '
+                    eclog(self._filename).GetLogger().error('Split Error:  ' + e.__str__())
+                    QMessageBox.about(self, content, e.__str__())
 
-            else:
-                file_name, _ = QFileDialog.getSaveFileName(self, "Save data", filter="csv files (*.csv)")
-                if file_name:
-                    self.data_container.Save(file_name)
+        else:
+            file_name, _ = QFileDialog.getSaveFileName(self, "Save data", filter="csv files (*.csv)")
+            if file_name:
+                self.data_container.Save(file_name)

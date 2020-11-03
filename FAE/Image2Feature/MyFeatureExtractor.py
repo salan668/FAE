@@ -145,6 +145,8 @@ class MyFeatureExtractor:
         if store_path:
             self.Save(store_path)
 
+        if store_path.endswith('.csv'):
+            store_path = store_path[:-4]
         with open(os.path.join(store_path + '_error.csv'), 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
             for error_case in self.error_list:
