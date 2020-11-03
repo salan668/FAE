@@ -46,7 +46,7 @@ def DrawCurve(x, y_list, std_list=[], xlabel='', ylabel='', title='', name_list=
             sub_std_list = std_list[index]
             if name_list[index] == CV_VAL:
                 axes.errorbar(x, sub_y_list, yerr=sub_std_list, fmt='-o',
-                              color=color_list[index], elinewidth=2, capsize=4, alpha=0.7, marker='.', label='CV Validation')
+                              color=color_list[index], elinewidth=1, capsize=4, alpha=1, marker='.', label='CV Validation')
                 if one_se:
                     sub_y_list = y_list[index]
                     sub_std_list = std_list[index]
@@ -60,11 +60,11 @@ def DrawCurve(x, y_list, std_list=[], xlabel='', ylabel='', title='', name_list=
                             best_auc_feature_number = index + 1
 
                             axes.plot(x, line_list[0], color='orange', linewidth=1, linestyle="--")
-                            axes.plot(best_auc_feature_number, best_auc_value, 'H', linewidth=20, color='black')
+                            axes.plot(best_auc_feature_number, best_auc_value, 'H', linewidth=1, color='black')
                             break
 
                 else:
-                    axes.plot(np.argmax(sub_y_list) + 1, np.max(sub_y_list), 'H', linewidth=20, color='black')
+                    axes.plot(np.argmax(sub_y_list) + 1, np.max(sub_y_list), 'H', linewidth=1, color='black')
                     best_auc_feature_number = np.argmax(sub_y_list) + 1
 
             else:
