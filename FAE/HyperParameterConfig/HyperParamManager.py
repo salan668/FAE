@@ -50,34 +50,35 @@ class RandomSeed:
         self.LoadConfig(config_path)
 
     def LoadConfig(self, config_path):
-        with open(config_path, 'r') as file:
-            self.random_seed = json.load(file, strict=False)
+        if os.path.exists(config_path):
+            with open(config_path, 'r') as file:
+                self.random_seed = json.load(file, strict=False)
 
-        if BALANCE_UP_SAMPLING not in self.random_seed.keys():
-            self.random_seed[BALANCE_UP_SAMPLING] = 0
-        if BALANCE_DOWN_SAMPLING not in self.random_seed.keys():
-            self.random_seed[BALANCE_DOWN_SAMPLING] = 0
-        if BALANCE_SMOTE not in self.random_seed.keys():
-            self.random_seed[BALANCE_SMOTE] = 0
-        if BALANCE_SMOTE_TOMEK not in self.random_seed.keys():
-            self.random_seed[BALANCE_SMOTE_TOMEK] = 0
+            if BALANCE_UP_SAMPLING not in self.random_seed.keys():
+                self.random_seed[BALANCE_UP_SAMPLING] = 0
+            if BALANCE_DOWN_SAMPLING not in self.random_seed.keys():
+                self.random_seed[BALANCE_DOWN_SAMPLING] = 0
+            if BALANCE_SMOTE not in self.random_seed.keys():
+                self.random_seed[BALANCE_SMOTE] = 0
+            if BALANCE_SMOTE_TOMEK not in self.random_seed.keys():
+                self.random_seed[BALANCE_SMOTE_TOMEK] = 0
 
-        if CLASSIFIER_AB not in self.random_seed.keys():
-            self.random_seed[CLASSIFIER_AB] = 0
-        if CLASSIFIER_AE not in self.random_seed.keys():
-            self.random_seed[CLASSIFIER_AE] = 0
-        if CLASSIFIER_DT not in self.random_seed.keys():
-            self.random_seed[CLASSIFIER_DT] = 0
-        if CLASSIFIER_GP not in self.random_seed.keys():
-            self.random_seed[CLASSIFIER_GP] = 0
-        if CLASSIFIER_LR not in self.random_seed.keys():
-            self.random_seed[CLASSIFIER_LR] = 0
-        if CLASSIFIER_LRLasso not in self.random_seed.keys():
-            self.random_seed[CLASSIFIER_LRLasso] = 0
-        if CLASSIFIER_RF not in self.random_seed.keys():
-            self.random_seed[CLASSIFIER_RF] = 0
-        if CLASSIFIER_SVM not in self.random_seed.keys():
-            self.random_seed[CLASSIFIER_SVM] = 0
+            if CLASSIFIER_AB not in self.random_seed.keys():
+                self.random_seed[CLASSIFIER_AB] = 0
+            if CLASSIFIER_AE not in self.random_seed.keys():
+                self.random_seed[CLASSIFIER_AE] = 0
+            if CLASSIFIER_DT not in self.random_seed.keys():
+                self.random_seed[CLASSIFIER_DT] = 0
+            if CLASSIFIER_GP not in self.random_seed.keys():
+                self.random_seed[CLASSIFIER_GP] = 0
+            if CLASSIFIER_LR not in self.random_seed.keys():
+                self.random_seed[CLASSIFIER_LR] = 0
+            if CLASSIFIER_LRLasso not in self.random_seed.keys():
+                self.random_seed[CLASSIFIER_LRLasso] = 0
+            if CLASSIFIER_RF not in self.random_seed.keys():
+                self.random_seed[CLASSIFIER_RF] = 0
+            if CLASSIFIER_SVM not in self.random_seed.keys():
+                self.random_seed[CLASSIFIER_SVM] = 0
 
 
 RANDOM_SEED = RandomSeed(r'HyperParameters\RandomSeed.json').random_seed
