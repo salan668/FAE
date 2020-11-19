@@ -15,6 +15,8 @@ Welcome any issues and PR.
 The Windows 64 version was release here https://drive.google.com/open?id=1htts7YsfaxKtN1NeDcNU4iksXfjr_XyK
 (Alternative link is: https://pan.baidu.com/s/1ha66TajeoT6dA-a4Qdt8fA)
 
+A short tutorial video may help: https://www.bilibili.com/video/BV1yt4y1S79S/ (Chinese Version)
+
 If FAE could help in your research, please refer to  
 
 > Y. Song, J. Zhang, Y. Zhang, Y. Hou, X. Yan, Y. Wang, M. Zhou, Y. Yao, G. Yang. FeAture Explorer (FAE): A tool for developing and comparing radiomics models. PLoS One. 2020. DOI: https://doi.org/10.1371/journal.pone.0237587
@@ -47,6 +49,8 @@ Just clone it by typing in:
 ```
 git clone https://github.com/salan668/FAE.git
 ```
+The .ui file has to be transfered to the .py file by pyuic manually. For example, GUI/HomePage.ui should be tranfered to GUI/HomePage.py file. 
+
 ### Architecture of Project 
 - **DataContainer**
     - **DataContainer**. The structure to contain the data, which also includes methods like saving/loading.

@@ -171,6 +171,24 @@ class MyFeatureExtractor:
                                                       show_name_list=show_name_list, store_path=store_path):
                 yield index, case_name
 
+    def Run(self, case_name, image_list, roi_list, show_name_list, store_path):
+        self.case_list.append(case_name)
+        feature_dict = {}
+
+        for image, roi, name in zip(image_list, roi_list, show_name_list):
+            feature_names_each_modality, feature_values_each_modality = self._GetFeatureValuesEachModality(
+                image, roi,  name)
+
+            for feature_name, feature_value in zip(feature_names_each_modality, feature_values_each_modality):
+                feature_dict[feature_name] = feature_value
+
+        feature_dict = collections.OrderedDict(sorted(feature_dict.items()))
+        feature_values = list(feature_dict.values())
+        feature_names = list(feature_dict.keys())
+
+        self.feature_name_list = feature_names
+        self.feature_values.append(feature_values)
+        self.Save(store_path)
 
 def main():
     extractor = MyFeatureExtractor(r'..\..\OnlyIntensityRadiomicsParams.yaml')

@@ -50,9 +50,11 @@ class RandomSeed:
         self.LoadConfig(config_path)
 
     def LoadConfig(self, config_path):
-        if os.path.exists(config_path):
-            with open(config_path, 'r') as file:
-                self.random_seed = json.load(file, strict=False)
+        if not os.path.exists(config_path):
+            print("Check config path:{}".format(config_path))
+            return
+        with open(config_path, 'r') as file:
+            self.random_seed = json.load(file, strict=False)
 
             if BALANCE_UP_SAMPLING not in self.random_seed.keys():
                 self.random_seed[BALANCE_UP_SAMPLING] = 0

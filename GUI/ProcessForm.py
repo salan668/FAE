@@ -142,6 +142,7 @@ class ProcessConnection(QWidget, Ui_Process):
                 self.lineEditTrainingData.setText(file_name)
                 self.UpdateDataDescription()
                 self.logger.info('Open CSV file ' + file_name + ' succeed.')
+                self.spinBoxMaxFeatureNumber.setValue(len(self.training_data_container.GetFeatureName()))
             except OSError as reason:
                 self.logger.log('Open SCV file Error, The reason is ' + str(reason))
                 print('Load Error！' + str(reason))

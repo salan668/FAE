@@ -70,6 +70,18 @@ class PipelinesManager(object):
     def LoadAll(self, store_folder):
         return self.LoadAucDict(store_folder) and self.LoadPipelineInfo(store_folder)
 
+
+
+    def GetRealFeatureNum(self, store_folder):
+        files = os.listdir(store_folder)
+        for file in files:
+            if file.find('_features.csv') != -1:
+                feature_file = os.path.join(store_folder, file)
+                pdf = pd.read_csv(feature_file)
+                return len(pdf.columns) - 1
+        return 0
+
+
     def LoadPipelineInfo(self, store_folder):
         index_2_dict = Index2Dict()
         info_path = os.path.join(store_folder, 'pipeline_info.csv')
@@ -94,7 +106,9 @@ class PipelinesManager(object):
                 elif row[0] == FEATURE_SELECTOR:
                     self.feature_selector_list = [index_2_dict.GetInstantByIndex(index) for index in row[1:]]
                 elif row[0] == FEATURE_NUMBER:
-                    self.feature_selector_num_list = row[1:]
+                    feature_number = self.GetRealFeatureNum(store_folder)
+                    number = len(row) - 1 if len(row) - 1 > feature_number else feature_number
+                    self.feature_selector_num_list = row[1: number]
                 elif row[0] == CLASSIFIER:
                     self.classifier_list = [index_2_dict.GetInstantByIndex(index) for index in row[1:]]
                 else:
