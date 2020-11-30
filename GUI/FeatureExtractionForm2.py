@@ -34,8 +34,8 @@ class FeatureExtractionForm(QWidget):
         self.ui.buttonRun.clicked.connect(self.Run)
         self.ui.UseExistConfigcheckBox.clicked.connect(self.UseExitingConfig)
         self.ui.ConfigPushButton.clicked.connect(self.BrowseRadiomicsFeatureCofigFile)
-        self.ui.CofnigLineEdit.setText(r'D:\research\exampleMR_NoResampling.yaml')
-        self.ui.CofnigLineEdit.setEnabled(False)
+        self.ui.ConfigLineEdit.setText(r'D:\research\exampleMR_NoResampling.yaml')
+        self.ui.ConfigLineEdit.setEnabled(False)
         self.ui.ConfigPushButton.setEnabled(False)
 
 
@@ -174,9 +174,28 @@ class FeatureExtractionForm(QWidget):
                 ctrl.setChecked(ctrl.text() in feature_classes)
 
     def UseExitingConfig(self):
-         use_exist = self.ui.UseExistConfigcheckBox.isChecked()
-         self.ui.CofnigLineEdit.setEnabled(use_exist)
-         self.ui.ConfigPushButton.setEnabled(use_exist)
+        use_exist = self.ui.UseExistConfigcheckBox.isChecked()
+        self.ui.ConfigLineEdit.setEnabled(use_exist)
+        self.ui.ConfigPushButton.setEnabled(use_exist)
+
+        self.ui.checkBoxOriginal.setEnabled(not use_exist)
+        self.ui.checkBoxWavelet.setEnabled(not use_exist)
+        self.ui.checkBoxSquare.setEnabled(not use_exist)
+        self.ui.checkBoxSquareRoot.setEnabled(not use_exist)
+        self.ui.checkBoxLoG.setEnabled(not use_exist)
+        self.ui.checkBoxLogarithm.setEnabled(not use_exist)
+        self.ui.checkBoxExponential.setEnabled(not use_exist)
+        self.ui.checkBoxGradient.setEnabled(not use_exist)
+        self.ui.checkBoxLocalBinaryPattern2D.setEnabled(not use_exist)
+        self.ui.checkBoxLocalBinaryPattern3D.setEnabled(not use_exist)
+
+        self.ui.checkBoxFirstOrderStatistics.setEnabled(not use_exist)
+        self.ui.checkBoxShapeBased2D.setEnabled(not use_exist)
+        self.ui.checkBoxGLCM.setEnabled(not use_exist)
+        self.ui.checkBoxGLRLM.setEnabled(not use_exist)
+        self.ui.checkBoxGLSZM.setEnabled(not use_exist)
+        self.ui.checkBoxGLDM.setEnabled(not use_exist)
+        self.ui.checkBoxNGTDM.setEnabled(not use_exist)
 
     def BrowseRadiomicsFeatureCofigFile(self):
         dlg = QFileDialog()
@@ -184,6 +203,7 @@ class FeatureExtractionForm(QWidget):
                                            filter="Config (*.yaml)")
         if file_name:
             self._radiomics_file = file_name
+            self.ui.ConfigLineEdit.setText(file_name)
 
     def Run(self):
         try:
