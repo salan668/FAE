@@ -20,6 +20,7 @@ class FeatureExtractionForm(QWidget):
         self._patterns = 0
         self._image_patten_list = []
         self._roi_patten_list = []
+        self._missing_message = ''
         self.radiomics_params = RadiomicsParamsConfig('RadiomicsParams.yaml')
 
         self.ui.setupUi(self)
@@ -32,12 +33,11 @@ class FeatureExtractionForm(QWidget):
         self.ui.buttonAddOne.clicked.connect(self.AddOnePattern)
         self.ui.buttonRemoveOne.clicked.connect(self.RemoveOnePattern)
         self.ui.buttonRun.clicked.connect(self.Run)
-        self.ui.UseExistConfigcheckBox.clicked.connect(self.UseExitingConfig)
-        self.ui.ConfigPushButton.clicked.connect(self.BrowseRadiomicsFeatureCofigFile)
-        self.ui.ConfigLineEdit.setText(r'D:\research\exampleMR_NoResampling.yaml')
-        self.ui.ConfigLineEdit.setEnabled(False)
-        self.ui.ConfigPushButton.setEnabled(False)
-
+        self.ui.useExistConfigcheckBox.clicked.connect(self.UseExitingConfig)
+        self.ui.configPushButton.clicked.connect(self.BrowseRadiomicsFeatureCofigFile)
+        self.ui.configLineEdit.setText(r'')
+        self.ui.configLineEdit.setEnabled(False)
+        self.ui.configPushButton.setEnabled(False)
 
     def closeEvent(self, event):
         self.close_signal.emit(True)
@@ -174,9 +174,9 @@ class FeatureExtractionForm(QWidget):
                 ctrl.setChecked(ctrl.text() in feature_classes)
 
     def UseExitingConfig(self):
-        use_exist = self.ui.UseExistConfigcheckBox.isChecked()
-        self.ui.ConfigLineEdit.setEnabled(use_exist)
-        self.ui.ConfigPushButton.setEnabled(use_exist)
+        use_exist = self.ui.useExistConfigcheckBox.isChecked()
+        self.ui.configLineEdit.setEnabled(use_exist)
+        self.ui.configPushButton.setEnabled(use_exist)
 
         self.ui.checkBoxOriginal.setEnabled(not use_exist)
         self.ui.checkBoxWavelet.setEnabled(not use_exist)
@@ -202,8 +202,7 @@ class FeatureExtractionForm(QWidget):
         file_name, _ = dlg.getOpenFileName(self, 'Open Radiomics Config file', directory=r'D:\research',
                                            filter="Config (*.yaml)")
         if file_name:
-            self._radiomics_file = file_name
-            self.ui.ConfigLineEdit.setText(file_name)
+            self.ui.configLineEdit.setText(file_name)
 
     def Run(self):
         try:
@@ -236,8 +235,8 @@ class FeatureExtractionForm(QWidget):
             QApplication.processEvents()
 
             UpdateRadiomicsConfig()
-            if self.ui.UseExistConfigcheckBox.isChecked():
-                extractor = MyFeatureExtractor('RadiomicsParams.yaml')
+            if self.ui.useExistConfigcheckBox.isChecked():
+                extractor = MyFeatureExtractor(self.ui.configLineEdit.text(), ignore_tolerance=True)
             else:
                 extractor = MyFeatureExtractor('RadiomicsParams.yaml', ignore_tolerance=True)
 

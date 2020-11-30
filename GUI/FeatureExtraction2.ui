@@ -225,14 +225,14 @@ One</string>
               <number>10</number>
              </property>
              <item>
-              <widget class="QCheckBox" name="UseExistConfigcheckBox">
+              <widget class="QCheckBox" name="useExistConfigcheckBox">
                <property name="text">
                 <string>Use existing config</string>
                </property>
               </widget>
              </item>
              <item>
-              <widget class="QLineEdit" name="CofnigLineEdit">
+              <widget class="QLineEdit" name="configLineEdit">
                <property name="minimumSize">
                 <size>
                  <width>0</width>
@@ -242,7 +242,7 @@ One</string>
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="ConfigPushButton">
+              <widget class="QPushButton" name="configPushButton">
                <property name="minimumSize">
                 <size>
                  <width>0</width>
