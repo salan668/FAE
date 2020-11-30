@@ -236,7 +236,7 @@ class FeatureExtractionForm(QWidget):
 
             UpdateRadiomicsConfig()
             if self.ui.useExistConfigcheckBox.isChecked():
-                extractor = MyFeatureExtractor(self.ui.configLineEdit.text(), ignore_tolerance=True)
+                extractor = MyFeatureExtractor(self.ui.configLineEdit.text())
             else:
                 extractor = MyFeatureExtractor('RadiomicsParams.yaml', ignore_tolerance=True)
 
