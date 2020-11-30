@@ -191,7 +191,7 @@ class DataContainer:
             print('No "label" in the index')
             return False
 
-        index = self._feature_name.index('label')
+        index = self._feature_name.index(label_name)
         self._feature_name.pop(index)
         self._label = np.asarray(self._df[label_name].values, dtype=np.int)
         self._array = np.asarray(self._df[self._feature_name].values, dtype=np.float64)
