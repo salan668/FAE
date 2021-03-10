@@ -1,6 +1,7 @@
 import sys
 from PyQt5.QtWidgets import *
-from GUI.HomePageForm import HomePageForm
+from HomePage.HomePageForm import HomePageForm
+
 # import qdarkstyle
 
 
