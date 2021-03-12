@@ -8,17 +8,19 @@ import os
 import numpy as np
 from random import shuffle
 import pandas as pd
+import matplotlib.pyplot as plt
 
 from scipy.stats import levene, ttest_ind, kstest, mannwhitneyu, chi2_contingency
 from collections import Counter
 
 from BC.DataContainer.DataContainer import DataContainer
+from BC.FeatureAnalysis.FeatureSelector import FeatureSelector
+
 
 
 class FeatureType:
     Numeric = 1
     Categorical = 2
-
 
 class OneFeatureStatistics(object):
     def __init__(self):
@@ -206,6 +208,118 @@ class DataSeparate:
             test_data_container.Save(os.path.join(store_folder, 'test_numeric_feature.csv'))
 
         return train_data_container, test_data_container
+
+
+def GetPvalue(array1, array2, feature_type):
+    # TODO: Accomplish
+    # if feature_type == 'Category':
+    #     return
+    pass
+
+
+def EstimateDistribution(self, one_feature):
+    # return 'Category', 'Normal', 'Non-normal'
+    return ''
+
+
+class DataSplitterByFeatureCluster(object):
+    def __init__(self, parts=30, repeat_times=100, test_ratio=0.3):
+        self.parts = parts
+        self.repeat_times = repeat_times
+        self.test_ratio = test_ratio
+
+    #################################################
+    def _Cluster(self, dc):
+        # According Cluster to selecte features and combine them into a DataContainer
+        return [], []
+
+    def _MergeClinical(self, dc, cli_df):
+        # Merge DataContainer and a dataframe of clinical
+        return DataContainer()
+
+    def _EstimateAllFeatureDistribution(self, dc):
+        # return a dict {"AGE": 'Normal', 'Gender': 'Category', ... }
+        return {}
+
+    def _EstimateDcFeaturePvalue(self, dc1, dc2, feature_type):
+        array1, array2 = dc1.GetArray(), dc2.GetArray()
+        pvalues = {}
+        for index, feature in enumerate(dc1.GetFeatureName()):
+            pvalues[feature] = GetPvalue(array1[:, index], array2[:, index], feature_type[feature])
+
+        return pvalues
+
+    #################################################
+    def VisualizePartsVariance(self, dc:DataContainer, max_k=None, method='SSE',
+                               store_folder=None, is_show=True):
+        # method must be one of SSE or SC. SSE denotes xxxx, SC denotes Silhouette Coefficient
+
+        # TODO: Normalize the train_data
+        data = dc.GetArray().transpose()
+
+        if max_k is None:
+            max_k = min(data.shape[0], 50)
+
+        assert(method in ['SSE', 'SC'])
+
+        #TODO: plot
+        score = []
+        for k in range(2, max_k):
+            if method == 'SSE':
+                pass
+            elif method == 'SC':
+                pass
+
+        if store_folder and os.path.isdir(store_folder):
+            plt.savefig(os.path.join(store_folder, 'ClusteringPlot.jpg'))
+
+        if is_show:
+            plt.show()
+
+    def VisualizeCluster(self, dc, feature_labels,
+                         store_folder=None, is_show=True):
+        pass
+
+    def Run(self, dc:DataContainer, output_folder: str, clinical_feature=None):
+        selected_feautre_names, feature_labels = self._Cluster(dc)
+
+        fs = FeatureSelector()
+        selected_dc = fs.SelectFeatureByName(dc, selected_feautre_names)
+
+        if clinical_feature is not None:
+            if isinstance(clinical_feature, str):
+                clinical_feature = pd.read_csv(clinical_feature, index_col=0)
+            assert(isinstance(clinical_feature, pd.DataFrame))
+
+            merge_dc = self._MergeClinical(selected_dc, clinical_feature)
+        else:
+            merge_dc = selected_dc
+
+        feature_distribution_type = self._EstimateAllFeatureDistribution(merge_dc)  # a dict
+
+        splitter = DataSeparate()
+
+        output_train_dc, output_test_dc = DataContainer(), DataContainer()
+        output_pvalue = []
+        mean_pvalue = -99999
+
+        for _ in range(self.repeat_times):
+            train_dc, test_dc = splitter.RunByTestingPercentage(merge_dc, testing_data_percentage=self.test_ratio)
+            feature_pvalue = self._EstimateDcFeaturePvalue(train_dc, test_dc, feature_distribution_type)
+            if np.mean(list(feature_pvalue.values())) > mean_pvalue:
+                mean_pvalue = np.mean(list(feature_pvalue.values()))
+                output_train_dc, output_test_dc = train_dc, test_dc
+                output_pvalue = feature_pvalue
+
+        if output_folder is not None and os.path.isdir(output_folder):
+            output_train_dc.Save(os.path.join(output_folder, 'train.csv'))
+            output_test_dc.Save(os.path.join(output_folder, 'test.csv'))
+
+            pvalue_df = pd.DataFrame(output_pvalue, index=['P Value'])
+            distibute_df = pd.DataFrame(feature_distribution_type, index=['Distribution'])
+            store_df = pd.concat((pvalue_df, distibute_df), axis=0)
+            store_df.to_csv(os.path.join(output_folder, 'split_info.csv'))
+
 
 if __name__ == '__main__':
     clinics = pd.read_csv(r'..\..\Demo\simulated_clinics.csv', index_col=0)
