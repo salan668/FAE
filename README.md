@@ -6,7 +6,7 @@ If you publish any work which uses this package, I will appreciate that you coul
 
 Welcome any issues and PR. 
 
-![Python](https://img.shields.io/badge/python-v3.6-blue.svg)
+![Python](https://img.shields.io/badge/python-v3.7-blue.svg)
 ![Contributions welcome](https://img.shields.io/badge/contributions-welcome-orange.svg)
 [![License](https://img.shields.io/badge/license-GPL3.0-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
@@ -15,26 +15,32 @@ Welcome any issues and PR.
 The Windows 64 version was release here https://drive.google.com/open?id=1htts7YsfaxKtN1NeDcNU4iksXfjr_XyK
 (Alternative link is: https://pan.baidu.com/s/1ha66TajeoT6dA-a4Qdt8fA)
 
-## Getting Started
+A short tutorial video may help: https://www.bilibili.com/video/BV1yt4y1S79S/ (Chinese Version)
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+If FAE could help in your research, please refer to  
+
+> Y. Song, J. Zhang, Y. Zhang, Y. Hou, X. Yan, Y. Wang, M. Zhou, Y. Yao, G. Yang. FeAture Explorer (FAE): A tool for developing and comparing radiomics models. PLoS One. 2020. DOI: https://doi.org/10.1371/journal.pone.0237587
+
+## Getting Started
 
 ### Pre-install
 The below modules must be installed first to make the FAE work. 
 
 ```
-- imbalanced-learn
-- matplotlib (seaborn)
-- numpy
-- pandas
-- pdfdocument(https://github.com/salan668/pdfdocument.git)
-- pymrmr
-- PyQt5
-- PyQtGraph
-- pyradiomics
-- reportlab
-- scikit-learn
-- scipy
+- imbalanced-learn=0.6.2
+- matplotlib=3.2.0
+- numpy=1.18.1
+- pandas=1.0.1
+- pdfdocument=3.3
+- pillow=7.0.0
+- PyQt5=5.14.1
+- PyQtGraph=0.10.0
+- pyradiomics=3.0
+- reportlab=3.5.34
+- scikit-learn=0.22.2
+- scipy=1.4.1
+- seaborn=0.10.0
+- statsmodels=0.11.1
 ```
 
 ### Installing
@@ -43,24 +49,24 @@ Just clone it by typing in:
 ```
 git clone https://github.com/salan668/FAE.git
 ```
-If you would like to use FAE in any project, please add the path in your system envirement. A trick method is to create a .pth file in the site-packages folder (<Your own python folder>\Lib\site-packages) and add a path that point to the root folder of the FAE.
+The .ui file has to be transfered to the .py file by pyuic manually. For example, GUI/HomePage.ui should be tranfered to GUI/HomePage.py file. 
 
 ### Architecture of Project 
 - **DataContainer**
     - **DataContainer**. The structure to contain the data, which also includes methods like saving/loading.
     - **DataSeparate**. Including functions to separate data into training part and testing part.
-    - **DataBalance**, The class to deal with data imbalance. Now we provided Under-sampling, Over-sampling, and SMOTE method.
 - **Feature Analysis**
-    - **Normalization**. To Normalize the data
-    - **DimensionReduction**. To reduce the dimension, including PCA. 
-    - **Classifier**. The classifier to develop the model, including SVM, AE, Random Forests, LDA. 
-    - **CrossValidation**. The CV model to estimate the model. Return the metrics
-    - **FeatureSelector**. The class to select features, which including 1) remove non-useful features, e.g. the VolumnNum; 2) different method to select features, like ANOVA, RFE, Relief.
-    - **FeturePipeline**. The class to estimate the model with different feature selected method and classifier. 
+    - **DataBalance**, Sample the cases to make the binary-labels balance.
+    - **Normalization**. Normalize the data to avoid the scale effect of different features.
+    - **DimensionReduction**. Reduce the feature dimension, including PCA. 
+    - **Classifier**. Map the features onto the labels. 
+    - **CrossValidation**. Estimate model by using cross-validation on the training data set.
+    - **FeatureSelector**. Select the sub-features from the feature matrix.
+    - **Pipelines**. The class to estimate the model with different feature selected method and classifier. 
 - **Image2Feature**
     - **RadiomicsFeatureExtractor**. This class help extract features from image and ROI with batch process. This class should be more "smart" in the future. 
 - **Visulization**. 
-    - **DrawDoubleLine**. This function helps draw doulbe-y plot. e.g. plot accuracy and error against the number of iterations.
+    - **DrawDoubleLine**. This function helps draw double-y plot. e.g. plot accuracy and error against the number of iterations.
     - **DrawROCList**. This function helps draw different ROC curves. AUC will be calculated automaticly and labeled on the legend. 
     - **FeatureRelationship**. This function helps draw the distribution of the values of different features. I can only show at most 3 features in one figure. 
     - **FeatureSort**. This function helps draw the features and the weights of them on the classifiction model. 
@@ -75,6 +81,7 @@ TODO
 - [**Yang Song**](https://github.com/salan668)
 - [**Jing Zhang**](https://github.com/zhangjingcode)
 - [**Guang Yang**](https://github.com/yg88)
+- **Chengxiu Zhang**
 
 ## License 
 This project is licensed under the GPL 3.0 License - see the [LICENSE.md](https://github.com/salan668/FAE/blob/master/LICENSE) file for details
