@@ -226,7 +226,7 @@ def GetPvalue(array1, array2, feature_type):
     p_value = 0
     if feature_type == 'Category':
         count1 = count_list(array1)
-        count2 = count_list(array2)  # dict, 每个类别为key，统计了每个类别的次数
+        count2 = count_list(array2)  # dict
         categories = set(list(count1.keys()) + list(count2.keys()))
         contingency_dict = {}
         for category in categories:
@@ -272,8 +272,8 @@ class DataSplitterByFeatureCluster(object):
         count_feature = [[] for _ in range(self.parts)]
         count_distance = [[] for _ in range(self.parts)]
 
-        feature_predict = k_means.labels_  # 所有特征的聚类预测结果
-        cluster_centers = k_means.cluster_centers_  # 所有类别的质心
+        feature_predict = k_means.labels_
+        cluster_centers = k_means.cluster_centers_
 
         for j in range(len(feature_name_list)):
             count_label[feature_predict[j]] += 1
@@ -347,7 +347,7 @@ class DataSplitterByFeatureCluster(object):
         score = []
         for k in range(2, max_k):
             print('make cluster k=', k)
-            estimator = KMeans(n_clusters=k)  # 构造聚类器
+            estimator = KMeans(n_clusters=k) 
             estimator.fit(processed_data)
             if method == 'SSE':
                 score.append(estimator.inertia_)
