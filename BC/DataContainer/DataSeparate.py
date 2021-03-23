@@ -444,9 +444,9 @@ if __name__ == '__main__':
     # print(separator.clinic_split_result)
     cluster_split = DataSplitterByFeatureCluster()
     container = DataContainer()
-    container.Load(r'C:\Users\HJ Wang\Desktop\c-t2全部特征.csv')
-    output_path = r'C:\Users\HJ Wang\Desktop'
-    clinical_path = r'C:\Users\HJ Wang\Desktop\临床.csv'
+    container.Load(r'.\all_feature.csv')
+    output_path = r'.\output'
+    clinical_path = r'.\clinical.csv'
     cluster_split.VisualizePartsVariance(container, store_folder=output_path)
     cluster_split.Run(container, output_path, clinical_feature=clinical_path)
     cluster_split.VisualizeCluster(dimension='2d', store_folder=output_path)
