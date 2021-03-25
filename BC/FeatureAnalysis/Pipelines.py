@@ -19,6 +19,8 @@ from BC.Func.Metric import EstimatePrediction
 from BC.Utility.PathManager import MakeFolder
 from BC.Utility.Constants import *
 
+from VersionConstant import *
+
 
 class PipelinesManager(object):
     def __init__(self, balancer=None, normalizer_list=[NormalizerNone],
@@ -55,7 +57,7 @@ class PipelinesManager(object):
             writer.writerow([VERSION_NAME, self.version])
             writer.writerow([CROSS_VALIDATION, self.cv.GetName()])
             writer.writerow([BALANCE, self.balance.GetName()])
-            writer.writerow([NORMALIER] + [one.GetName() for one in self.normalizer_list])
+            writer.writerow([NORMALIZR] + [one.GetName() for one in self.normalizer_list])
             writer.writerow([DIMENSION_REDUCTION] + [one.GetName() for one in self.dimension_reduction_list])
             writer.writerow([FEATURE_SELECTOR] + [one.GetName() for one in self.feature_selector_list])
             writer.writerow([FEATURE_NUMBER] + self.feature_selector_num_list)
@@ -70,8 +72,6 @@ class PipelinesManager(object):
     def LoadAll(self, store_folder):
         return self.LoadAucDict(store_folder) and self.LoadPipelineInfo(store_folder)
 
-
-
     def GetRealFeatureNum(self, store_folder):
         files = os.listdir(store_folder)
         for file in files:
@@ -80,7 +80,6 @@ class PipelinesManager(object):
                 pdf = pd.read_csv(feature_file)
                 return len(pdf.columns) - 1
         return 0
-
 
     def LoadPipelineInfo(self, store_folder):
         index_2_dict = Index2Dict()
@@ -99,7 +98,7 @@ class PipelinesManager(object):
                     self.cv = index_2_dict.GetInstantByIndex(row[1])
                 elif row[0] == BALANCE:
                     self.balance = index_2_dict.GetInstantByIndex(row[1])
-                elif row[0] == NORMALIER:
+                elif row[0] == NORMALIZR:
                     self.normalizer_list = [index_2_dict.GetInstantByIndex(index) for index in row[1:]]
                 elif row[0] == DIMENSION_REDUCTION:
                     self.dimension_reduction_list = [index_2_dict.GetInstantByIndex(index) for index in row[1:]]

@@ -177,7 +177,7 @@ class DimensionReductionByPCC(DimensionReduction):
                 if self.__PCCSimilarity(data[:, save_index], data[:, feature_index]) > self.__threshold:
                     if self.__PCCSimilarity(data[:, save_index], label) < self.__PCCSimilarity(data[:, feature_index],
                                                                                                label):
-                        self.__selected_index[self.__selected_index == save_index] = feature_index
+                        self.__selected_index[self.__selected_index.index(save_index)] = feature_index
                     is_similar = True
                     break
             if not is_similar:

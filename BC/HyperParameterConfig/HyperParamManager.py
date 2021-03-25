@@ -83,12 +83,10 @@ class RandomSeed:
                 self.random_seed[CLASSIFIER_SVM] = 0
 
 
-RANDOM_SEED = RandomSeed(r'BC\HyperParameters\RandomSeed.json').random_seed
+root = os.path.abspath(os.getcwd())
+RANDOM_SEED = RandomSeed(os.path.join(root, r'BC\HyperParameters\RandomSeed.json')).random_seed
 
 
 if __name__ == '__main__':
-    import os
-    print(os.getcwd())
-    print(os.path.abspath(os.getcwd()))
-    rs = RandomSeed(r'../HyperParameters\RandomSeed.json')
-    print(rs.random_seed)
+    print(os.path.split(root))
+    print(RANDOM_SEED)

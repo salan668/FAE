@@ -1,10 +1,5 @@
 featureClass:
   firstorder: null
-  glcm: null
-  gldm: null
-  glrlm: null
-  glszm: null
-  ngtdm: null
   shape: null
 imageType:
   Original: {}

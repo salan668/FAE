@@ -1,6 +1,6 @@
 # Pipeline Key
 BALANCE = 'Balance'
-NORMALIER = 'Normalizer'
+NORMALIZR = 'Normalizer'
 DIMENSION_REDUCTION = 'DimensionReduction'
 FEATURE_SELECTOR = 'FeatureSelector'
 FEATURE_NUMBER = 'FeatureNumber'
@@ -50,10 +50,3 @@ BALANCE_TRAIN = 'balance_train'
 TRAIN = 'train'
 TEST = 'test'
 
-# Version Key
-VERSION_NAME = 'Version'
-MAJOR = 0
-MINOR = 3
-PATCH = 7
-VERSION = '{}.{}.{}'.format(MAJOR, MINOR, PATCH)
-ACCEPT_VERSION = ['0.3.0', '0.3.1', '0.3.2', '0.3.3', '0.3.4', '0.3.5', '0.3.6', '0.3.7']
