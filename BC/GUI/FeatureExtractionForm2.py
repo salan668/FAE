@@ -60,18 +60,27 @@ class FeatureExtractionForm(QWidget):
 
     def AddOnePattern(self):
         message = QMessageBox()
-        if self.ui.lineEditkeyInclude.text() == '':
-            message.about(self, 'Include can not be empty',
-                                'Include patterns are used to identify the file')
-            return
-        if self.ui.lineEditkeyShowName.text() == '':
-            message.about(self, 'ShowName can not be empty',
-                          'ShowName patterns are used to add pre-name in the feature matrix')
+        if self.ui.radioImagePattern.isChecked():
+            if self.ui.lineEditkeyInclude.text() == '':
+                message.about(self, 'Include can not be empty',
+                                    'Include patterns are used to identify the file')
+                return
+            if self.ui.lineEditkeyShowName.text() == '':
+                message.about(self, 'ShowName can not be empty',
+                              'ShowName patterns are used to add pre-name in the feature matrix')
+                return
+
+            one_pattern = {'name': self.ui.lineEditkeyShowName.text().split(','),
+                           'include': self.ui.lineEditkeyInclude.text().split(','),
+                           'exclude': self.ui.lineEditkeyExclude.text().split(',')}
+        elif self.ui.radioRoiPattern.isChecked():
+            one_pattern = {'name': ['ROI'],
+                           'include': self.ui.lineEditkeyInclude.text().split(','),
+                           'exclude': self.ui.lineEditkeyExclude.text().split(',')}
+        else:
+            message.about('No Radio Button was chosen')
             return
 
-        one_pattern = {'name': self.ui.lineEditkeyShowName.text().split(','),
-                       'include': self.ui.lineEditkeyInclude.text().split(','),
-                       'exclude': self.ui.lineEditkeyExclude.text().split(',')}
         if self.ui.radioImagePattern.isChecked() and self._PatternNameExist(one_pattern['name']):
             message.about(self, '', 'Same image pattern exists')
             return
