@@ -113,7 +113,6 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                                         "loaded.")
             except Exception as ex:
                 QMessageBox.about(self, "Load Error", ex.__str__())
-                self.logger.log(logging.ERROR, 'Load Error, The reason is ' + str(ex))
                 self.ClearAll()
                 raise ex
 
@@ -478,7 +477,6 @@ class VisualizationConnection(QWidget, Ui_Visualization):
             self.canvasFeature.draw()
         except Exception as e:
             content = 'In Visualization, UpdateContribution failed'
-            self.logger.error('{}{}'.format(content, str(e)))
             QMessageBox.about(self, content, e.__str__())
 
     def SetResultDescription(self):
@@ -665,7 +663,6 @@ class VisualizationConnection(QWidget, Ui_Visualization):
 
         except Exception as e:
             content = 'Visualization, ShowOneResult failed: '
-            self.logger.error('{}{}'.format(content, str(e)))
             QMessageBox.about(self, content, e.__str__())
 
     def GenerateDescription(self):
