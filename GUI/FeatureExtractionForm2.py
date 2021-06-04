@@ -29,7 +29,7 @@ class FeatureExtractionForm(QWidget):
         self.ui.tableFilePattern.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.ui.tableFilePattern.setSelectionBehavior(QAbstractItemView.SelectRows)
 
-        self.ui.buttonBrowseSourceFolder.clicked.connect(self.BrowseSourceFolder)
+        self.ui.buttonBrowseSourceFolder.clicked.connect(self.on_browse)
         self.ui.buttonAddOne.clicked.connect(self.AddOnePattern)
         self.ui.buttonRemoveOne.clicked.connect(self.RemoveOnePattern)
         self.ui.buttonRun.clicked.connect(self.Run)
@@ -43,7 +43,7 @@ class FeatureExtractionForm(QWidget):
         self.close_signal.emit(True)
         event.accept()
 
-    def BrowseSourceFolder(self):
+    def on_browse(self):
         dlg = QFileDialog()
         dlg.setFileMode(QFileDialog.DirectoryOnly)
         dlg.setOption(QFileDialog.ShowDirsOnly)

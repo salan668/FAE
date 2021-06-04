@@ -67,11 +67,11 @@ class ProcessConnection(QWidget, Ui_Process):
         self.testing_data_container = DataContainer()
         self.logger = eclog(os.path.split(__file__)[-1]).GetLogger()
         self.fae = PipelinesManager(logger=self.logger)
-        self.__process_normalizer_list = []
-        self.__process_dimension_reduction_list = []
-        self.__process_feature_selector_list = []
+        self.__normalizers = []
+        self.__dimension_reductions = []
+        self.__feature_selectors = []
         self.__process_feature_number_list = []
-        self.__process_classifier_list = []
+        self.__classifiers = []
 
         self.thread = CVRun()
 
@@ -127,9 +127,9 @@ class ProcessConnection(QWidget, Ui_Process):
         self.UpdatePipelineText()
         self.SetStateButtonBeforeLoading(False)
 
-    def closeEvent(self, QCloseEvent):
+    def closeEvent(self, close_event):
         self.close_signal.emit(True)
-        QCloseEvent.accept()
+        close_event.accept()
 
     def LoadTrainingData(self):
         dlg = QFileDialog()
@@ -161,10 +161,10 @@ class ProcessConnection(QWidget, Ui_Process):
                 self.UpdateDataDescription()
                 self.logger.info('Loading testing data ' + file_name + ' succeed.')
             except OSError as reason:
-                self.logger.log('Open SCV file Error, The reason is ' + str(reason))
+                self.logger.log('Open CSV file Error, The reason is ' + str(reason))
                 print('ERROR！' + str(reason))
             except ValueError:
-                self.logger.error('Open SCV file ' + file_name + ' Failed. because of value error.')
+                self.logger.error('Open CSV file ' + file_name + ' Failed. Value error.')
                 QMessageBox.information(self, 'Error',
                                         'The selected testing data mismatch.')
 
@@ -185,25 +185,16 @@ class ProcessConnection(QWidget, Ui_Process):
             list_string = ", ".join([temp.GetName() for temp in the_list])
             return name_string + list_string + ", "
 
-        text_list = ["Current:"]
+        text_list = ["Current:",
+                     FormatOneLine(normalizer_name, self.__normalizers),
+                     FormatOneLine(dimension_reduction_name, self.__dimension_reductions),
+                     FormatOneLine(feature_selector_name, self.__feature_selectors),
+                     "Feature Number: {:d} / [{:d}-{:d}]".format(feature_num,
+                                                                 self.spinBoxMinFeatureNumber.value(),
+                                                                 self.spinBoxMaxFeatureNumber.value()),
+                     FormatOneLine(classifier_name, self.__classifiers),
+                     "Total process: {:d} / {:d}".format(current_num, total_num)]
 
-        text_list.append(FormatOneLine(normalizer_name,
-                                       self.__process_normalizer_list))
-
-        text_list.append(FormatOneLine(dimension_reduction_name,
-                                       self.__process_dimension_reduction_list))
-
-        text_list.append(FormatOneLine(feature_selector_name,
-                                       self.__process_feature_selector_list))
-
-        text_list.append("Feature Number: {:d} / [{:d}-{:d}]".format(feature_num,
-                                                                     self.spinBoxMinFeatureNumber.value(),
-                                                                     self.spinBoxMaxFeatureNumber.value()))
-
-        text_list.append(FormatOneLine(classifier_name,
-                                       self.__process_classifier_list))
-
-        text_list.append("Total process: {:d} / {:d}".format(current_num, total_num))
         return "\n".join(text_list)
 
     def SetStateAllButtonWhenRunning(self, state):
@@ -273,7 +264,7 @@ class ProcessConnection(QWidget, Ui_Process):
             store_folder = dlg.selectedFiles()[0]
             if len(os.listdir(store_folder)) > 0:
                 reply = QMessageBox.question(self, 'Continue?',
-                                             'The folder is not empty, if you click Yes, the data would be clear in this folder',
+                                             "Folder not empty. If continue, all data in folder will be cleared.",
                                              QMessageBox.Yes, QMessageBox.No)
                 if reply == QMessageBox.Yes:
                     try:
@@ -327,59 +318,59 @@ class ProcessConnection(QWidget, Ui_Process):
         else:
             return False
 
-        self.__process_normalizer_list = []
+        self.__normalizers = []
         if self.checkNormalizeNone.isChecked():
-            self.__process_normalizer_list.append(NormalizerNone)
+            self.__normalizers.append(NormalizerNone)
         if self.checkNormalizeMinMax.isChecked():
-            self.__process_normalizer_list.append(NormalizerMinMax)
+            self.__normalizers.append(NormalizerMinMax)
         if self.checkNormalizeZscore.isChecked():
-            self.__process_normalizer_list.append(NormalizerZscore)
+            self.__normalizers.append(NormalizerZscore)
         if self.checkNormalizeMean.isChecked():
-            self.__process_normalizer_list.append(NormalizerMean)
+            self.__normalizers.append(NormalizerMean)
 
-        self.__process_dimension_reduction_list = []
+        self.__dimension_reductions = []
         if self.checkPCA.isChecked():
-            self.__process_dimension_reduction_list.append(DimensionReductionByPCA())
+            self.__dimension_reductions.append(DimensionReductionByPCA())
         if self.checkRemoveSimilarFeatures.isChecked():
-            self.__process_dimension_reduction_list.append(DimensionReductionByPCC())
+            self.__dimension_reductions.append(DimensionReductionByPCC())
 
-        self.__process_feature_selector_list = []
+        self.__feature_selectors = []
         if self.checkANOVA.isChecked():
-            self.__process_feature_selector_list.append(FeatureSelectByANOVA())
+            self.__feature_selectors.append(FeatureSelectByANOVA())
         if self.checkKW.isChecked():
-            self.__process_feature_selector_list.append(FeatureSelectByKruskalWallis())
+            self.__feature_selectors.append(FeatureSelectByKruskalWallis())
         if self.checkRFE.isChecked():
-            self.__process_feature_selector_list.append(FeatureSelectByRFE())
+            self.__feature_selectors.append(FeatureSelectByRFE())
         if self.checkRelief.isChecked():
-            self.__process_feature_selector_list.append(FeatureSelectByRelief())
+            self.__feature_selectors.append(FeatureSelectByRelief())
         # if self.checkMRMR.isChecked():
-        #     self.__process_feature_selector_list.append(eatureSelectByMrmr())
+        #     self.__feature_selectors.append(FeatureSelectByMrmr())
 
         self.__process_feature_number_list = np.arange(self.spinBoxMinFeatureNumber.value(),
                                                        self.spinBoxMaxFeatureNumber.value() + 1).tolist()
 
-        self.__process_classifier_list = []
+        self.__classifiers = []
         if self.checkSVM.isChecked():
-            self.__process_classifier_list.append(SVM())
+            self.__classifiers.append(SVM())
         if self.checkLDA.isChecked():
-            self.__process_classifier_list.append(LDA())
+            self.__classifiers.append(LDA())
         if self.checkAE.isChecked():
-            self.__process_classifier_list.append(AE())
+            self.__classifiers.append(AE())
         if self.checkRF.isChecked():
-            self.__process_classifier_list.append(RandomForest())
+            self.__classifiers.append(RandomForest())
         if self.checkLogisticRegression.isChecked():
-            self.__process_classifier_list.append(LR())
+            self.__classifiers.append(LR())
         if self.checkLRLasso.isChecked():
-            self.__process_classifier_list.append(LRLasso())
+            self.__classifiers.append(LRLasso())
         if self.checkAdaboost.isChecked():
-            self.__process_classifier_list.append(AdaBoost())
+            self.__classifiers.append(AdaBoost())
         if self.checkDecisionTree.isChecked():
-            self.__process_classifier_list.append(DecisionTree())
+            self.__classifiers.append(DecisionTree())
         if self.checkGaussianProcess.isChecked():
-            self.__process_classifier_list.append(GaussianProcess())
+            self.__classifiers.append(GaussianProcess())
         if self.checkNaiveBayes.isChecked():
-            self.__process_classifier_list.append(NaiveBayes())
-        if len(self.__process_classifier_list) == 0:
+            self.__classifiers.append(NaiveBayes())
+        if len(self.__classifiers) == 0:
             self.logger.error('Process classifier list length is zero.')
             return False
 
@@ -393,44 +384,45 @@ class ProcessConnection(QWidget, Ui_Process):
             return False
 
         self.fae.balance = data_balance
-        self.fae.normalizer_list = self.__process_normalizer_list
-        self.fae.dimension_reduction_list = self.__process_dimension_reduction_list
-        self.fae.feature_selector_list = self.__process_feature_selector_list
+        self.fae.normalizer_list = self.__normalizers
+        self.fae.dimension_reduction_list = self.__dimension_reductions
+        self.fae.feature_selector_list = self.__feature_selectors
         self.fae.feature_selector_num_list = self.__process_feature_number_list
-        self.fae.classifier_list = self.__process_classifier_list
+        self.fae.classifier_list = self.__classifiers
         self.fae.cv = cv
         self.fae.GenerateAucDict()
 
         return True
 
-    def UpdateDataDescription(self):
-        show_text = ""
-        if self.training_data_container.GetArray().size > 0:
-            show_text += "The number of training cases: {:d}\n".format(len(self.training_data_container.GetCaseName()))
-            show_text += "The number of training features: {:d}\n".format(
-                len(self.training_data_container.GetFeatureName()))
-            if len(np.unique(self.training_data_container.GetLabel())) == 2:
-                positive_number = len(
-                    np.where(
-                        self.training_data_container.GetLabel() == np.max(self.training_data_container.GetLabel()))[0])
-                negative_number = len(self.training_data_container.GetLabel()) - positive_number
-                assert (positive_number + negative_number == len(self.training_data_container.GetLabel()))
-                show_text += "The number of training positive samples: {:d}\n".format(positive_number)
-                show_text += "The number of training negative samples: {:d}\n".format(negative_number)
+    @staticmethod
+    def get_dataset_description(dataset, dataset_name):
+        """
+        :param dataset: dataset to describe
+        :param dataset_name: can be one of "training", "test"
+        :return: description string for the specified dataset
+        """
+        if dataset.GetArray().size == 0:
+            return ""
+        
+        format_string = "Cases in " + dataset_name + ": {:d}\n"
 
-        show_text += '\n'
-        if self.testing_data_container.GetArray().size > 0:
-            show_text += "The number of testing cases: {:d}\n".format(len(self.testing_data_container.GetCaseName()))
-            show_text += "The number of testing features: {:d}\n".format(
-                len(self.testing_data_container.GetFeatureName()))
-            if len(np.unique(self.testing_data_container.GetLabel())) == 2:
-                positive_number = len(
-                    np.where(
-                        self.testing_data_container.GetLabel() == np.max(self.testing_data_container.GetLabel()))[0])
-                negative_number = len(self.testing_data_container.GetLabel()) - positive_number
-                assert (positive_number + negative_number == len(self.testing_data_container.GetLabel()))
-                show_text += "The number of testing positive samples: {:d}\n".format(positive_number)
-                show_text += "The number of testing negative samples: {:d}\n".format(negative_number)
+        show_text = format_string.format(len(dataset.GetCaseName()))
+        show_text += ("Features in " + dataset_name + " dataset: {:d}\n").format(
+            len(dataset.GetFeatureName()))
+        if len(np.unique(dataset.GetLabel())) == 2:
+            positive_number = len(np.where(dataset.GetLabel() == np.max(dataset.GetLabel()))[0])
+            negative_number = len(dataset.GetLabel()) - positive_number
+            show_text += ("Positive cases in " + dataset_name + " dataset: {:d}\n").format(positive_number)
+            show_text += ("Negative cases in " + dataset_name + " dataset: {:d}\n").format(negative_number)
+        return show_text
+
+
+    def UpdateDataDescription(self):
+        show_text = self.get_dataset_description(self.training_data_container, "training")
+        if show_text:
+            show_text += '\n'
+            
+        show_text += self.get_dataset_description(self.testing_data_container, "test")
 
         self.textEditDescription.setText(show_text)
 
@@ -543,73 +535,47 @@ class ProcessConnection(QWidget, Ui_Process):
 
         self.listOnePipeline.addItem(cv_method)
 
-        self.listOnePipeline.addItem("Total number of pipelines is:\n{:d}"
-                                     .format(
+        self.listOnePipeline.addItem("Total number of pipelines is:\n{:d}".format(
             normalizer_num * dimension_reduction_num * feature_selector_num * feature_num * classifier_num))
 
     def SelectAllNormalization(self):
-        if self.checkNormalizationAll.isChecked():
-            self.checkNormalizeNone.setChecked(True)
-            self.checkNormalizeMinMax.setChecked(True)
-            self.checkNormalizeZscore.setChecked(True)
-            self.checkNormalizeMean.setChecked(True)
-        else:
-            self.checkNormalizeNone.setChecked(False)
-            self.checkNormalizeMinMax.setChecked(False)
-            self.checkNormalizeZscore.setChecked(False)
-            self.checkNormalizeMean.setChecked(False)
+        checked = self.checkNormalizationAll.isChecked()
+        self.checkNormalizeNone.setChecked(checked)
+        self.checkNormalizeMinMax.setChecked(checked)
+        self.checkNormalizeZscore.setChecked(checked)
+        self.checkNormalizeMean.setChecked(checked)
 
         self.UpdatePipelineText()
 
     def SelectAllPreprocess(self):
-        if self.checkPreprocessAll.isChecked():
-            self.checkPCA.setChecked(True)
-            self.checkRemoveSimilarFeatures.setChecked(True)
-        else:
-            self.checkPCA.setChecked(False)
-            self.checkRemoveSimilarFeatures.setChecked(False)
+        checked = self.checkPreprocessAll.isChecked()
+        self.checkPCA.setChecked(checked)
+        self.checkRemoveSimilarFeatures.setChecked(checked)
 
         self.UpdatePipelineText()
 
     def SelectAllFeatureSelector(self):
-        if self.checkFeatureSelectorAll.isChecked():
-            self.checkANOVA.setChecked(True)
-            self.checkKW.setChecked(True)
-            self.checkRFE.setChecked(True)
-            self.checkRelief.setChecked(True)
-            # self.checkMRMR.setChecked(True)
-        else:
-            self.checkANOVA.setChecked(False)
-            self.checkKW.setChecked(False)
-            self.checkRFE.setChecked(False)
-            self.checkRelief.setChecked(False)
-            # self.checkMRMR.setChecked(False)
+        checked = self.checkFeatureSelectorAll.isChecked()
+        self.checkANOVA.setChecked(checked)
+        self.checkKW.setChecked(checked)
+        self.checkRFE.setChecked(checked)
+        self.checkRelief.setChecked(checked)
+        # self.checkMRMR.setChecked(checked)
 
         self.UpdatePipelineText()
 
     def SelectAllClassifier(self):
-        if self.checkClassifierAll.isChecked():
-            self.checkSVM.setChecked(True)
-            self.checkAE.setChecked(True)
-            self.checkLDA.setChecked(True)
-            self.checkRF.setChecked(True)
-            self.checkLogisticRegression.setChecked(True)
-            self.checkLRLasso.setChecked(True)
-            self.checkAdaboost.setChecked(True)
-            self.checkDecisionTree.setChecked(True)
-            self.checkGaussianProcess.setChecked(True)
-            self.checkNaiveBayes.setChecked(True)
-        else:
-            self.checkSVM.setChecked(False)
-            self.checkAE.setChecked(False)
-            self.checkLDA.setChecked(False)
-            self.checkRF.setChecked(False)
-            self.checkLogisticRegression.setChecked(False)
-            self.checkLRLasso.setChecked(False)
-            self.checkAdaboost.setChecked(False)
-            self.checkDecisionTree.setChecked(False)
-            self.checkGaussianProcess.setChecked(False)
-            self.checkNaiveBayes.setChecked(False)
+        checked = self.checkClassifierAll.isChecked()
+        self.checkSVM.setChecked(checked)
+        self.checkAE.setChecked(checked)
+        self.checkLDA.setChecked(checked)
+        self.checkRF.setChecked(checked)
+        self.checkLogisticRegression.setChecked(checked)
+        self.checkLRLasso.setChecked(checked)
+        self.checkAdaboost.setChecked(checked)
+        self.checkDecisionTree.setChecked(checked)
+        self.checkGaussianProcess.setChecked(checked)
+        self.checkNaiveBayes.setChecked(checked)
 
         self.UpdatePipelineText()
 
