@@ -76,7 +76,8 @@ class ProcessConnection(QWidget, Ui_Process):
 
         super(ProcessConnection, self).__init__(parent)
         self.setupUi(self)
-
+        self.pcccoefdoubleSpinBox.setValue(self.getDefaultValue())
+        self.pcccoefdoubleSpinBox.valueChanged.connect(self.pccValueChange)
         self.buttonLoadTrainingData.clicked.connect(self.LoadTrainingData)
         self.buttonLoadTestingData.clicked.connect(self.LoadTestingData)
 
@@ -125,6 +126,20 @@ class ProcessConnection(QWidget, Ui_Process):
 
         self.UpdatePipelineText()
         self.SetStateButtonBeforeLoading(False)
+
+    def getDefaultValue(self):
+        path = os.getcwd() + '/fae_Settings.ini'
+        settings = QSettings(path)
+        pcc_coef = 0.99
+        if settings.value('PCC_Coef'):
+            pcc_coef = float(settings.value('PCC_Coef'))
+        return pcc_coef
+
+    def saveDefaultValue(self):
+        path = os.getcwd() + '/fae_Settings.ini'
+        settings = QSettings(path)
+        settings.setValue('PCC_Coef', self.pcccoefdoubleSpinBox.value())
+        settings.sync()
 
     def closeEvent(self, QCloseEvent):
         self.close_signal.emit(True)
@@ -240,6 +255,7 @@ class ProcessConnection(QWidget, Ui_Process):
 
         self.spinBoxMinFeatureNumber.setEnabled(state)
         self.spinBoxMaxFeatureNumber.setEnabled(state)
+        self.pcccoefdoubleSpinBox.setEnabled(state)
 
         self.checkSVM.setEnabled(state)
         self.checkAE.setEnabled(state)
@@ -308,6 +324,12 @@ class ProcessConnection(QWidget, Ui_Process):
 
         self.UpdatePipelineText()
 
+    def pccValueChange(self):
+        if self.pcccoefdoubleSpinBox.value() > 1.0:
+            self.pcccoefdoubleSpinBox.setValue(1.0)
+
+        self.UpdatePipelineText()
+
     def MaxFeatureNumberChange(self):
         if self.spinBoxMaxFeatureNumber.value() < self.spinBoxMinFeatureNumber.value():
             self.spinBoxMaxFeatureNumber.setValue(self.spinBoxMinFeatureNumber.value())
@@ -340,7 +362,8 @@ class ProcessConnection(QWidget, Ui_Process):
         if self.checkPCA.isChecked():
             self.__process_dimension_reduction_list.append(DimensionReductionByPCA())
         if self.checkRemoveSimilarFeatures.isChecked():
-            self.__process_dimension_reduction_list.append(DimensionReductionByPCC())
+            self.__process_dimension_reduction_list.append(DimensionReductionByPCC(self.pcccoefdoubleSpinBox.value()))
+        self.saveDefaultValue()
 
         self.__process_feature_selector_list = []
         if self.checkANOVA.isChecked():
@@ -460,7 +483,7 @@ class ProcessConnection(QWidget, Ui_Process):
             preprocess_test += "PCA\n"
             dimension_reduction_num += 1
         if self.checkRemoveSimilarFeatures.isChecked():
-            preprocess_test += "Pearson Correlation (0.99)\n"
+            preprocess_test += "Pearson Correlation (" + str(self.pcccoefdoubleSpinBox.value()) + ")\n"
             dimension_reduction_num += 1
         if dimension_reduction_num == 0:
             dimension_reduction_num = 1
