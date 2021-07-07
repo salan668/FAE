@@ -81,6 +81,8 @@ class ProcessConnection(QWidget, Ui_Process):
         self.buttonLoadTrainingData.clicked.connect(self.LoadTrainingData)
         self.buttonLoadTestingData.clicked.connect(self.LoadTestingData)
 
+        self.buttonDefaultParam.clicked.connect(self.SetDefaultParam)
+
         self.radioNoneBalance.clicked.connect(self.UpdatePipelineText)
         self.radioDownSampling.clicked.connect(self.UpdatePipelineText)
         self.radioUpSampling.clicked.connect(self.UpdatePipelineText)
@@ -157,6 +159,7 @@ class ProcessConnection(QWidget, Ui_Process):
                 self.UpdateDataDescription()
                 self.logger.info('Open CSV file ' + file_name + ' succeed.')
                 self.spinBoxMaxFeatureNumber.setValue(len(self.training_data_container.GetFeatureName()))
+                self.SetDefaultParam()
             except OSError as reason:
                 self.logger.log('Open SCV file Error, The reason is ' + str(reason))
                 print('Load Error！' + str(reason))
@@ -220,6 +223,45 @@ class ProcessConnection(QWidget, Ui_Process):
         text_list.append("Total process: {:d} / {:d}".format(current_num, total_num))
         return "\n".join(text_list)
 
+    def SetDefaultParam(self):
+        self.radioUpSampling.setChecked(True)
+
+        self.checkNormalizationAll.setChecked(False)
+        self.checkNormalizeNone.setChecked(False)
+        self.checkNormalizeMean.setChecked(True)
+        self.checkNormalizeMinMax.setChecked(False)
+        self.checkNormalizeZscore.setChecked(True)
+
+        self.checkPCA.setChecked(False)
+        self.checkRemoveSimilarFeatures.setChecked(True)
+        self.pcccoefdoubleSpinBox.setValue(0.99)
+
+        self.spinBoxMinFeatureNumber.setValue(1)
+        self.spinBoxMaxFeatureNumber.setValue(min(min(len(self.training_data_container.GetCaseName()) // 10 * 3, 
+                                                  len(self.training_data_container.GetFeatureName())), 
+                                                  30)
+            )
+        
+        self.checkANOVA.setChecked(True)
+        self.checkKW.setChecked(True)
+        self.checkRFE.setChecked(True)
+        self.checkRelief.setChecked(False)
+
+        self.checkSVM.setChecked(True)        
+        self.checkLogisticRegression.setChecked(True)
+        self.checkLDA.setChecked(True)
+        self.checkDecisionTree.setChecked(True)
+        self.checkGaussianProcess.setChecked(False)
+        self.checkLRLasso.setChecked(False)
+        self.checkAE.setChecked(False)
+        self.checkRF.setChecked(False)
+        self.checkGaussianProcess.setChecked(False)
+        self.checkNaiveBayes.setChecked(False)
+
+        self.radio5folder.setChecked(True)
+
+        self.UpdatePipelineText()
+
     def SetStateAllButtonWhenRunning(self, state):
         if state:
             self.thread.exit()
@@ -229,6 +271,7 @@ class ProcessConnection(QWidget, Ui_Process):
         self.SetStateButtonBeforeLoading(state)
 
     def SetStateButtonBeforeLoading(self, state):
+        self.buttonDefaultParam.setEnabled(state)
         self.buttonRun.setEnabled(state)
 
         self.radioNoneBalance.setEnabled(state)
@@ -483,7 +526,7 @@ class ProcessConnection(QWidget, Ui_Process):
             preprocess_test += "PCA\n"
             dimension_reduction_num += 1
         if self.checkRemoveSimilarFeatures.isChecked():
-            preprocess_test += "Pearson Correlation (" + str(self.pcccoefdoubleSpinBox.value()) + ")\n"
+            preprocess_test += "Pearson Correlation ({:.2f})\n".format(self.pcccoefdoubleSpinBox.value())
             dimension_reduction_num += 1
         if dimension_reduction_num == 0:
             dimension_reduction_num = 1
