@@ -213,17 +213,26 @@ class PrepareConnection(QWidget, Ui_Prepare):
             self.clearClinicRef.setEnabled(False)
 
     def CheckAndSave(self):
+        def _colnum_string(n):
+            string = ""
+            while n > 0:
+                n, remainder = divmod(n - 1, 26)
+                string = chr(65 + remainder) + string
+            return string
+
         if self.data_container.IsEmpty():
             QMessageBox.warning(self, "Warning", "There is no data", QMessageBox.Ok)
             return None
 
         if self.data_container.HasInvalidNumber():
-            QMessageBox.warning(self, "Warning", "There are nan items", QMessageBox.Ok)
             non_valid_number_index = self.data_container.FindInvalidNumberIndex()
             old_edit_triggers = self.tableFeature.editTriggers()
             self.tableFeature.setEditTriggers(QAbstractItemView.CurrentChanged)
             self.tableFeature.setCurrentCell(non_valid_number_index[0], non_valid_number_index[1])
             self.tableFeature.setEditTriggers(old_edit_triggers)
+            QMessageBox.warning(self, "Warning", "There are nan item in Row {}, Col {} ({})".format(
+                non_valid_number_index[0] + 2, non_valid_number_index[1] + 2, _colnum_string(non_valid_number_index[1] + 2)), QMessageBox.Ok)
+            
             return None
 
         self.data_container.UpdateDataByFrame()
