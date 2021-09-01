@@ -85,15 +85,23 @@ class  RadiomicsParamsConfig:
         print(self.__image_classes)
 
     def SaveConfig(self):
-        file = open(self.__config_path, 'r', encoding='utf-8')
-        content = file.read()
-        config = yaml.load(content)
-        file.close()
-        file = open(self.__config_path, 'w', encoding='utf-8')
+        with open(self.__config_path, 'r', encoding='utf-8') as file:
+            content = file.read()
+            config = yaml.load(content)
 
-        config[self.__image_classes_key] = self.__image_classes
-        config[self.__feature_classes_key] = self.__feature_classes
-        yaml.dump(config, file)
+        if config is None:
+            config = {}
+
+        with open(self.__config_path, 'w', encoding='utf-8') as file:
+            config[self.__image_classes_key] = {}
+            for one_image_classes_name in self.__image_classes:
+                if one_image_classes_name == 'LoG':
+                    config[self.__image_classes_key][one_image_classes_name] = {'sigma': [1]}
+                else:
+                    config[self.__image_classes_key][one_image_classes_name] = {}
+
+            config[self.__feature_classes_key] = self.__feature_classes
+            yaml.dump(config, file)
 
 
 if __name__ == '__main__':
