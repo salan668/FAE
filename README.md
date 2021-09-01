@@ -38,9 +38,11 @@ The below modules must be installed first to make the FAE work.
 - pyradiomics=3.0
 - reportlab=3.5.34
 - scikit-learn=0.22.2
+- scikit-image=0.18.3
 - scipy=1.4.1
 - seaborn=0.10.0
 - statsmodels=0.11.1
+- trimesh=3.9.29
 ```
 
 ### Installing
