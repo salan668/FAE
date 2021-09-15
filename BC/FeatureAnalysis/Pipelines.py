@@ -38,12 +38,6 @@ class PipelinesManager(object):
         self.__logger = logger
         self.version = VERSION
 
-        self.total_metric = {TRAIN: pd.DataFrame(columns=HEADER),
-                             BALANCE_TRAIN: pd.DataFrame(columns=HEADER),
-                             TEST: pd.DataFrame(columns=HEADER),
-                             CV_TRAIN: pd.DataFrame(columns=HEADER),
-                             CV_VAL: pd.DataFrame(columns=HEADER)}
-
         self.GenerateAucDict()
 
     def SaveAll(self, store_folder):
@@ -169,6 +163,12 @@ class PipelinesManager(object):
             temp.to_csv(store_path)
 
     def GenerateAucDict(self):
+        self.total_metric = {TRAIN: pd.DataFrame(columns=HEADER),
+                             BALANCE_TRAIN: pd.DataFrame(columns=HEADER),
+                             TEST: pd.DataFrame(columns=HEADER),
+                             CV_TRAIN: pd.DataFrame(columns=HEADER),
+                             CV_VAL: pd.DataFrame(columns=HEADER)}
+
         self.total_num = len(self.normalizer_list) * \
                          len(self.dimension_reduction_list) * \
                          len(self.feature_selector_list) * \
