@@ -6,6 +6,15 @@ import seaborn as sns
 
 color_list = sns.color_palette('deep') + sns.color_palette('bright')
 
+
+def LegendRename(name_list):
+    rename_dict= {'cv_train': 'CV Training', 'cv_val': 'Validation',
+                  'balance_train': 'Balance Training',
+                  'train': 'Training', 'test': 'Testing'}
+    new_name_list = [rename_dict[i] for i in name_list]
+    return new_name_list
+
+
 def DrawROCList(pred_list, label_list, name_list='', store_path='', is_show=True, fig=plt.figure()):
     '''
     To Draw the ROC curve.
@@ -23,6 +32,8 @@ def DrawROCList(pred_list, label_list, name_list='', store_path='', is_show=True
         label_list = [label_list]
     if not isinstance(name_list, list):
         name_list = [name_list]
+
+    name_list = LegendRename(name_list)
 
     fig.clear()
     axes = fig.add_subplot(1, 1, 1)
