@@ -577,7 +577,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
 
             index_by_val = sub_val_df.index.tolist()
 
-            df = df_test.loc[index_by_val]
+            df = df_val.loc[index_by_val]
 
         df.sort_index(inplace=True)
 
