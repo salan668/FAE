@@ -30,7 +30,7 @@ class OneFeatureStatistics(object):
 
     def EstimateFeatureType(self, array):
         # 目前通过Unique方法进行判断
-        if np.unique(array).size < array.size // 100:
+        if np.unique(array).size <= 9:
             return FeatureType.Categorical
         else:
             return FeatureType.Numeric
