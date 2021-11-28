@@ -123,12 +123,12 @@ class PipelinesManager(object):
         return True
 
     def SaveOneResult(self, pred, label, key_name, case_name, matric_indexs, model_name,
-                      store_root='', model_folder=''):
+                      store_root='', model_folder='', cutoff=None):
         assert(len(matric_indexs) == 5)
         norm_index, dr_index, fs_index, fn_index, cls_index = matric_indexs
 
         info = pd.DataFrame({'Pred': pred, 'Label': label}, index=case_name)
-        metric = EstimatePrediction(pred, label, key_name)
+        metric = EstimatePrediction(pred, label, key_name, cutoff=cutoff)
 
         self.__auc_dict[key_name][norm_index, dr_index, fs_index, fn_index, cls_index] = \
             metric['{}_{}'.format(key_name, AUC)]
@@ -139,6 +139,7 @@ class PipelinesManager(object):
             info.to_csv(os.path.join(model_folder, '{}_prediction.csv'.format(key_name)))
             self._AddOneMetric(metric, os.path.join(model_folder, 'metrics.csv'))
             self._MergeOneMetric(metric, key_name, model_name)
+        return metric
 
     def _AddOneMetric(self, info, store_path):
         if not os.path.exists(store_path):
@@ -211,7 +212,7 @@ class PipelinesManager(object):
                os.path.isdir(fs_folder) and os.path.isdir(cls_folder))
         return normalizer_folder, dr_folder, fs_folder, cls_folder
 
-    def RunWithoutCV(self, train_container, test_container=DataContainer(), store_folder=''):
+    def RunWithoutCV(self, train_container, test_container=DataContainer(), store_folder='', is_train_cutoff=False):
         self.SavePipelineInfo(store_folder)
         num = 0
 
@@ -269,24 +270,36 @@ class PipelinesManager(object):
 
                             balance_train_pred = cls.Predict(fs_balance_train_container.GetArray())
                             balance_train_label = fs_balance_train_container.GetLabel()
-                            self.SaveOneResult(balance_train_pred, balance_train_label,
+                            balanced_metric = self.SaveOneResult(balance_train_pred, balance_train_label,
                                                BALANCE_TRAIN, fs_balance_train_container.GetCaseName(),
                                                matrics_index, model_name, store_folder, cls_store_folder)
 
                             train_data = fs_train_container.GetArray()
                             train_label = fs_train_container.GetLabel()
                             train_pred = cls.Predict(train_data)
-                            self.SaveOneResult(train_pred, train_label,
-                                               TRAIN, fs_train_container.GetCaseName(),
-                                               matrics_index, model_name, store_folder, cls_store_folder)
+                            if is_train_cutoff:
+                                self.SaveOneResult(train_pred, train_label,
+                                                   TRAIN, fs_train_container.GetCaseName(),
+                                                   matrics_index, model_name, store_folder, cls_store_folder,
+                                                   cutoff=float(balanced_metric[BALANCE_TRAIN + '_' + YI]))
+                            else:
+                                self.SaveOneResult(train_pred, train_label,
+                                                   TRAIN, fs_train_container.GetCaseName(),
+                                                   matrics_index, model_name, store_folder, cls_store_folder)
 
                             if not test_container.IsEmpty():
                                 test_data = fs_test_container.GetArray()
                                 test_label = fs_test_container.GetLabel()
                                 test_pred = cls.Predict(test_data)
-                                self.SaveOneResult(test_pred, test_label,
-                                                   TEST, fs_test_container.GetCaseName(),
-                                                   matrics_index, model_name, store_folder, cls_store_folder)
+                                if is_train_cutoff:
+                                    self.SaveOneResult(test_pred, test_label,
+                                                       TEST, fs_test_container.GetCaseName(),
+                                                       matrics_index, model_name, store_folder, cls_store_folder,
+                                                       cutoff=float(balanced_metric[BALANCE_TRAIN + '_' + YI]))
+                                else:
+                                    self.SaveOneResult(test_pred, test_label,
+                                                       TEST, fs_test_container.GetCaseName(),
+                                                       matrics_index, model_name, store_folder, cls_store_folder)
 
         self.total_metric[BALANCE_TRAIN].to_csv(os.path.join(store_folder, '{}_results.csv'.format(BALANCE_TRAIN)))
         self.total_metric[TRAIN].to_csv(os.path.join(store_folder, '{}_results.csv'.format(TRAIN)))
