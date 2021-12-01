@@ -200,7 +200,7 @@ def EstimateMetirc(prediction, label, key_word=''):
 
     return metric
 
-def EstimatePrediction(prediction, label, key_word=''):
+def EstimatePrediction(prediction, label, key_word='', cutoff=None):
     '''
         Calculate the medical metric according to prediction and the label.
         :param prediction: The prediction. Dim is 1.
@@ -217,12 +217,20 @@ def EstimatePrediction(prediction, label, key_word=''):
     metric[key_word + POS_NUM] = np.sum(label)
     metric[key_word + NEG_NUM] = len(label) - np.sum(label)
 
-    fpr, tpr, threshold = roc_curve(label, prediction)
-    index = np.argmax(1 - fpr + tpr)
-    metric[key_word + YI] = '{:.4f}'.format(threshold[index])
+    # fpr, tpr, threshold = roc_curve(label, prediction)
+    # index = np.argmax(1 - fpr + tpr)
+    # metric[key_word + YI] = '{:.4f}'.format(threshold[index])
 
     pred = np.zeros_like(label)
-    pred[prediction >= threshold[index]] = 1
+    if cutoff is None:
+        fpr, tpr, threshold = roc_curve(label, prediction)
+        index = np.argmax(1 - fpr + tpr)
+        metric[key_word + YI] = '{:.4f}'.format(threshold[index])
+        pred[prediction >= threshold[index]] = 1
+    else:
+        metric[key_word + YI] = '{:.4f}'.format(cutoff)
+        pred[prediction >= cutoff] = 1
+
     C = confusion_matrix(label, pred, labels=[1, 0])
 
     metric[key_word + ACC] = '{:.4f}'.format(np.where(pred == label)[0].size / label.size)

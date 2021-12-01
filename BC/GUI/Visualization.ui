@@ -102,7 +102,7 @@
            <item>
             <widget class="QLabel" name="label">
              <property name="text">
-              <string>testing based</string>
+              <string>model based</string>
              </property>
             </widget>
            </item>
@@ -161,21 +161,21 @@
            <item>
             <widget class="QCheckBox" name="checkROCCVTrain">
              <property name="text">
-              <string>CV Train</string>
+              <string>CV Training</string>
              </property>
             </widget>
            </item>
            <item>
             <widget class="QCheckBox" name="checkROCCVValidation">
              <property name="text">
-              <string>CV Validation</string>
+              <string>Validation</string>
              </property>
             </widget>
            </item>
            <item>
             <widget class="QCheckBox" name="checkROCTrain">
              <property name="text">
-              <string>Train</string>
+              <string>Training</string>
              </property>
             </widget>
            </item>
@@ -236,21 +236,21 @@
            <item>
             <widget class="QCheckBox" name="checkPlotCVTrain">
              <property name="text">
-              <string>CV Train</string>
+              <string>CV Training</string>
              </property>
             </widget>
            </item>
            <item>
             <widget class="QCheckBox" name="checkPlotCVValidation">
              <property name="text">
-              <string>CV Validation</string>
+              <string>Validation</string>
              </property>
             </widget>
            </item>
            <item>
             <widget class="QCheckBox" name="checkPlotTrain">
              <property name="text">
-              <string>Train</string>
+              <string>Training</string>
              </property>
             </widget>
            </item>

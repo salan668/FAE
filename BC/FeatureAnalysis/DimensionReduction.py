@@ -221,7 +221,7 @@ class DimensionReductionByPCC(DimensionReduction):
 
     def GetDescription(self):
         text = "Since the dimension of feature space was high, we compared the similarity of each feature pair. " \
-               "If the PCC value of the feature pair was larger than 0.99, we removed one of them. After this " \
+               "If the PCC value of the feature pair was larger than the set value, we removed one of them. After this " \
                "process, the dimension of the feature space was reduced and each feature was independent to each other. "
         return text
 

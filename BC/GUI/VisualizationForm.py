@@ -96,6 +96,18 @@ class VisualizationConnection(QWidget, Ui_Visualization):
             if not os.path.exists(self._root_folder):
                 return
             try:
+                if not self._fae.LoadPipelineInfo(self._root_folder):
+                    QMessageBox().about(self, "Load Failed",
+                                        "The results were built by BC with the non-accept version and can not be "
+                                        "loaded.")
+                    return
+
+                if not self._fae.LoadAucDict(self._root_folder):
+                    QMessageBox().about(self, 'Load Failed',
+                                        'auc_metric.pkl and auc_std_metric.pkl do not exist, it seems that the model '
+                                        'development does not run completely.')
+                    return
+
                 if self._fae.LoadAll(self._root_folder):
                     self.lineEditResultPath.setText(self._root_folder)
                     self.SetResultDescription()
@@ -107,10 +119,6 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                     self.buttonLoadResult.setEnabled(False)
                     self.buttonGenerateDescription.setEnabled(True)
 
-                else:
-                    QMessageBox().about(self, "Load Failed",
-                                        "The results were built by BC with the previous version and can not be "
-                                        "loaded.")
             except Exception as ex:
                 QMessageBox.about(self, "Load Error", ex.__str__())
                 self.ClearAll()
@@ -577,7 +585,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
 
             index_by_val = sub_val_df.index.tolist()
 
-            df = df_test.loc[index_by_val]
+            df = df_val.loc[index_by_val]
 
         df.sort_index(inplace=True)
 

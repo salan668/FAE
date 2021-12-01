@@ -189,7 +189,7 @@ class Description:
         pdf.table_header(figure_title)
 
         pdf.end_connect(
-            "Thanks for using BC Pro {}. If you need a specific description, please connect to "
+            "Thanks for using FAE {}. If you need a specific description, please connect to "
             "Yang Song (songyangmri@gmail.com) or Guang Yang (gyang@phy.ecnu.edu.cn). "
             "Welcome any co-operation and discussion.".format(VERSION))
         pdf.generate()
