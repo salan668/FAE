@@ -560,6 +560,13 @@
          <item>
           <widget class="QListWidget" name="listOnePipeline"/>
          </item>
+         <item>
+          <widget class="QCheckBox" name="checkEstimatebyTraining">
+           <property name="text">
+            <string>Estiamte Confusion Matrix by Balanced Training cutoff</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
        <item>

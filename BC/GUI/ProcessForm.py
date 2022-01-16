@@ -24,15 +24,17 @@ class CVRun(QThread):
         super().__init__()
         pass
 
-    def SetProcessConnectionAndStore_folder(self, process_connection, store_folder):
+    def SetProcessConnectionAndStore_folder(self, process_connection, store_folder, is_train_cutoff=False):
         self._process_connection = process_connection
         self.store_folder = store_folder
+        self.is_train_cutoff = is_train_cutoff
 
     def run(self):
         try:
             for total, num in self._process_connection.fae.RunWithoutCV(self._process_connection.training_data_container,
                                                                         self._process_connection.testing_data_container,
-                                                                        self.store_folder):
+                                                                        self.store_folder,
+                                                                        self.is_train_cutoff):
                 text = "Model Developing:\n{} / {}".format(num, total)
                 self.signal.emit(text)
         except Exception as e:
@@ -352,7 +354,7 @@ class ProcessConnection(QWidget, Ui_Process):
             if self.MakePipelines():
                 # self.thread = CVRun()
                 self.thread.moveToThread(QThread())
-                self.thread.SetProcessConnectionAndStore_folder(self, store_folder)
+                self.thread.SetProcessConnectionAndStore_folder(self, store_folder, self.checkEstimatebyTraining.isChecked())
 
                 self.thread.signal.connect(self.textEditVerbose.setPlainText)
                 self.thread.start()

@@ -67,19 +67,10 @@ class DataContainer:
         return result
 
     def IsValidNumber(self, input_data):
-        if not self.__IsNumber(input_data):
-            return False
-
-        if math.isnan(float(input_data)):
-            return False
-
-        return True
+        return self.__IsNumber(input_data) and not math.isnan(float(input_data))
 
     def IsEmpty(self):
-        if self._df.size > 0:
-            return False
-        else:
-            return True
+        return self._df.size <= 0
 
     def IsBinaryLabel(self):
         return len(np.unique(self._label)) == 2
@@ -89,19 +80,12 @@ class DataContainer:
             if self._label[index] != 0 and self._label[index] != 1:
                 return index
 
-    def HasInvalidNumber(self):
-        for row_index in range(self._df.shape[0]):
-            for col_index in range(self._df.shape[1]):
-                if not self.IsValidNumber(self._df.iloc[row_index, col_index]):
-                    return True
-        return False
-
-    def FindInvalidNumberIndex(self):
+    def FindInvalidNumber(self):
         for row_index in range(self._df.shape[0]):
             for col_index in range(self._df.shape[1]):
                 if not self.IsValidNumber(self._df.iloc[row_index, col_index]):
                     return row_index, col_index
-        return None, None
+        return None
 
     def Save(self, store_path):
         self.UpdateFrameByData()
