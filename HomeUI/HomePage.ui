@@ -6,16 +6,16 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>680</width>
-    <height>365</height>
+    <width>885</width>
+    <height>531</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>FeAture Explorer (Research Used Only)</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout_2">
+  <layout class="QGridLayout" name="gridLayout_3">
    <item row="0" column="0">
-    <layout class="QVBoxLayout" name="verticalLayout_3" stretch="2,2,0,1,0">
+    <layout class="QVBoxLayout" name="verticalLayout_3">
      <item>
       <widget class="QLabel" name="labelTitle">
        <property name="font">
@@ -38,7 +38,7 @@
       </widget>
      </item>
      <item>
-      <layout class="QGridLayout" name="gridLayout">
+      <layout class="QGridLayout" name="gridLayout_2">
        <item row="0" column="0">
         <widget class="QLabel" name="label">
          <property name="font">
@@ -142,6 +142,48 @@
           </widget>
          </item>
         </layout>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_5">
+       <property name="font">
+        <font>
+         <family>Adobe Arabic</family>
+         <pointsize>14</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>Plugins</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QGridLayout" name="gridLayout" columnstretch="1,1,2">
+       <item row="0" column="0">
+        <widget class="QComboBox" name="comboPlugin"/>
+       </item>
+       <item row="0" column="1" rowspan="2">
+        <widget class="QLabel" name="labelPluginFigure">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2" rowspan="2">
+        <widget class="QTextBrowser" name="textBrowser"/>
+       </item>
+       <item row="1" column="0">
+        <widget class="QPushButton" name="buttonPluginRun">
+         <property name="text">
+          <string>Feature Extraction</string>
+         </property>
+        </widget>
        </item>
       </layout>
      </item>

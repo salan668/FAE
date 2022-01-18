@@ -1,6 +1,11 @@
+import os
 import sys
 
+from pathlib import Path
+
+import PyQt5
 from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
 
 from HomeUI.HomePage import Ui_HomePage
 from BC.GUI import FeatureExtractionForm, PrepareConnection, ProcessConnection, VisualizationConnection
@@ -9,6 +14,7 @@ from VersionConstant import VERSION
 from SA.GUI.ProcessForm import ProcessForm
 from SA.GUI.VisualizationForm import VisualizationForm
 
+from Plugin.PluginManager import PluginManager
 
 class HomePageForm(QDialog, Ui_HomePage):
     def __init__(self, parent=None):
@@ -39,6 +45,11 @@ class HomePageForm(QDialog, Ui_HomePage):
         self.buttonSaVisulization.clicked.connect(self.OpenSaVisualization)
         self.sa_visualization.close_signal.connect(self.CloseSaVisualization)
 
+        self.plugins_manager = PluginManager()
+        self.buttonPluginRun.clicked.connect(self.RunPlugin)
+
+        self.LoadPlugins()
+        self.UpdatePlugin()
 
     def OpenFeatureExtraction(self):
         self.feature_extraction.show()
@@ -81,6 +92,40 @@ class HomePageForm(QDialog, Ui_HomePage):
     def CloseSaVisualization(self, is_close):
         if is_close:
             self.show()
+
+    def LoadPlugins(self):
+        self.comboPlugin.clear()
+        plugin_folder = Path(os.getcwd()) / 'Plugin'
+        self.plugins_manager.LoadPlugin(plugin_folder)
+        for one in self.plugins_manager.plugins.keys():
+            self.comboPlugin.addItem(one)
+
+    def UpdatePlugin(self):
+        # Set Logo
+        current_plugin = self.plugins_manager.plugins[self.comboPlugin.currentText()]
+        if current_plugin.figure is not None:
+            pixmap = QPixmap(str(current_plugin.figure))
+
+            # wired for use 2 factor.
+            pixmap = pixmap.scaled(self.labelPluginFigure.size() * 2, PyQt5.QtCore.Qt.KeepAspectRatio)
+            self.labelPluginFigure.setPixmap(pixmap)
+        else:
+            self.labelPluginFigure.setText('Non Logo')
+
+        if current_plugin.description is not None:
+            text = ''
+            with open(str(current_plugin.description), 'r') as f:
+                for one in f.read():
+                    text += one
+
+                self.textBrowser.setText(text)
+        else:
+            self.textBrowser.setText('None')
+
+    def RunPlugin(self):
+        file_path = str(self.plugins_manager.plugins[self.comboPlugin.currentText()].path)
+        self.showMinimized()
+        os.system(file_path)
 
 
 if __name__ == '__main__':
