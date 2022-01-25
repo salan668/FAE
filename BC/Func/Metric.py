@@ -3,8 +3,9 @@ All rights reserved.
 --Yang Song, Apr 8th, 2020.
 """
 import numpy as np
-from sklearn.metrics import roc_auc_score, roc_curve, confusion_matrix
+from sklearn.metrics import roc_curve, matthews_corrcoef, classification_report, precision_recall_curve, auc
 
+from BC.Func.DelongAUC import CalculateAUC
 from BC.Utility.Constants import *
 
 def AUC_Confidence_Interval(y_true, y_pred, CI_index=0.95):
@@ -217,43 +218,34 @@ def EstimatePrediction(prediction, label, key_word='', cutoff=None):
     metric[key_word + POS_NUM] = np.sum(label)
     metric[key_word + NEG_NUM] = len(label) - np.sum(label)
 
-    # fpr, tpr, threshold = roc_curve(label, prediction)
-    # index = np.argmax(1 - fpr + tpr)
-    # metric[key_word + YI] = '{:.4f}'.format(threshold[index])
+    precision, recall, _ = precision_recall_curve(label, prediction)
+    metric[key_word + AUC_PR] = '{:.4f}'.format(auc(recall, precision))
 
     pred = np.zeros_like(label)
     if cutoff is None:
         fpr, tpr, threshold = roc_curve(label, prediction)
         index = np.argmax(1 - fpr + tpr)
-        metric[key_word + YI] = '{:.4f}'.format(threshold[index])
+        metric[key_word + CUTOFF] = '{:.4f}'.format(threshold[index])
         pred[prediction >= threshold[index]] = 1
     else:
-        metric[key_word + YI] = '{:.4f}'.format(cutoff)
+        metric[key_word + CUTOFF] = '{:.4f}'.format(cutoff)
         pred[prediction >= cutoff] = 1
 
-    C = confusion_matrix(label, pred, labels=[1, 0])
-
     metric[key_word + ACC] = '{:.4f}'.format(np.where(pred == label)[0].size / label.size)
-    if np.sum(C[0, :]) < 1e-6:
-        metric[key_word + SEN] = 0
-    else:
-        metric[key_word + SEN] = '{:.4f}'.format(C[0, 0] / np.sum(C[0, :]))
-    if np.sum(C[1, :]) < 1e-6:
-        metric[key_word + SPE] = 0
-    else:
-        metric[key_word + SPE] = '{:.4f}'.format(C[1, 1] / np.sum(C[1, :]))
-    if np.sum(C[:, 0]) < 1e-6:
-        metric[key_word + PPV] = 0
-    else:
-        metric[key_word + PPV] = '{:.4f}'.format(C[0, 0] / np.sum(C[:, 0]))
-    if np.sum(C[:, 1]) < 1e-6:
-        metric[key_word + NPV] = 0
-    else:
-        metric[key_word + NPV] = '{:.4f}'.format(C[1, 1] / np.sum(C[:, 1]))
+    metric[key_word + MCC] = '{:.4f}'.format(matthews_corrcoef(label, pred))
 
-    single_auc, mean_auc, ci, score, std = AUC_Confidence_Interval(label, prediction)
-    metric[key_word + AUC] = '{:.4f}'.format(single_auc)
+    report = classification_report(label, pred, digits=4, output_dict=True)
+    metric[key_word + SEN] = '{:.4f}'.format(report['1']['recall'])
+    metric[key_word + SPE] = '{:.4f}'.format(report['0']['recall'])
+    metric[key_word + PPV] = '{:.4f}'.format(report['1']['precision'])
+    metric[key_word + NPV] = '{:.4f}'.format(report['0']['precision'])
+
+    metric[key_word + YI] = '{:.4f}'.format(1 - report['1']['recall'] + report['0']['recall'])
+
+    roc_auc, std, ci = CalculateAUC(label, prediction)
+    metric[key_word + AUC] = '{:.4f}'.format(roc_auc)
     metric[key_word + AUC_CI] = '[{:.4f}-{:.4f}]'.format(ci[0], ci[1])
     metric[key_word + AUC_STD] = '{:.4f}'.format(std)
 
     return metric
+

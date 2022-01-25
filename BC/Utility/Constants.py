@@ -32,6 +32,9 @@ NUMBER = 'Number'
 POS_NUM = 'PosNum'
 NEG_NUM = 'NegNum'
 AUC = 'AUC'
+AUC_PR = 'AUC-PR'
+CUTOFF = 'Cutoff'
+MCC = 'MCC'
 AUC_CI = '95% CIs'
 AUC_STD = 'Std'
 ACC = 'Acc'
@@ -40,7 +43,7 @@ SEN = 'Sen'
 SPE = 'Spe'
 PPV = 'PPV'
 NPV = 'NPV'
-HEADER = [NUMBER, POS_NUM, NEG_NUM, AUC, AUC_CI, AUC_STD, ACC, YI, SEN, SPE, PPV, NPV]
+HEADER = [NUMBER, POS_NUM, NEG_NUM, AUC, AUC_CI, AUC_STD, AUC_PR, CUTOFF, MCC, ACC, YI, SEN, SPE, PPV, NPV]
 
 
 # Type Key

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>885</width>
-    <height>531</height>
+    <height>431</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,7 +15,7 @@
   </property>
   <layout class="QGridLayout" name="gridLayout_3">
    <item row="0" column="0">
-    <layout class="QVBoxLayout" name="verticalLayout_3">
+    <layout class="QVBoxLayout" name="verticalLayout_4">
      <item>
       <widget class="QLabel" name="labelTitle">
        <property name="font">
@@ -94,11 +94,22 @@
         </widget>
        </item>
        <item row="1" column="0">
-        <widget class="QPushButton" name="buttonFeatureExtraction">
-         <property name="text">
-          <string>Feature Extraction</string>
-         </property>
-        </widget>
+        <layout class="QVBoxLayout" name="verticalLayout_3">
+         <item>
+          <widget class="QPushButton" name="buttonFeatureExtraction">
+           <property name="text">
+            <string>Feature Extraction</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="buttonFeatureMerge">
+           <property name="text">
+            <string>Feature Merge</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
        <item row="1" column="1">
         <layout class="QVBoxLayout" name="verticalLayout">
@@ -181,7 +192,7 @@
        <item row="1" column="0">
         <widget class="QPushButton" name="buttonPluginRun">
          <property name="text">
-          <string>Feature Extraction</string>
+          <string>Run Plugin</string>
          </property>
         </widget>
        </item>

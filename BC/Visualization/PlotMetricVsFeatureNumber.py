@@ -46,7 +46,8 @@ def DrawCurve(x, y_list, std_list=[], xlabel='', ylabel='', title='', name_list=
             sub_std_list = std_list[index]
             if name_list[index] == CV_VAL:
                 axes.errorbar(x, sub_y_list, yerr=sub_std_list, fmt='-o',
-                              color=color_list[index], elinewidth=1, capsize=4, alpha=1, marker='.', label='CV Validation')
+                              color=color_list[index], elinewidth=1, capsize=4,
+                              alpha=1, label='CV Validation')
                 if one_se:
                     sub_y_list = y_list[index]
                     sub_std_list = std_list[index]

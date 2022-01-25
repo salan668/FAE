@@ -8,7 +8,7 @@ from BC.GUI.Visualization import Ui_Visualization
 from BC.FeatureAnalysis.Classifier import *
 from BC.FeatureAnalysis.Pipelines import PipelinesManager
 from BC.Description.Description import Description
-from BC.Visualization.DrawROCList import DrawROCList
+from BC.Visualization.DrawROCList import DrawROCList, DrawPRCurveList
 from BC.Visualization.PlotMetricVsFeatureNumber import DrawCurve, DrawBar
 from BC.Visualization.FeatureSort import GeneralFeatureSort
 from BC.Utility.EcLog import eclog
@@ -37,6 +37,9 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.__plt_roc = self.canvasROC.getFigure().add_subplot(111)
         self.__plt_plot = self.canvasPlot.getFigure().add_subplot(111)
         self.__contribution = self.canvasFeature.getFigure().add_subplot(111)
+        self.comboShowType.addItem('ROC')
+        self.comboShowType.addItem('PR Curve')
+        self.comboShowType.currentIndexChanged.connect(self.UpdateROC)
 
         # Update Sheet
         self.tableClinicalStatistic.setEditTriggers(QAbstractItemView.NoEditTriggers)
@@ -98,7 +101,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
             try:
                 if not self._fae.LoadPipelineInfo(self._root_folder):
                     QMessageBox().about(self, "Load Failed",
-                                        "The results were built by BC with the non-accept version and can not be "
+                                        "The results were built by FAE with the non-accept version and can not be "
                                         "loaded.")
                     return
 
@@ -307,7 +310,10 @@ class VisualizationConnection(QWidget, Ui_Visualization):
             self.__AddOneCurveInRoc(pred_list, label_list, name_list, cls_folder, TEST)
 
         if len(pred_list) > 0:
-            DrawROCList(pred_list, label_list, name_list=name_list, is_show=False, fig=self.canvasROC.getFigure())
+            if self.comboShowType.currentText() == 'ROC':
+                DrawROCList(pred_list, label_list, name_list=name_list, is_show=False, fig=self.canvasROC.getFigure())
+            elif self.comboShowType.currentText() == 'PR Curve':
+                DrawPRCurveList(pred_list, label_list, name_list=name_list, is_show=False, fig=self.canvasROC.getFigure())
 
         self.canvasROC.draw()
 

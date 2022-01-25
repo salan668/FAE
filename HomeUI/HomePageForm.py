@@ -47,6 +47,7 @@ class HomePageForm(QDialog, Ui_HomePage):
 
         self.plugins_manager = PluginManager()
         self.buttonPluginRun.clicked.connect(self.RunPlugin)
+        self.comboPlugin.currentIndexChanged.connect(self.UpdatePlugin)
 
         self.LoadPlugins()
         self.UpdatePlugin()
@@ -102,12 +103,15 @@ class HomePageForm(QDialog, Ui_HomePage):
 
     def UpdatePlugin(self):
         # Set Logo
+        if self.comboPlugin.count() == 0:
+            return
+
         current_plugin = self.plugins_manager.plugins[self.comboPlugin.currentText()]
         if current_plugin.figure is not None:
             pixmap = QPixmap(str(current_plugin.figure))
 
             # wired for use 2 factor.
-            pixmap = pixmap.scaled(self.labelPluginFigure.size() * 2, PyQt5.QtCore.Qt.KeepAspectRatio)
+            pixmap = pixmap.scaled(self.labelPluginFigure.size(), PyQt5.QtCore.Qt.KeepAspectRatio)
             self.labelPluginFigure.setPixmap(pixmap)
         else:
             self.labelPluginFigure.setText('Non Logo')
@@ -123,9 +127,9 @@ class HomePageForm(QDialog, Ui_HomePage):
             self.textBrowser.setText('None')
 
     def RunPlugin(self):
-        file_path = str(self.plugins_manager.plugins[self.comboPlugin.currentText()].path)
+        file_path = self.plugins_manager.plugins[self.comboPlugin.currentText()].path
         self.showMinimized()
-        os.system(file_path)
+        os.system(str(file_path))
 
 
 if __name__ == '__main__':

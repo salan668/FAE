@@ -50,7 +50,7 @@ class PluginManager(object):
             if one.is_dir():
                 config_path = one / 'config.json'
                 if not config_path.exists():
-                    print('{} does not include config.json')
+                    print('{} does not include config.json'.format(one))
                     continue
 
                 one_plugin = Plugin()

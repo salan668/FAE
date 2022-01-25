@@ -153,7 +153,7 @@ class Description:
                                 "calculated at a cutoff value that maximized the value of the Yorden index. We " \
                                 "also estimated the 95% confidence interval by bootstrape with 1000 samples. " \
                                 "All above processes were implemented with FeAture Explorer Pro " \
-                                "(FAEPro, V {}) on Python (3.7.6).\n".format(VERSION)
+                                "(FAE, V {}) on Python (3.7.6).\n".format(VERSION)
         result_description = self._MetricDescription(os.path.split(fs_folder)[1].split('_')[1], df)
 
         table_stype = (
