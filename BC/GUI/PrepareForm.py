@@ -224,14 +224,14 @@ class PrepareConnection(QWidget, Ui_Prepare):
             QMessageBox.warning(self, "Warning", "There is no data", QMessageBox.Ok)
             return None
 
-        if self.data_container.HasInvalidNumber():
-            non_valid_number_index = self.data_container.FindInvalidNumberIndex()
+        invalid_number_index = self.data_container.FindInvalidNumber()
+        if invalid_number_index:
             old_edit_triggers = self.tableFeature.editTriggers()
             self.tableFeature.setEditTriggers(QAbstractItemView.CurrentChanged)
-            self.tableFeature.setCurrentCell(non_valid_number_index[0], non_valid_number_index[1])
+            self.tableFeature.setCurrentCell(invalid_number_index[0], invalid_number_index[1])
             self.tableFeature.setEditTriggers(old_edit_triggers)
             QMessageBox.warning(self, "Warning", "There are nan item in Row {}, Col {} ({})".format(
-                non_valid_number_index[0] + 2, non_valid_number_index[1] + 2, _colnum_string(non_valid_number_index[1] + 2)), QMessageBox.Ok)
+                invalid_number_index[0] + 2, invalid_number_index[1] + 2, _colnum_string(invalid_number_index[1] + 2)), QMessageBox.Ok)
             
             return None
 
