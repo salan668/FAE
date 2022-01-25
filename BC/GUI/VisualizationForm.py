@@ -2,7 +2,6 @@ import re
 
 from PyQt5.QtWidgets import *
 from PyQt5 import QtCore
-import logging
 
 from BC.GUI.Visualization import Ui_Visualization
 from BC.FeatureAnalysis.Classifier import *
@@ -11,7 +10,7 @@ from BC.Description.Description import Description
 from BC.Visualization.DrawROCList import DrawROCList, DrawPRCurveList
 from BC.Visualization.PlotMetricVsFeatureNumber import DrawCurve, DrawBar
 from BC.Visualization.FeatureSort import GeneralFeatureSort
-from BC.Utility.EcLog import eclog
+from Utility.EcLog import eclog
 from BC.Utility.Constants import *
 
 

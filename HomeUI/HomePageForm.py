@@ -8,7 +8,8 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 
 from HomeUI.HomePage import Ui_HomePage
-from BC.GUI import FeatureExtractionForm, PrepareConnection, ProcessConnection, VisualizationConnection
+from Feature.GUI import FeatureMergeForm, FeatureExtractionForm
+from BC.GUI import PrepareConnection, ProcessConnection, VisualizationConnection
 from VersionConstant import VERSION
 
 from SA.GUI.ProcessForm import ProcessForm
@@ -24,6 +25,7 @@ class HomePageForm(QDialog, Ui_HomePage):
         self.labelTitle.setText("FeAture Explorer V. {}".format(VERSION))
 
         self.feature_extraction = FeatureExtractionForm()
+        self.feature_merge = FeatureMergeForm()
         self.bc_preprocessing = PrepareConnection()
         self.bc_model_exploration = ProcessConnection()
         self.bc_visualization = VisualizationConnection()
@@ -32,6 +34,8 @@ class HomePageForm(QDialog, Ui_HomePage):
 
         self.buttonFeatureExtraction.clicked.connect(self.OpenFeatureExtraction)
         self.feature_extraction.close_signal.connect(self.CloseFeatureExtraction)
+        self.buttonFeatureMerge.clicked.connect(self.OpenFeatureMerge)
+        self.feature_merge.close_signal.connect(self.CloseFeatureMerge)
 
         self.buttonBcFeaturePreprocessing.clicked.connect(self.OpenBcPreprocessing)
         self.bc_preprocessing.close_signal.connect(self.CloseBcPreprocessing)
@@ -56,6 +60,13 @@ class HomePageForm(QDialog, Ui_HomePage):
         self.feature_extraction.show()
         self.hide()
     def CloseFeatureExtraction(self, is_close):
+        if is_close:
+            self.show()
+
+    def OpenFeatureMerge(self):
+        self.feature_merge.show()
+        self.hide()
+    def CloseFeatureMerge(self, is_close):
         if is_close:
             self.show()
 

@@ -1,0 +1,2 @@
+from Feature.GUI.FeatureExtractionForm2 import FeatureExtractionForm
+from Feature.GUI.FeatureMergeForm import FeatureMergeForm

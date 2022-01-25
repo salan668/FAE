@@ -6,7 +6,7 @@ import pandas as pd
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import pyqtSignal
 from BC.GUI.Prepare import Ui_Prepare
-from BC.Utility.EcLog import eclog
+from Utility.EcLog import eclog
 from BC.DataContainer.DataContainer import DataContainer
 from BC.DataContainer import DataSeparate
 from BC.FeatureAnalysis.FeatureSelector import RemoveSameFeatures
