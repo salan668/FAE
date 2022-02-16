@@ -1,7 +1,14 @@
 featureClass:
   firstorder: null
+  glcm: null
+  gldm: null
+  glrlm: null
+  glszm: null
+  ngtdm: null
   shape: null
 imageType:
+  LBP2D: {}
+  LBP3D: {}
   Original: {}
 setting:
   binWidth: 50
