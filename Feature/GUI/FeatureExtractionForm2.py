@@ -21,7 +21,7 @@ class FeatureExtractionForm(QWidget):
         self._image_patten_list = []
         self._roi_patten_list = []
         self._missing_message = ''
-        self.radiomics_params = RadiomicsParamsConfig('RadiomicsParams.yaml')
+        self.radiomics_params = RadiomicsParamsConfig(r'Feature\GUI\RadiomicsParams.yaml')
 
         self.ui.setupUi(self)
         self.ui.tableFilePattern.setColumnCount(4)
@@ -247,7 +247,7 @@ class FeatureExtractionForm(QWidget):
             if self.ui.useExistConfigcheckBox.isChecked():
                 extractor = MyFeatureExtractor(self.ui.configLineEdit.text())
             else:
-                extractor = MyFeatureExtractor('RadiomicsParams.yaml', ignore_tolerance=True)
+                extractor = MyFeatureExtractor(self.radiomics_params.config_path, ignore_tolerance=True)
 
             series_matchers, roi_matcher = self._GetImageAndRoiMatcher()
             name_list, matcher_list = [], []
