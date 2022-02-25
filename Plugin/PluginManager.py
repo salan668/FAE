@@ -46,6 +46,10 @@ class PluginManager(object):
         self.plugins = {}
 
     def LoadPlugin(self, plugin_folder: Path):
+        self.plugins = {}
+        if not plugin_folder.exists():
+            return
+
         for one in plugin_folder.iterdir():
             if one.is_dir():
                 config_path = one / 'config.json'
