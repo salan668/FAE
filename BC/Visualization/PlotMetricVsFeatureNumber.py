@@ -10,6 +10,7 @@ from BC.Utility.Constants import CV_VAL
 
 color_list = sns.color_palette('deep') + sns.color_palette('bright')
 
+
 def DrawCurve(x, y_list, std_list=[], xlabel='', ylabel='', title='', name_list=[], store_path='',
               one_se=False, is_show=True, fig=plt.figure()):
     '''
@@ -47,7 +48,7 @@ def DrawCurve(x, y_list, std_list=[], xlabel='', ylabel='', title='', name_list=
             if name_list[index] == CV_VAL:
                 axes.errorbar(x, sub_y_list, yerr=sub_std_list, fmt='-o',
                               color=color_list[index], elinewidth=1, capsize=4,
-                              alpha=1, label='CV Validation')
+                              alpha=1, label='CV Validation', marker='.')
                 if one_se:
                     sub_y_list = y_list[index]
                     sub_std_list = std_list[index]
