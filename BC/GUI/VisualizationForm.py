@@ -128,6 +128,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
 
     def ClearAll(self):
         self.__is_clear = True
+
         self.buttonLoadResult.setEnabled(True)
         self.buttonSave.setEnabled(False)
         self.buttonGenerateDescription.setEnabled(False)
