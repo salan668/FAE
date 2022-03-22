@@ -281,7 +281,7 @@ class PipelinesManager(object):
                                 self.SaveOneResult(train_pred, train_label,
                                                    TRAIN, fs_train_container.GetCaseName(),
                                                    matrics_index, model_name, store_folder, cls_store_folder,
-                                                   cutoff=float(balanced_metric[BALANCE_TRAIN + '_' + YI]))
+                                                   cutoff=float(balanced_metric[BALANCE_TRAIN + '_' + CUTOFF]))
                             else:
                                 self.SaveOneResult(train_pred, train_label,
                                                    TRAIN, fs_train_container.GetCaseName(),
@@ -295,7 +295,7 @@ class PipelinesManager(object):
                                     self.SaveOneResult(test_pred, test_label,
                                                        TEST, fs_test_container.GetCaseName(),
                                                        matrics_index, model_name, store_folder, cls_store_folder,
-                                                       cutoff=float(balanced_metric[BALANCE_TRAIN + '_' + YI]))
+                                                       cutoff=float(balanced_metric[BALANCE_TRAIN + '_' + CUTOFF]))
                                 else:
                                     self.SaveOneResult(test_pred, test_label,
                                                        TEST, fs_test_container.GetCaseName(),
@@ -364,12 +364,10 @@ class PipelinesManager(object):
                                                            index=fs_cv_val_container.GetCaseName())
 
                                 if store_folder:
-                                    self._AddOneCvPrediction(os.path.join(cls_store_folder,
-                                                                         '{}_prediction.csv'.format(CV_TRAIN)),
-                                                             cv_train_info)
-                                    self._AddOneCvPrediction(os.path.join(cls_store_folder,
-                                                                         '{}_prediction.csv'.format(CV_VAL)),
-                                                             cv_val_info)
+                                    self._AddOneCvPrediction(os.path.join(
+                                        cls_store_folder,'{}_prediction.csv'.format(CV_TRAIN)), cv_train_info)
+                                    self._AddOneCvPrediction(os.path.join(
+                                        cls_store_folder, '{}_prediction.csv'.format(CV_VAL)), cv_val_info)
 
     def MergeCvResult(self, store_folder):
         num = 0
