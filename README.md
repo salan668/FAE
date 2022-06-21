@@ -1,8 +1,10 @@
 # FAE
 
-Feature Analysis Explorer (FAE) can help researchers develop a classification model with comparison among different methods. This project was inspired on the [Radiomics](http://www.radiomics.io/), and provides a GUI to help analyze the feature matrix, including feature matrix pre-process, model development, and results visualization.
+FeAture Explorer (FAE), a radiomics (or medical analysis) tool that helps radiologists extract features, preprocess feature matrix, develop machine learning models (Binary Classification & Survival Analysis) with one-click, and evaluate models qualitatively  and quantitatively. This project was inspired on the [Radiomics](http://www.radiomics.io/), and provides a GUI with convenient process. FAE was initially developed by East China Normal University and Siemens Healthineers Ltd. 
 
-If you publish any work which uses this package, I will appreciate that you could give the following link (https://github.com/salan668/FAE)
+If FAE could help in your project, We appreciate that you could cite this work:
+
+> Y. Song, J. Zhang, Y. Zhang, Y. Hou, X. Yan, Y. Wang, M. Zhou, Y. Yao, G. Yang. FeAture Explorer (FAE): A tool for developing and comparing radiomics models. PLoS One. 2020. DOI: https://doi.org/10.1371/journal.pone.0237587
 
 Welcome any issues and PR. 
 
@@ -12,27 +14,20 @@ Welcome any issues and PR.
 
 ## Release
 
-The Windows 64 version was release here https://drive.google.com/open?id=1htts7YsfaxKtN1NeDcNU4iksXfjr_XyK
-(Alternative link is: https://pan.baidu.com/s/1ha66TajeoT6dA-a4Qdt8fA)
+The Windows64 version and the Ubuntut 20.04 release could be found [Google Drive](https://drive.google.com/open?id=1htts7YsfaxKtN1NeDcNU4iksXfjr_XyK) or [Baidu Drive](https://pan.baidu.com/s/1ha66TajeoT6dA-a4Qdt8fA). A short [tutorial video](https://www.bilibili.com/video/BV1yt4y1S79S/) with Chinese version may help.
 
-A short tutorial video may help: https://www.bilibili.com/video/BV1yt4y1S79S/ (Chinese Version)
-
-If FAE could help in your research, please refer to  
-
-> Y. Song, J. Zhang, Y. Zhang, Y. Hou, X. Yan, Y. Wang, M. Zhou, Y. Yao, G. Yang. FeAture Explorer (FAE): A tool for developing and comparing radiomics models. PLoS One. 2020. DOI: https://doi.org/10.1371/journal.pone.0237587
-
-## Getting Started
-
-### Pre-install
+## Pre-install
 The below modules must be installed first to make the FAE work. 
 
 ```
 - imbalanced-learn=0.6.2
+- lifelines=0.26.0
 - matplotlib=3.2.0
 - numpy=1.18.1
 - pandas=1.0.1
 - pdfdocument=3.3
 - pillow=7.0.0
+- pycox=0.2.2
 - PyQt5=5.14.1
 - PyQtGraph=0.10.0
 - pyradiomics=3.0
@@ -51,47 +46,30 @@ Just clone it by typing in:
 ```
 git clone https://github.com/salan668/FAE.git
 ```
-The .ui file has to be transfered to the .py file by pyuic manually. For example, GUI/HomePage.ui should be tranfered to GUI/HomePage.py file. 
+The .ui file has to be transferred to the .py file by pyuic manually. For example, GUI/HomePage.ui should be transferred to GUI/HomePage.py file. 
 
-### Architecture of Project 
-- **DataContainer**
-    - **DataContainer**. The structure to contain the data, which also includes methods like saving/loading.
-    - **DataSeparate**. Including functions to separate data into training part and testing part.
-- **Feature Analysis**
-    - **DataBalance**, Sample the cases to make the binary-labels balance.
-    - **Normalization**. Normalize the data to avoid the scale effect of different features.
-    - **DimensionReduction**. Reduce the feature dimension, including PCA. 
-    - **Classifier**. Map the features onto the labels. 
-    - **CrossValidation**. Estimate model by using cross-validation on the training data set.
-    - **FeatureSelector**. Select the sub-features from the feature matrix.
-    - **Pipelines**. The class to estimate the model with different feature selected method and classifier. 
+### Main Architecture of Project 
+- **BC**: Binary Classification Pipeline
+  - **DataContainer**. The data structure including feature array, label, cases ID, and feature names. 
+  - **Description**. The PDF generator to describe the developed BC model.
+  - **FeatureAnalysis**. The module of the feature pipeline, including Data Balance, Normalization, Dimension Reduction, Feature Selector, Classifier, and Cross Validation.
+  - **Visualization**. The common visualized plots, like ROC curve and the plot of AUC against different parameters.
 - **Image2Feature**
-    - **RadiomicsFeatureExtractor**. This class help extract features from image and ROI with batch process. This class should be more "smart" in the future. 
-- **Visulization**. 
-    - **DrawDoubleLine**. This function helps draw double-y plot. e.g. plot accuracy and error against the number of iterations.
-    - **DrawROCList**. This function helps draw different ROC curves. AUC will be calculated automaticly and labeled on the legend. 
-    - **FeatureRelationship**. This function helps draw the distribution of the values of different features. I can only show at most 3 features in one figure. 
-    - **FeatureSort**. This function helps draw the features and the weights of them on the classifiction model. 
-    - **PlotMetricVsFeatureNumber**. This function helps draw the AUC / Accuracy / other metrics against the number of chosen features. This can help find the adaptive number of the features. 
-- **Report**
-    - To Generate the report with PDF format. 
+    - **RadiomicsFeatureExtractor**. An Extractor to get features from self-config multi-aligned images with defined ROI.
+- **SA**: Survival Analysis Pipeline
 
-## Document
-TODO
+## License 
+This project is licensed under the GPL 3.0 License
 
-## Author
+## Contributor and Acknowledge List
 - [**Yang Song**](https://github.com/salan668)
 - [**Jing Zhang**](https://github.com/zhangjingcode)
 - [**Guang Yang**](https://github.com/yg88)
 - **Chengxiu Zhang**
-
-## License 
-This project is licensed under the GPL 3.0 License - see the [LICENSE.md](https://github.com/salan668/FAE/blob/master/LICENSE) file for details
-
-## Acknowledge
-- Contributor:
-    - Yi-lai Pei
-    - [**jmtaysom**](https://github.com/jmtaysom)
-    - Zhiyong Zhao
-- Demo data support. 
-    - Yu-dong Zhang, Xu Yan. 
+- [**Xue-xiang Cao**](mailto:xuer_cao@hotmail.com)
+- Yi-lai Pei
+- [**jmtaysom**](https://github.com/jmtaysom)
+- Zhiyong Zhao
+- Xu Yan
+- Yu-dong Zhang
+ 
