@@ -84,7 +84,8 @@ class RandomSeed:
 
 
 root = os.path.abspath(os.getcwd())
-RANDOM_SEED = RandomSeed(os.path.join(root, r'BC\HyperParameters\RandomSeed.json')).random_seed
+# RANDOM_SEED = RandomSeed(os.path.join(root, r'BC\HyperParameters\RandomSeed.json')).random_seed
+RANDOM_SEED = RandomSeed(os.path.join(root, 'BC', 'HyperParameters', 'RandomSeed.json')).random_seed
 
 
 if __name__ == '__main__':
