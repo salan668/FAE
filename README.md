@@ -67,9 +67,10 @@ This project is licensed under the GPL 3.0 License
 - [**Guang Yang**](https://github.com/yg88)
 - **Chengxiu Zhang**
 - [**Xue-xiang Cao**](mailto:xuer_cao@hotmail.com)
+- Xu Yan
+- Tian-jing Zhang
 - Yi-lai Pei
 - [**jmtaysom**](https://github.com/jmtaysom)
 - Zhiyong Zhao
-- Xu Yan
 - Yu-dong Zhang
  
