@@ -68,7 +68,7 @@ This project is licensed under the GPL 3.0 License
 - **Chengxiu Zhang**
 - [**Xue-xiang Cao**](mailto:xuer_cao@hotmail.com)
 - Xu Yan
-- Tian-jing Zhang
+- [**Tian-jing Zhang**](mailto:tianjingz@nvidia.com)
 - Yi-lai Pei
 - [**jmtaysom**](https://github.com/jmtaysom)
 - Zhiyong Zhao
