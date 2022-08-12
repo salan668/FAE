@@ -7,6 +7,7 @@ import seaborn as sns
 import numpy as np
 
 from BC.Utility.Constants import CV_VAL
+from .DrawROCList import LegendRename
 
 color_list = sns.color_palette('deep') + sns.color_palette('bright')
 
@@ -30,7 +31,7 @@ def DrawCurve(x, y_list, std_list=[], xlabel='', ylabel='', title='', name_list=
 
     fig.clear()
     axes = fig.add_subplot(1, 1, 1)
-
+    name_list = LegendRename(name_list)
     if std_list == []:
         for index in range(len(y_list)):
             axes.plot(x, y_list[index], color=color_list[index])
