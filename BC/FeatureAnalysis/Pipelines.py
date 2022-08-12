@@ -281,7 +281,7 @@ class PipelinesManager(object):
                                 self.SaveOneResult(train_pred, train_label,
                                                    TRAIN, fs_train_container.GetCaseName(),
                                                    matrics_index, model_name, store_folder, cls_store_folder,
-                                                   cutoff=float(balanced_metric[BALANCE_TRAIN + '_' + YI]))
+                                                   cutoff=float(balanced_metric[BALANCE_TRAIN + '_' + CUTOFF]))
                             else:
                                 self.SaveOneResult(train_pred, train_label,
                                                    TRAIN, fs_train_container.GetCaseName(),
@@ -295,7 +295,7 @@ class PipelinesManager(object):
                                     self.SaveOneResult(test_pred, test_label,
                                                        TEST, fs_test_container.GetCaseName(),
                                                        matrics_index, model_name, store_folder, cls_store_folder,
-                                                       cutoff=float(balanced_metric[BALANCE_TRAIN + '_' + YI]))
+                                                       cutoff=float(balanced_metric[BALANCE_TRAIN + '_' + CUTOFF]))
                                 else:
                                     self.SaveOneResult(test_pred, test_label,
                                                        TEST, fs_test_container.GetCaseName(),
@@ -364,12 +364,10 @@ class PipelinesManager(object):
                                                            index=fs_cv_val_container.GetCaseName())
 
                                 if store_folder:
-                                    self._AddOneCvPrediction(os.path.join(cls_store_folder,
-                                                                         '{}_prediction.csv'.format(CV_TRAIN)),
-                                                             cv_train_info)
-                                    self._AddOneCvPrediction(os.path.join(cls_store_folder,
-                                                                         '{}_prediction.csv'.format(CV_VAL)),
-                                                             cv_val_info)
+                                    self._AddOneCvPrediction(os.path.join(
+                                        cls_store_folder,'{}_prediction.csv'.format(CV_TRAIN)), cv_train_info)
+                                    self._AddOneCvPrediction(os.path.join(
+                                        cls_store_folder, '{}_prediction.csv'.format(CV_VAL)), cv_val_info)
 
     def MergeCvResult(self, store_folder):
         num = 0
@@ -394,7 +392,7 @@ class PipelinesManager(object):
                             cv_train_info = pd.read_csv(os.path.join(cls_store_folder,
                                                                      '{}_prediction.csv'.format(CV_TRAIN)),
                                                         index_col=0)
-                            cv_train_metric = EstimatePrediction(cv_train_info['Pred'], cv_train_info['Label'],
+                            cv_train_metric = EstimatePrediction(cv_train_info['Pred'].values, cv_train_info['Label'].values,
                                                                  key_word=CV_TRAIN)
                             self.__auc_dict[CV_TRAIN][norm_index, dr_index, fs_index, fn_index, cls_index] = \
                                 cv_train_metric['{}_{}'.format(CV_TRAIN, AUC)]
@@ -407,7 +405,7 @@ class PipelinesManager(object):
                             cv_val_info = pd.read_csv(os.path.join(cls_store_folder,
                                                                    '{}_prediction.csv'.format(CV_VAL)),
                                                       index_col=0)
-                            cv_val_metric = EstimatePrediction(cv_val_info['Pred'], cv_val_info['Label'],
+                            cv_val_metric = EstimatePrediction(cv_val_info['Pred'].values, cv_val_info['Label'].values,
                                                                key_word=CV_VAL)
                             self.__auc_dict[CV_VAL][norm_index, dr_index, fs_index, fn_index, cls_index] = \
                                 cv_val_metric['{}_{}'.format(CV_VAL, AUC)]

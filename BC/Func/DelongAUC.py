@@ -118,6 +118,9 @@ def CalculateAUC(label, prediction, alpha=.95):
     std = np.sqrt(var)
     lower_upper_q = np.abs(np.array([0, 1]) - (1 - alpha) / 2)
 
-    ci = scipy.stats.norm.ppf(lower_upper_q, loc=auc, scale=std)
-    ci[ci > 1] = 1
+    if std < 1e-6:
+        ci = [auc, auc]
+    else:
+        ci = scipy.stats.norm.ppf(lower_upper_q, loc=auc, scale=std)
+        ci[ci > 1] = 1
     return auc, std, ci

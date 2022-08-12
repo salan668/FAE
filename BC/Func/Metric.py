@@ -240,7 +240,7 @@ def EstimatePrediction(prediction, label, key_word='', cutoff=None):
     metric[key_word + PPV] = '{:.4f}'.format(report['1']['precision'])
     metric[key_word + NPV] = '{:.4f}'.format(report['0']['precision'])
 
-    metric[key_word + YI] = '{:.4f}'.format(1 - report['1']['recall'] + report['0']['recall'])
+    metric[key_word + YI] = '{:.4f}'.format(report['1']['recall'] + report['0']['recall'] - 1)
 
     roc_auc, std, ci = CalculateAUC(label, prediction)
     metric[key_word + AUC] = '{:.4f}'.format(roc_auc)
