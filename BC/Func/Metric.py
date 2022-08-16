@@ -3,7 +3,7 @@ All rights reserved.
 --Yang Song, Apr 8th, 2020.
 """
 import numpy as np
-from sklearn.metrics import roc_curve, matthews_corrcoef, classification_report, precision_recall_curve, auc
+from sklearn.metrics import confusion_matrix, roc_curve, roc_auc_score, matthews_corrcoef, classification_report, precision_recall_curve, auc
 
 from BC.Func.DelongAUC import CalculateAUC
 from BC.Utility.Constants import *
