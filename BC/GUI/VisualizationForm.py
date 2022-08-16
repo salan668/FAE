@@ -486,9 +486,14 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                 processed_feature_name = list(df.index)
                 original_value = list(df.iloc[:, 0])
                 for index in range(len(original_value)):
+                    feature_select_value = original_value[index]
+                    if isinstance(feature_select_value, int):
+                        feature_select_value_name = str(feature_select_value)
+                        
+                    else:
+                        feature_select_value_name = '%.2f' % feature_select_value
 
-                    processed_feature_name[index] = processed_feature_name[index] + ' ' + str(original_value[index])
-
+                    processed_feature_name[index] = processed_feature_name[index] + ' ' + str(feature_select_value_name)
                 GeneralFeatureSort(processed_feature_name, value, max_num=self.spinContributeFeatureNumber.value(),
                                 is_show=False, fig=self.canvasFeature.getFigure(), reverse=reverse)
 
