@@ -42,14 +42,14 @@ image_classes_yaml2inface = {'Exponential': 'Exponential',
 
 class  RadiomicsParamsConfig:
     def __init__(self, file_path):
-        self.__config_path = file_path
+        self.config_path = file_path
         self.__feature_classes_key = 'featureClass'
         self.__feature_classes = {}
         self.__image_classes_key = 'imageType'
         self.__image_classes = {}
 
     def LoadConfig(self):
-        file = open(self.__config_path, 'r', encoding='utf-8')
+        file = open(self.config_path, 'r', encoding='utf-8')
         content = file.read()
         # config = yaml.load(content, Loader=yaml.FullLoader)
         config = yaml.load(content)
@@ -85,15 +85,26 @@ class  RadiomicsParamsConfig:
         print(self.__image_classes)
 
     def SaveConfig(self):
-        file = open(self.__config_path, 'r', encoding='utf-8')
-        content = file.read()
-        config = yaml.load(content)
-        file.close()
-        file = open(self.__config_path, 'w', encoding='utf-8')
+        if os.path.exists(self.config_path):
+            with open(self.config_path, 'r', encoding='utf-8') as file:
+                content = file.read()
+                config = yaml.load(content)
+        else:
+            config = None
 
-        config[self.__image_classes_key] = self.__image_classes
-        config[self.__feature_classes_key] = self.__feature_classes
-        yaml.dump(config, file)
+        if config is None:
+            config = {}
+
+        with open(self.config_path, 'w', encoding='utf-8') as file:
+            config[self.__image_classes_key] = {}
+            for one_image_classes_name in self.__image_classes:
+                if one_image_classes_name == 'LoG':
+                    config[self.__image_classes_key][one_image_classes_name] = {'sigma': [1]}
+                else:
+                    config[self.__image_classes_key][one_image_classes_name] = {}
+
+            config[self.__feature_classes_key] = self.__feature_classes
+            yaml.dump(config, file)
 
 
 if __name__ == '__main__':

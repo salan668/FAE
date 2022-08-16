@@ -4,7 +4,7 @@ import sys
 from PyQt5.QtWidgets import *
 from PyQt5 import QtCore
 
-from BC.GUI.FeatureExtraction2 import Ui_FeatureExtraction
+from Feature.GUI.FeatureExtraction2 import Ui_FeatureExtraction
 from BC.Utility.RadiomicsParamsConfig import RadiomicsParamsConfig
 from BC.Utility.SeriesMatcher import SeriesStringMatcher
 from BC.Image2Feature.MyFeatureExtractor import MyFeatureExtractor
@@ -21,7 +21,7 @@ class FeatureExtractionForm(QWidget):
         self._image_patten_list = []
         self._roi_patten_list = []
         self._missing_message = ''
-        self.radiomics_params = RadiomicsParamsConfig('RadiomicsParams.yaml')
+        self.radiomics_params = RadiomicsParamsConfig(r'Feature\GUI\RadiomicsParams.yaml')
 
         self.ui.setupUi(self)
         self.ui.tableFilePattern.setColumnCount(4)
@@ -29,7 +29,7 @@ class FeatureExtractionForm(QWidget):
         self.ui.tableFilePattern.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.ui.tableFilePattern.setSelectionBehavior(QAbstractItemView.SelectRows)
 
-        self.ui.buttonBrowseSourceFolder.clicked.connect(self.BrowseSourceFolder)
+        self.ui.buttonBrowseSourceFolder.clicked.connect(self.on_browse)
         self.ui.buttonAddOne.clicked.connect(self.AddOnePattern)
         self.ui.buttonRemoveOne.clicked.connect(self.RemoveOnePattern)
         self.ui.buttonRun.clicked.connect(self.Run)
@@ -43,7 +43,7 @@ class FeatureExtractionForm(QWidget):
         self.close_signal.emit(True)
         event.accept()
 
-    def BrowseSourceFolder(self):
+    def on_browse(self):
         dlg = QFileDialog()
         dlg.setFileMode(QFileDialog.DirectoryOnly)
         dlg.setOption(QFileDialog.ShowDirsOnly)
@@ -60,18 +60,27 @@ class FeatureExtractionForm(QWidget):
 
     def AddOnePattern(self):
         message = QMessageBox()
-        if self.ui.lineEditkeyInclude.text() == '':
-            message.about(self, 'Include can not be empty',
-                                'Include patterns are used to identify the file')
-            return
-        if self.ui.lineEditkeyShowName.text() == '':
-            message.about(self, 'ShowName can not be empty',
-                          'ShowName patterns are used to add pre-name in the feature matrix')
+        if self.ui.radioImagePattern.isChecked():
+            if self.ui.lineEditkeyInclude.text() == '':
+                message.about(self, 'Include can not be empty',
+                                    'Include patterns are used to identify the file')
+                return
+            if self.ui.lineEditkeyShowName.text() == '':
+                message.about(self, 'ShowName can not be empty',
+                              'ShowName patterns are used to add pre-name in the feature matrix')
+                return
+
+            one_pattern = {'name': self.ui.lineEditkeyShowName.text().split(','),
+                           'include': self.ui.lineEditkeyInclude.text().split(','),
+                           'exclude': self.ui.lineEditkeyExclude.text().split(',')}
+        elif self.ui.radioRoiPattern.isChecked():
+            one_pattern = {'name': ['ROI'],
+                           'include': self.ui.lineEditkeyInclude.text().split(','),
+                           'exclude': self.ui.lineEditkeyExclude.text().split(',')}
+        else:
+            message.about('No Radio Button was chosen')
             return
 
-        one_pattern = {'name': self.ui.lineEditkeyShowName.text().split(','),
-                       'include': self.ui.lineEditkeyInclude.text().split(','),
-                       'exclude': self.ui.lineEditkeyExclude.text().split(',')}
         if self.ui.radioImagePattern.isChecked() and self._PatternNameExist(one_pattern['name']):
             message.about(self, '', 'Same image pattern exists')
             return
@@ -238,7 +247,7 @@ class FeatureExtractionForm(QWidget):
             if self.ui.useExistConfigcheckBox.isChecked():
                 extractor = MyFeatureExtractor(self.ui.configLineEdit.text())
             else:
-                extractor = MyFeatureExtractor('RadiomicsParams.yaml', ignore_tolerance=True)
+                extractor = MyFeatureExtractor(self.radiomics_params.config_path, ignore_tolerance=True)
 
             series_matchers, roi_matcher = self._GetImageAndRoiMatcher()
             name_list, matcher_list = [], []

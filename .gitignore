@@ -25,6 +25,10 @@ wheels/
 *.egg
 MANIFEST
 
+# IDE
+.idea/FAE.iml
+*.iml
+
 # PyInstaller
 #  Usually these files are written by a python script from a template
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
@@ -112,6 +116,17 @@ Example/
 .vscode/settings.json
 BC/GUI/Process.py
 BC/GUI/FeatureExtraction2.py
+BC/GUI/FeatureExtraction.py
 BC/GUI/Prepare.py
-HomePage/HomePage.py
 BC/GUI/Visualization.py
+HomeUI/HomePage.py
+SA/GUI/Prepare.py
+SA/GUI/Process.py
+SA/GUI/Visualization.py
+GUI/FeatureExtraction2.py
+GUI/FeatureExtraction.py
+GUI/Prepare.py
+GUI/Process.py
+GUI/Visualization.py
+GUI/HomePage.py
+

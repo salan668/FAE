@@ -24,15 +24,17 @@ class CVRun(QThread):
         super().__init__()
         pass
 
-    def SetProcessConnectionAndStore_folder(self, process_connection, store_folder):
+    def SetProcessConnectionAndStore_folder(self, process_connection, store_folder, is_train_cutoff=False):
         self._process_connection = process_connection
         self.store_folder = store_folder
+        self.is_train_cutoff = is_train_cutoff
 
     def run(self):
         try:
             for total, num in self._process_connection.fae.RunWithoutCV(self._process_connection.training_data_container,
                                                                         self._process_connection.testing_data_container,
-                                                                        self.store_folder):
+                                                                        self.store_folder,
+                                                                        self.is_train_cutoff):
                 text = "Model Developing:\n{} / {}".format(num, total)
                 self.signal.emit(text)
         except Exception as e:
@@ -76,9 +78,12 @@ class ProcessConnection(QWidget, Ui_Process):
 
         super(ProcessConnection, self).__init__(parent)
         self.setupUi(self)
-
+        self.pcccoefdoubleSpinBox.setValue(self.getDefaultValue())
+        self.pcccoefdoubleSpinBox.valueChanged.connect(self.pccValueChange)
         self.buttonLoadTrainingData.clicked.connect(self.LoadTrainingData)
         self.buttonLoadTestingData.clicked.connect(self.LoadTestingData)
+
+        self.buttonDefaultParam.clicked.connect(self.SetDefaultParam)
 
         self.radioNoneBalance.clicked.connect(self.UpdatePipelineText)
         self.radioDownSampling.clicked.connect(self.UpdatePipelineText)
@@ -126,6 +131,20 @@ class ProcessConnection(QWidget, Ui_Process):
         self.UpdatePipelineText()
         self.SetStateButtonBeforeLoading(False)
 
+    def getDefaultValue(self):
+        path = os.getcwd() + '/fae_Settings.ini'
+        settings = QSettings(path)
+        pcc_coef = 0.99
+        if settings.value('PCC_Coef'):
+            pcc_coef = float(settings.value('PCC_Coef'))
+        return pcc_coef
+
+    def saveDefaultValue(self):
+        path = os.getcwd() + '/fae_Settings.ini'
+        settings = QSettings(path)
+        settings.setValue('PCC_Coef', self.pcccoefdoubleSpinBox.value())
+        settings.sync()
+
     def closeEvent(self, QCloseEvent):
         self.close_signal.emit(True)
         QCloseEvent.accept()
@@ -142,6 +161,7 @@ class ProcessConnection(QWidget, Ui_Process):
                 self.UpdateDataDescription()
                 self.logger.info('Open CSV file ' + file_name + ' succeed.')
                 self.spinBoxMaxFeatureNumber.setValue(len(self.training_data_container.GetFeatureName()))
+                self.SetDefaultParam()
             except OSError as reason:
                 self.logger.log('Open SCV file Error, The reason is ' + str(reason))
                 print('Load Error！' + str(reason))
@@ -205,6 +225,45 @@ class ProcessConnection(QWidget, Ui_Process):
         text_list.append("Total process: {:d} / {:d}".format(current_num, total_num))
         return "\n".join(text_list)
 
+    def SetDefaultParam(self):
+        self.radioUpSampling.setChecked(True)
+
+        self.checkNormalizationAll.setChecked(False)
+        self.checkNormalizeNone.setChecked(False)
+        self.checkNormalizeMean.setChecked(True)
+        self.checkNormalizeMinMax.setChecked(False)
+        self.checkNormalizeZscore.setChecked(True)
+
+        self.checkPCA.setChecked(False)
+        self.checkRemoveSimilarFeatures.setChecked(True)
+        self.pcccoefdoubleSpinBox.setValue(0.99)
+
+        self.spinBoxMinFeatureNumber.setValue(1)
+        self.spinBoxMaxFeatureNumber.setValue(min(min(len(self.training_data_container.GetCaseName()) // 10 * 3, 
+                                                  len(self.training_data_container.GetFeatureName())), 
+                                                  30)
+            )
+        
+        self.checkANOVA.setChecked(True)
+        self.checkKW.setChecked(True)
+        self.checkRFE.setChecked(True)
+        self.checkRelief.setChecked(False)
+
+        self.checkSVM.setChecked(True)        
+        self.checkLogisticRegression.setChecked(True)
+        self.checkLDA.setChecked(True)
+        self.checkDecisionTree.setChecked(True)
+        self.checkGaussianProcess.setChecked(False)
+        self.checkLRLasso.setChecked(False)
+        self.checkAE.setChecked(False)
+        self.checkRF.setChecked(False)
+        self.checkGaussianProcess.setChecked(False)
+        self.checkNaiveBayes.setChecked(False)
+
+        self.radio5folder.setChecked(True)
+
+        self.UpdatePipelineText()
+
     def SetStateAllButtonWhenRunning(self, state):
         if state:
             self.thread.exit()
@@ -214,6 +273,7 @@ class ProcessConnection(QWidget, Ui_Process):
         self.SetStateButtonBeforeLoading(state)
 
     def SetStateButtonBeforeLoading(self, state):
+        self.buttonDefaultParam.setEnabled(state)
         self.buttonRun.setEnabled(state)
 
         self.radioNoneBalance.setEnabled(state)
@@ -240,6 +300,7 @@ class ProcessConnection(QWidget, Ui_Process):
 
         self.spinBoxMinFeatureNumber.setEnabled(state)
         self.spinBoxMaxFeatureNumber.setEnabled(state)
+        self.pcccoefdoubleSpinBox.setEnabled(state)
 
         self.checkSVM.setEnabled(state)
         self.checkAE.setEnabled(state)
@@ -293,7 +354,7 @@ class ProcessConnection(QWidget, Ui_Process):
             if self.MakePipelines():
                 # self.thread = CVRun()
                 self.thread.moveToThread(QThread())
-                self.thread.SetProcessConnectionAndStore_folder(self, store_folder)
+                self.thread.SetProcessConnectionAndStore_folder(self, store_folder, self.checkEstimatebyTraining.isChecked())
 
                 self.thread.signal.connect(self.textEditVerbose.setPlainText)
                 self.thread.start()
@@ -305,6 +366,12 @@ class ProcessConnection(QWidget, Ui_Process):
     def MinFeatureNumberChange(self):
         if self.spinBoxMinFeatureNumber.value() > self.spinBoxMaxFeatureNumber.value():
             self.spinBoxMinFeatureNumber.setValue(self.spinBoxMaxFeatureNumber.value())
+
+        self.UpdatePipelineText()
+
+    def pccValueChange(self):
+        if self.pcccoefdoubleSpinBox.value() > 1.0:
+            self.pcccoefdoubleSpinBox.setValue(1.0)
 
         self.UpdatePipelineText()
 
@@ -340,7 +407,8 @@ class ProcessConnection(QWidget, Ui_Process):
         if self.checkPCA.isChecked():
             self.__process_dimension_reduction_list.append(DimensionReductionByPCA())
         if self.checkRemoveSimilarFeatures.isChecked():
-            self.__process_dimension_reduction_list.append(DimensionReductionByPCC())
+            self.__process_dimension_reduction_list.append(DimensionReductionByPCC(self.pcccoefdoubleSpinBox.value()))
+        self.saveDefaultValue()
 
         self.__process_feature_selector_list = []
         if self.checkANOVA.isChecked():
@@ -460,7 +528,7 @@ class ProcessConnection(QWidget, Ui_Process):
             preprocess_test += "PCA\n"
             dimension_reduction_num += 1
         if self.checkRemoveSimilarFeatures.isChecked():
-            preprocess_test += "Pearson Correlation (0.99)\n"
+            preprocess_test += "Pearson Correlation ({:.2f})\n".format(self.pcccoefdoubleSpinBox.value())
             dimension_reduction_num += 1
         if dimension_reduction_num == 0:
             dimension_reduction_num = 1

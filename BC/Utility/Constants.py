@@ -1,6 +1,6 @@
 # Pipeline Key
 BALANCE = 'Balance'
-NORMALIER = 'Normalizer'
+NORMALIZR = 'Normalizer'
 DIMENSION_REDUCTION = 'DimensionReduction'
 FEATURE_SELECTOR = 'FeatureSelector'
 FEATURE_NUMBER = 'FeatureNumber'
@@ -32,6 +32,9 @@ NUMBER = 'Number'
 POS_NUM = 'PosNum'
 NEG_NUM = 'NegNum'
 AUC = 'AUC'
+AUC_PR = 'AUC-PR'
+CUTOFF = 'Cutoff'
+MCC = 'MCC'
 AUC_CI = '95% CIs'
 AUC_STD = 'Std'
 ACC = 'Acc'
@@ -40,7 +43,7 @@ SEN = 'Sen'
 SPE = 'Spe'
 PPV = 'PPV'
 NPV = 'NPV'
-HEADER = [NUMBER, POS_NUM, NEG_NUM, AUC, AUC_CI, AUC_STD, ACC, YI, SEN, SPE, PPV, NPV]
+HEADER = [NUMBER, POS_NUM, NEG_NUM, AUC, AUC_CI, AUC_STD, AUC_PR, CUTOFF, MCC, ACC, YI, SEN, SPE, PPV, NPV]
 
 
 # Type Key
@@ -50,10 +53,3 @@ BALANCE_TRAIN = 'balance_train'
 TRAIN = 'train'
 TEST = 'test'
 
-# Version Key
-VERSION_NAME = 'Version'
-MAJOR = 0
-MINOR = 3
-PATCH = 7
-VERSION = '{}.{}.{}'.format(MAJOR, MINOR, PATCH)
-ACCEPT_VERSION = ['0.3.0', '0.3.1', '0.3.2', '0.3.3', '0.3.4', '0.3.5', '0.3.6', '0.3.7']

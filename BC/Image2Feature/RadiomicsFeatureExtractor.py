@@ -7,7 +7,7 @@ import glob
 import SimpleITK as sitk
 from radiomics import featureextractor
 
-from BC.Utility.EcLog import eclog
+from Utility.EcLog import eclog
 
 
 class RadiomicsFeatureExtractor:

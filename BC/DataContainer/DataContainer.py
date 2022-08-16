@@ -15,9 +15,9 @@ from BC.Utility.Constants import REMOVE_CASE, REMOVE_FEATURE, REMOVE_NONE
 
 def LoadCSVwithChineseInPandas(file_path, **kwargs):
     if 'encoding' not in kwargs.keys():
-        return pd.read_csv(file_path, encoding="gbk", **kwargs)
+        return pd.read_csv(file_path, encoding="gbk", **kwargs).sort_index()
     else:
-        return pd.read_csv(file_path, **kwargs)
+        return pd.read_csv(file_path, **kwargs).sort_index()
 
 class DataContainer:
     '''
@@ -67,19 +67,10 @@ class DataContainer:
         return result
 
     def IsValidNumber(self, input_data):
-        if not self.__IsNumber(input_data):
-            return False
-
-        if math.isnan(float(input_data)):
-            return False
-
-        return True
+        return self.__IsNumber(input_data) and not math.isnan(float(input_data))
 
     def IsEmpty(self):
-        if self._df.size > 0:
-            return False
-        else:
-            return True
+        return self._df.size <= 0
 
     def IsBinaryLabel(self):
         return len(np.unique(self._label)) == 2
@@ -89,19 +80,12 @@ class DataContainer:
             if self._label[index] != 0 and self._label[index] != 1:
                 return index
 
-    def HasInvalidNumber(self):
-        for row_index in range(self._df.shape[0]):
-            for col_index in range(self._df.shape[1]):
-                if not self.IsValidNumber(self._df.iloc[row_index, col_index]):
-                    return True
-        return False
-
-    def FindInvalidNumberIndex(self):
+    def FindInvalidNumber(self):
         for row_index in range(self._df.shape[0]):
             for col_index in range(self._df.shape[1]):
                 if not self.IsValidNumber(self._df.iloc[row_index, col_index]):
                     return row_index, col_index
-        return None, None
+        return None
 
     def Save(self, store_path):
         self.UpdateFrameByData()
@@ -126,7 +110,7 @@ class DataContainer:
         assert(os.path.exists(file_path))
         self.__init__()
         try:
-            self._df = pd.read_csv(file_path, header=0, index_col=0)
+            self._df = pd.read_csv(file_path, header=0, index_col=0).sort_index()
             if is_update:
                 self.UpdateDataByFrame()
             return True
@@ -203,7 +187,7 @@ class DataContainer:
         header.insert(0, 'label')
         index = self._case_name
 
-        self._df = pd.DataFrame(data=data, index=index, columns=header)
+        self._df = pd.DataFrame(data=data, index=index, columns=header).sort_index()
 
     def RemoveInvalid(self, store_path='', remove_index=REMOVE_NONE):
         array = []

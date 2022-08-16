@@ -10,6 +10,7 @@ from BC.Utility.Constants import CV_VAL
 
 color_list = sns.color_palette('deep') + sns.color_palette('bright')
 
+
 def DrawCurve(x, y_list, std_list=[], xlabel='', ylabel='', title='', name_list=[], store_path='',
               one_se=False, is_show=True, fig=plt.figure()):
     '''
@@ -40,13 +41,14 @@ def DrawCurve(x, y_list, std_list=[], xlabel='', ylabel='', title='', name_list=
         if name_list != []:
             axes.legend(name_list, loc=4)
     else:
-
+        best_auc_feature_number = None
         for index in range(len(y_list)):
             sub_y_list = y_list[index]
             sub_std_list = std_list[index]
             if name_list[index] == CV_VAL:
-                axes.errorbar(x, sub_y_list, yerr=sub_std_list, fmt='-o',
-                              color=color_list[index], elinewidth=1, capsize=4, alpha=1, marker='.', label='CV Validation')
+                axes.errorbar(x, sub_y_list, yerr=sub_std_list, fmt='-',
+                              color=color_list[index], elinewidth=1, capsize=4,
+                              alpha=1, label='CV Validation', marker='.')
                 if one_se:
                     sub_y_list = y_list[index]
                     sub_std_list = std_list[index]
@@ -57,15 +59,14 @@ def DrawCurve(x, y_list, std_list=[], xlabel='', ylabel='', title='', name_list=
                     for index in range(len(sub_y_list)):
                         if sub_y_list[index] >= sub_one_se:
                             best_auc_value = sub_y_list[index]
-                            best_auc_feature_number = index + 1
+                            best_auc_feature_number = x[index]
 
                             axes.plot(x, line_list[0], color='orange', linewidth=1, linestyle="--")
                             axes.plot(best_auc_feature_number, best_auc_value, 'H', linewidth=1, color='black')
                             break
-
                 else:
-                    axes.plot(np.argmax(sub_y_list) + 1, np.max(sub_y_list), 'H', linewidth=1, color='black')
-                    best_auc_feature_number = np.argmax(sub_y_list) + 1
+                    axes.plot(x[np.argmax(sub_y_list)], np.max(sub_y_list), 'H', linewidth=1, color='black')
+                    best_auc_feature_number = x[np.argmax(sub_y_list)]
 
             else:
                 axes.plot(x, y_list[index], color=color_list[index], label=name_list[index])
@@ -76,18 +77,19 @@ def DrawCurve(x, y_list, std_list=[], xlabel='', ylabel='', title='', name_list=
             if name_list != []:
                 axes.legend(loc=4)
 
-
         if len(x) < 21:
-            axes.set_xticks(np.linspace(1, len(x), len(x)))
+            show_x_ticks = x
         else:
-            sub_ticks_list = list(np.arange(0, len(x)+1, len(x)/5))
-            sub_ticks_list[0] = 1
-            sub_ticks_list.append(best_auc_feature_number)
-            for delete_index in [best_auc_feature_number-1, best_auc_feature_number-2,
-                                 best_auc_feature_number+1, best_auc_feature_number+2]:
-                if delete_index in sub_ticks_list:
-                    sub_ticks_list.remove(delete_index)
-            axes.set_xticks(sorted(sub_ticks_list))
+            # sub_ticks_list = list(np.arange(0, len(x)+1, len(x)//4))
+            show_x_ticks = [x[ind] for ind in np.arange(0, len(x), len(x)//5)]
+            assert (best_auc_feature_number is not None)
+            show_x_ticks.append(best_auc_feature_number)
+            for delete_index in [best_auc_feature_number - 1, best_auc_feature_number - 2,
+                                 best_auc_feature_number + 1, best_auc_feature_number + 2]:
+                if delete_index in show_x_ticks:
+                    show_x_ticks.remove(delete_index)
+
+        axes.set_xticks(show_x_ticks)
 
     if store_path:
         fig.set_tight_layout(True)

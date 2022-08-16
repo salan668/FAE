@@ -6,7 +6,7 @@ import pandas as pd
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import pyqtSignal
 from BC.GUI.Prepare import Ui_Prepare
-from BC.Utility.EcLog import eclog
+from Utility.EcLog import eclog
 from BC.DataContainer.DataContainer import DataContainer
 from BC.DataContainer import DataSeparate
 from BC.FeatureAnalysis.FeatureSelector import RemoveSameFeatures
@@ -142,10 +142,13 @@ class PrepareConnection(QWidget, Ui_Prepare):
         file_name, _ = dlg.getOpenFileName(self, 'Open SCV file', filter="csv files (*.csv)")
         if file_name:
             try:
-                self.__clinical_ref = pd.read_csv(file_name, index_col=0)
-                if list(self.__clinical_ref.index) != list(self.data_container.GetFrame().index):
+                self.__clinical_ref = pd.read_csv(file_name, index_col=0).sort_index()
+                if not self.__clinical_ref.index.equals(self.data_container.GetFrame().index):
+                    source_case = [case for case in self.__clinical_ref.index if case not in self.data_container.GetCaseName()]
+                    dest_case = [case for case in self.data_container.GetCaseName() if
+                                   case not in self.__clinical_ref.index]
                     QMessageBox.information(self, 'Error',
-                                            'The index of clinical features is not consistent to the data')
+                                            'The index of clinical features is not consistent to the data. {} not in clinical infomations, and {} not in source features'.format(dest_case, source_case))
                     return None
                 self.loadClinicRef.setEnabled(False)
                 self.clearClinicRef.setEnabled(True)
@@ -213,17 +216,26 @@ class PrepareConnection(QWidget, Ui_Prepare):
             self.clearClinicRef.setEnabled(False)
 
     def CheckAndSave(self):
+        def _colnum_string(n):
+            string = ""
+            while n > 0:
+                n, remainder = divmod(n - 1, 26)
+                string = chr(65 + remainder) + string
+            return string
+
         if self.data_container.IsEmpty():
             QMessageBox.warning(self, "Warning", "There is no data", QMessageBox.Ok)
             return None
 
-        if self.data_container.HasInvalidNumber():
-            QMessageBox.warning(self, "Warning", "There are nan items", QMessageBox.Ok)
-            non_valid_number_index = self.data_container.FindInvalidNumberIndex()
+        invalid_number_index = self.data_container.FindInvalidNumber()
+        if invalid_number_index:
             old_edit_triggers = self.tableFeature.editTriggers()
             self.tableFeature.setEditTriggers(QAbstractItemView.CurrentChanged)
-            self.tableFeature.setCurrentCell(non_valid_number_index[0], non_valid_number_index[1])
+            self.tableFeature.setCurrentCell(invalid_number_index[0], invalid_number_index[1])
             self.tableFeature.setEditTriggers(old_edit_triggers)
+            QMessageBox.warning(self, "Warning", "There are nan item in Row {}, Col {} ({})".format(
+                invalid_number_index[0] + 2, invalid_number_index[1] + 2, _colnum_string(invalid_number_index[1] + 2)), QMessageBox.Ok)
+            
             return None
 
         self.data_container.UpdateDataByFrame()

@@ -19,7 +19,7 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.linear_model import LogisticRegression
 
 from BC.DataContainer.DataContainer import DataContainer
-from BC.Utility.EcLog import eclog
+from Utility.EcLog import eclog
 from BC.Utility.Constants import *
 from BC.HyperParameterConfig.HyperParamManager import RANDOM_SEED
 
@@ -360,7 +360,7 @@ class LR(Classifier):
 
     def GetDescription(self):
         text = "We used logistic regression as the classifier. Logistic regression is a linear classifier that " \
-               "combines all the features. A hyper-plane was searched in the high dimension to separate the samples.  "
+               "combines all the features. "
         return text
 
     def Predict(self, x, is_probability=True):
