@@ -15,9 +15,9 @@ from BC.Utility.Constants import REMOVE_CASE, REMOVE_FEATURE, REMOVE_NONE
 
 def LoadCSVwithChineseInPandas(file_path, **kwargs):
     if 'encoding' not in kwargs.keys():
-        return pd.read_csv(file_path, encoding="gbk", **kwargs)
+        return pd.read_csv(file_path, encoding="gbk", **kwargs).sort_index()
     else:
-        return pd.read_csv(file_path, **kwargs)
+        return pd.read_csv(file_path, **kwargs).sort_index()
 
 class DataContainer:
     '''
@@ -110,7 +110,7 @@ class DataContainer:
         assert(os.path.exists(file_path))
         self.__init__()
         try:
-            self._df = pd.read_csv(file_path, header=0, index_col=0)
+            self._df = pd.read_csv(file_path, header=0, index_col=0).sort_index()
             if is_update:
                 self.UpdateDataByFrame()
             return True
@@ -187,7 +187,7 @@ class DataContainer:
         header.insert(0, 'label')
         index = self._case_name
 
-        self._df = pd.DataFrame(data=data, index=index, columns=header)
+        self._df = pd.DataFrame(data=data, index=index, columns=header).sort_index()
 
     def RemoveInvalid(self, store_path='', remove_index=REMOVE_NONE):
         array = []

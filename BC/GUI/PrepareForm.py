@@ -142,10 +142,13 @@ class PrepareConnection(QWidget, Ui_Prepare):
         file_name, _ = dlg.getOpenFileName(self, 'Open SCV file', filter="csv files (*.csv)")
         if file_name:
             try:
-                self.__clinical_ref = pd.read_csv(file_name, index_col=0)
-                if list(self.__clinical_ref.index) != list(self.data_container.GetFrame().index):
+                self.__clinical_ref = pd.read_csv(file_name, index_col=0).sort_index()
+                if not self.__clinical_ref.index.equals(self.data_container.GetFrame().index):
+                    source_case = [case for case in self.__clinical_ref.index if case not in self.data_container.GetCaseName()]
+                    dest_case = [case for case in self.data_container.GetCaseName() if
+                                   case not in self.__clinical_ref.index]
                     QMessageBox.information(self, 'Error',
-                                            'The index of clinical features is not consistent to the data')
+                                            'The index of clinical features is not consistent to the data. {} not in clinical infomations, and {} not in source features'.format(dest_case, source_case))
                     return None
                 self.loadClinicRef.setEnabled(False)
                 self.clearClinicRef.setEnabled(True)

@@ -63,7 +63,7 @@ class CVRun(QThread):
                 text = "Corss Validation Done.\n\nCV Result Merge Done\n\n" \
                        "Model Developing:\n{} / {}".format(num, total)
                 self.signal.emit(text)
-        except Exception:
+        except Exception as e:
             mylog.error("Thread RunWithoutCV Failed: ", e.__str__())
 
         text = "Model Developing:\nDone.\n\nCross Validation:\nDone.\n\nMerging CV Results:\nDone.\n"

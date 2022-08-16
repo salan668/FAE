@@ -31,7 +31,8 @@ class Metric(object):
                           np.array(sampled_event).astype(int), censor_surv='km')
             time_grid = np.linspace(min(sampled_duration), max(sampled_duration), 100)
 
-            cindex.append(ev.concordance_td('antolini'))
+            # cindex.append(ev.concordance_td('antolini'))
+            cindex.append(ev.concordance_td())
             brier.append(ev.integrated_brier_score(time_grid))
             nbll.append(ev.integrated_nbll(time_grid))
 

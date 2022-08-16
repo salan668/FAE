@@ -86,7 +86,7 @@ class DataContainer(object):
             raise ValueError
 
         new_df = self.df.drop(columns=[self.event_name, self.duration_name], inplace=False)
-        self._array = new_df.values
+        self._array = new_df.values.astype(float)
         self._case_name = list(new_df.index)
         self._feature_name = list(new_df.columns)
 
