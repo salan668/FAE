@@ -130,3 +130,5 @@ GUI/Process.py
 GUI/Visualization.py
 GUI/HomePage.py
 
+/Plugin/IBSI_Extraction
+/Plugin/VidaProcess
