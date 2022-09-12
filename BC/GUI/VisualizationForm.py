@@ -266,7 +266,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         for selector in self._fae.feature_selector_list:
             self.comboContributionFeatureSelector.addItem(selector.GetName())
         for classifier in self._fae.classifier_list:
-            specific_name = classifier.GetName() + '_coef.csv'
+            specific_name = 'model.pickle'
             if self._SearchSpecificFile(int(self._fae.feature_selector_num_list[0]), specific_name):
                 self.comboContributionClassifier.addItem(classifier.GetName())
         self.spinContributeFeatureNumber.setMinimum(int(self._fae.feature_selector_num_list[0]))
@@ -440,54 +440,65 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                                                    self.comboContributionClassifier.currentText())
             norm_folder, dr_folder, fs_folder, cls_folder = self._fae.SplitFolder(pipeline_name, self._root_folder)
 
-            if self.radioContributionFeatureSelector.isChecked():
-                file_name = self.comboContributionFeatureSelector.currentText() + '_sort.csv'
-                file_path = os.path.join(fs_folder, file_name)
+            # model weight file exist?
+            coef_name = self.comboContributionClassifier.currentText() + '_coef.csv'
+            coef_file_path = os.path.join(cls_folder, coef_name)
 
-                if file_path:
-                    df = pd.read_csv(file_path, index_col=0)
-                    value = list(df.iloc[:, 0])
+            sort_name = self.comboContributionFeatureSelector.currentText() + '_sort.csv'
+            sort_file_path = os.path.join(fs_folder, sort_name)
 
-                    sort_by = df.columns.values[0]
-                    if sort_by == 'rank':
-                        reverse = False
-                    elif sort_by == 'F' or sort_by == 'weight':
-                        reverse = True
+            if os.path.exists(coef_file_path):
+                self.radioContributionClassifier.setEnabled(True)
+                self.radioContributionFeatureSelector.setEnabled(False)
+                self.radioContributionClassifier.setChecked(True)
+                df = pd.read_csv(coef_file_path, index_col=0)
+                value = list(np.abs(df.iloc[:, 0]))
+
+                # add positive and negatiove info for coef
+                processed_feature_name = list(df.index)
+                original_value = list(df.iloc[:, 0])
+                for index in range(len(original_value)):
+                    if original_value[index] > 0:
+                        processed_feature_name[index] = processed_feature_name[index] + ' P'
                     else:
-                        reverse = False
-                        print('Invalid feature selector sort name.')
+                        processed_feature_name[index] = processed_feature_name[index] + ' N'
 
-                    # add positive and negatiove info for coef
-                    processed_feature_name = list(df.index)
-                    original_value = list(df.iloc[:, 0])
-                    for index in range(len(original_value)):
-                        if original_value[index] > 0:
-                            processed_feature_name[index] = processed_feature_name[index] + ' P'
-                        else:
-                            processed_feature_name[index] = processed_feature_name[index] + ' N'
+                GeneralFeatureSort(processed_feature_name, value,
+                                    is_show=False, fig=self.canvasFeature.getFigure())
+            
+            else:
+                self.radioContributionClassifier.setEnabled(False)
+                self.radioContributionFeatureSelector.setEnabled(True)
+                self.radioContributionFeatureSelector.setChecked(True)
 
-                    GeneralFeatureSort(processed_feature_name, value, max_num=self.spinContributeFeatureNumber.value(),
-                                       is_show=False, fig=self.canvasFeature.getFigure(), reverse=reverse)
+                df = pd.read_csv(sort_file_path, index_col=0)
+                value = list(df.iloc[:, 0])
 
-            elif self.radioContributionClassifier.isChecked():
-                specific_name = self.comboContributionClassifier.currentText() + '_coef.csv'
-                file_path = os.path.join(cls_folder, specific_name)
+                sort_by = df.columns.values[0]
+                if sort_by == 'rank':
+                    reverse = False
+                elif sort_by == 'F' or sort_by == 'weight':
+                    reverse = True
+                else:
+                    reverse = False
+                    print('Invalid feature selector sort name.')
 
-                if os.path.exists(file_path):
-                    df = pd.read_csv(file_path, index_col=0)
-                    value = list(np.abs(df.iloc[:, 0]))
+                # add positive and negatiove info for coef
+                processed_feature_name = list(df.index)
+                original_value = list(df.iloc[:, 0])
+                for index in range(len(original_value)):
+                    feature_select_value = original_value[index]
+                    if isinstance(feature_select_value, int):
+                        feature_select_value_name = str(feature_select_value)
+                        
+                    else:
+                        feature_select_value_name = '%.2f' % feature_select_value
 
-                    # add positive and negatiove info for coef
-                    processed_feature_name = list(df.index)
-                    original_value = list(df.iloc[:, 0])
-                    for index in range(len(original_value)):
-                        if original_value[index] > 0:
-                            processed_feature_name[index] = processed_feature_name[index] + ' P'
-                        else:
-                            processed_feature_name[index] = processed_feature_name[index] + ' N'
+                    processed_feature_name[index] = processed_feature_name[index] + ' ' + str(feature_select_value_name)
+                GeneralFeatureSort(processed_feature_name, value, max_num=self.spinContributeFeatureNumber.value(),
+                                is_show=False, fig=self.canvasFeature.getFigure(), reverse=reverse)
 
-                    GeneralFeatureSort(processed_feature_name, value,
-                                       is_show=False, fig=self.canvasFeature.getFigure())
+
             self.canvasFeature.draw()
         except Exception as e:
             content = 'In Visualization, UpdateContribution failed'
