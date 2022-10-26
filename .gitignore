@@ -132,3 +132,12 @@ GUI/HomePage.py
 
 /Plugin/IBSI_Extraction
 /Plugin/VidaProcess
+BC/DataContainer/MergePrediction.py
+BC/Image2Feature/FeatureExtractionTemp.py
+BuildScript.bat
+Feature/GUI/FeatureExtraction.py
+Feature/GUI/FeatureMerge.py
+Feature/GUI/RadiomicsParams2.yaml
+src/FAE-icon-py.ico
+src/FAE-icon.png
+src/FAE-icon.pptx
