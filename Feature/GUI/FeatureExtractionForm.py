@@ -310,12 +310,16 @@ class FeatureExtractionForm(QWidget):
         self.ui.checkBoxGLDM.setEnabled(not use_exist)
         self.ui.checkBoxNGTDM.setEnabled(not use_exist)
 
+        if not use_exist:
+            self.radiomics_params = RadiomicsParamsConfig(r'Feature\GUI\RadiomicsParams.yaml')
+
     def BrowseRadiomicsFeatureCofigFile(self):
         dlg = QFileDialog()
         file_name, _ = dlg.getOpenFileName(self, 'Open Radiomics Config file', directory=r'D:\research',
                                            filter="Config (*.yaml)")
         if file_name:
             self.ui.configLineEdit.setText(file_name)
+            self.radiomics_params = RadiomicsParamsConfig(file_name)
 
     def _UpdateRadiomicsConfig(self):
         image_types = list()
@@ -337,7 +341,9 @@ class FeatureExtractionForm(QWidget):
         if not file_name:
             return None
 
-        self._UpdateRadiomicsConfig()
+        if not self.ui.useExistConfigcheckBox.isChecked():
+            self._UpdateRadiomicsConfig()
+
         self.analysis_thread = FeatureExtractThread(
             self.image_matcher_manager.results, self.roi_matcher_manager.results, file_name, RadiomicsFeatureExtractor(self.radiomics_params.config_path), self.ui.radioExtractResample.isChecked(), self.ui.radioExtractCopyInfo.isChecked()
             )
