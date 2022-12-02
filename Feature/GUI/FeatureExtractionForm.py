@@ -53,7 +53,7 @@ class FileCheckerThread(QThread):
             if not state:
                 message += '{} {}'.format(series_name, manager.error_info.loc[case_name, series_name])
 
-            self.progress_signal.emit(100 * count / case_number)
+            self.progress_signal.emit(int(100 * count / case_number))
             self.text_signal.emit(message)
 
         self.text_signal.emit(message + '\nAll Done.')
@@ -100,14 +100,14 @@ class FeatureExtractThread(QThread):
         count = 0
 
         for case_name in self.image_paths.index:
-            message += '{}: '.format(case_name)
+            # message += '{}: '.format(case_name)
             self.text_signal.emit(message)
             one_case_feature = {}
             try:
                 for image_name in self.image_paths.columns:
                     roi_image = sitk.ReadImage(str(self.roi_paths.loc[case_name, 'roi']))
                     image = sitk.ReadImage(str(self.image_paths.loc[case_name, image_name]))
-                    assert (image.GetSize() == roi_image.GetSize())
+                    # assert (image.GetSize() == roi_image.GetSize())
 
                     if self.only_matrix:
                         roi_image.CopyInformation(image)
@@ -117,7 +117,7 @@ class FeatureExtractThread(QThread):
                             one_case_feature['{}_{}'.format(image_name, key)] = value
 
                 all_features = pd.concat([all_features, pd.DataFrame(one_case_feature, index=[case_name])], axis=0)
-                message += 'Done.\n'.format(case_name)
+                # message += 'Done.\n'.format(case_name)
                 self.text_signal.emit(message)
             except Exception as e:
                 message += '{}.\n'.format(e.__str__())
@@ -190,47 +190,70 @@ class FeatureExtractionForm(QWidget):
         else:
             return False
 
+    def AddOneImagePattern(self, name, patten_matcher):
+        message = QMessageBox()
+        if name == '':
+            message.about(self, 'ShowName can not be empty', 'ShowName can not be empty')
+            return False
+        if name in self.image_matcher_manager.matchers.keys():
+            message.about(self, 'Same patten has been saved', 'Same patten has been saved')
+            return False
+
+        self.image_matcher_manager.AddOne(name, patten_matcher)
+        return True
+
+    def AddRoiPattern(self, patten_matcher):
+        message = QMessageBox()
+        if len(self.roi_matcher_manager.matchers) > 0:
+            message.about(self, 'Only One Roi Pattern', 'There should be only one ROI Pattern')
+            return False
+        self.roi_matcher_manager.AddOne('FAE_ROI', patten_matcher)
+        return True
+
     def AddOnePattern(self):
         message = QMessageBox()
         if self.ui.lineEditkeyInclude.text() == '':
             message.about(self, 'Include can not be empty',
                           'Include patterns are used to identify the file')
             return
-        if self.ui.lineEditStoreName.text() == '':
-            message.about(self, 'ShowName can not be empty',
-                          'ShowName can not be empty')
-            return
-        if self.ui.lineEditStoreName.text() in self.image_matcher_manager.matchers.keys():
-            message.about(self, 'Same patten has been saved',
-                          'ShowName patterns are used to add pre-name in the feature matrix')
-            return
 
-        if self.ui.radioRoiPattern.isChecked() and len(self.roi_matcher_manager.matchers) > 0:
-            message.about(self, 'Only One Roi Pattern',
-                          'There should be only one ROI Pattern')
-            return
-
-        name = self.ui.lineEditStoreName.text()
         one_pattern = SeriesStringMatcher(include_key=self.ui.lineEditkeyInclude.text().split(','),
                                           exclude_key=self.ui.lineEditkeyExclude.text().split(','))
-
-        if self._PatternNameExist(name):
-            message.about(self, '', 'Same image pattern exists')
-            return
-
-        current_row_count = self.ui.tableFilePattern.rowCount()
-        self.ui.tableFilePattern.insertRow(current_row_count)
+        add_result, add_type, name = False, '', ''
         if self.ui.radioImagePattern.isChecked():
-            self.ui.tableFilePattern.setItem(current_row_count, 0, QTableWidgetItem('Image'))
-            self.image_matcher_manager.AddOne(name, one_pattern)
-
+            name = self.ui.lineEditStoreName.text()
+            add_result = self.AddOneImagePattern(name, one_pattern)
+            add_type = 'Image'
         elif self.ui.radioRoiPattern.isChecked():
-            self.ui.tableFilePattern.setItem(current_row_count, 0, QTableWidgetItem('ROI'))
-            self.roi_matcher_manager.AddOne('roi', one_pattern)
+            name = 'ROI'
+            add_result = self.AddRoiPattern(one_pattern)
+            add_type = 'Roi'
 
-        self.ui.tableFilePattern.setItem(current_row_count, 1, QTableWidgetItem(name))
-        self.ui.tableFilePattern.setItem(current_row_count, 2, QTableWidgetItem(','.join(one_pattern.include_key)))
-        self.ui.tableFilePattern.setItem(current_row_count, 3, QTableWidgetItem(','.join(one_pattern.exclude_key)))
+        if add_result:
+            current_row_count = self.ui.tableFilePattern.rowCount()
+            self.ui.tableFilePattern.insertRow(current_row_count)
+            self.ui.tableFilePattern.setItem(current_row_count, 0, QTableWidgetItem(add_type))
+            self.ui.tableFilePattern.setItem(current_row_count, 1, QTableWidgetItem(name))
+            self.ui.tableFilePattern.setItem(current_row_count, 2, QTableWidgetItem(','.join(one_pattern.include_key)))
+            self.ui.tableFilePattern.setItem(current_row_count, 3, QTableWidgetItem(','.join(one_pattern.exclude_key)))
+
+        # if self._PatternNameExist(name):
+        #     message.about(self, '', 'Same image pattern exists')
+        #     return
+
+        # current_row_count = self.ui.tableFilePattern.rowCount()
+        # self.ui.tableFilePattern.insertRow(current_row_count)
+        # if self.ui.radioImagePattern.isChecked():
+        #     self.ui.tableFilePattern.setItem(current_row_count, 0, QTableWidgetItem('Image'))
+        #     self.image_matcher_manager.AddOne(name, one_pattern)
+        #
+        # elif self.ui.radioRoiPattern.isChecked():
+        #     self.ui.tableFilePattern.setItem(current_row_count, 0, QTableWidgetItem('ROI'))
+        #     self.roi_matcher_manager.AddOne('FAE_ROI', one_pattern)
+        #
+        # self.ui.tableFilePattern.setItem(current_row_count, 1, QTableWidgetItem(name))
+        # self.ui.tableFilePattern.setItem(current_row_count, 2, QTableWidgetItem(','.join(one_pattern.include_key)))
+        # self.ui.tableFilePattern.setItem(current_row_count, 3, QTableWidgetItem(','.join(one_pattern.exclude_key)))
 
     def RemoveOnePattern(self):
         if not self.ui.tableFilePattern.selectedIndexes():
@@ -243,7 +266,7 @@ class FeatureExtractionForm(QWidget):
         if image_type == 'Image':
             self.image_matcher_manager.RemoveOne(name)
         elif image_type == 'ROI':
-            self.roi_matcher_manager.RemoveOne(name)
+            self.roi_matcher_manager.ClearMatcher()
 
         self.ui.tableFilePattern.removeRow(index)
 

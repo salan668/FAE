@@ -26,9 +26,8 @@ class FeatureEncodingOneHot():
 
 
 if __name__ == '__main__':
-    data = DataContainer()
-    data.Load(r'c:\Users\yangs\Desktop\test.csv')
-    info = data.GetFrame()
+    import pandas as pd
+    df = pd.read_csv(r'C:\Users\Suns\Desktop\clinic_data2 .csv', delimiter='\t')
 
-    new_info = pd.get_dummies(info, columns=['bGs', 'PIRADS', 't2score', 'DWIscore', 'MR_stage'])
-    new_info.to_csv(r'c:\Users\yangs\Desktop\test_onehot.csv')
+    new_info = pd.get_dummies(df, columns=['bingli', 'T', 'N', 'Clinic'])
+    new_info.to_csv(r'c:\Users\Suns\Desktop\clinic_data2_onehot.csv')
