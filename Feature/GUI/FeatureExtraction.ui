@@ -25,7 +25,6 @@
            <property name="font">
             <font>
              <family>Times New Roman</family>
-             <weight>75</weight>
              <bold>true</bold>
             </font>
            </property>
@@ -276,12 +275,11 @@
          <property name="font">
           <font>
            <family>Times New Roman</family>
-           <weight>75</weight>
            <bold>true</bold>
           </font>
          </property>
          <property name="text">
-          <string>Step1. Set the config of the extracted features</string>
+          <string>Step1. Set configurations for feature extraction</string>
          </property>
         </widget>
        </item>
@@ -358,7 +356,6 @@
              <property name="font">
               <font>
                <family>Times New Roman</family>
-               <weight>50</weight>
                <bold>false</bold>
               </font>
              </property>
@@ -525,7 +522,6 @@
              <property name="font">
               <font>
                <family>Times New Roman</family>
-               <weight>50</weight>
                <bold>false</bold>
               </font>
              </property>
@@ -667,7 +663,6 @@
             <font>
              <family>Times New Roman</family>
              <pointsize>10</pointsize>
-             <weight>75</weight>
              <bold>true</bold>
             </font>
            </property>
@@ -716,12 +711,11 @@
           <font>
            <family>Times New Roman</family>
            <pointsize>10</pointsize>
-           <weight>75</weight>
            <bold>true</bold>
           </font>
          </property>
          <property name="title">
-          <string>Step 3: Set the ROI process. Usually used [None]</string>
+          <string>Step 3: Select ROI processing. Usually [None] is used.</string>
          </property>
          <layout class="QHBoxLayout" name="horizontalLayout_5">
           <item>
@@ -732,7 +726,6 @@
                <font>
                 <family>Times New Roman</family>
                 <pointsize>10</pointsize>
-                <weight>50</weight>
                 <bold>false</bold>
                </font>
               </property>
@@ -750,7 +743,6 @@
                <font>
                 <family>Times New Roman</family>
                 <pointsize>10</pointsize>
-                <weight>50</weight>
                 <bold>false</bold>
                </font>
               </property>
@@ -765,7 +757,6 @@
                <font>
                 <family>Times New Roman</family>
                 <pointsize>10</pointsize>
-                <weight>50</weight>
                 <bold>false</bold>
                </font>
               </property>
@@ -794,7 +785,7 @@
           </font>
          </property>
          <property name="text">
-          <string>Feature Extract</string>
+          <string>Start Feature Extraction</string>
          </property>
         </widget>
        </item>
