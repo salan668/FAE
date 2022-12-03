@@ -313,9 +313,9 @@ class Ui_Process(object):
         _translate = QtCore.QCoreApplication.translate
         Process.setWindowTitle(_translate("Process", "Model Exploration"))
         self.groupBox.setTitle(_translate("Process", "Load"))
-        self.label.setText(_translate("Process", "Training data"))
+        self.label.setText(_translate("Process", "Training dataset:"))
         self.buttonLoadTrainingData.setText(_translate("Process", "Load"))
-        self.label_2.setText(_translate("Process", "Testing data"))
+        self.label_2.setText(_translate("Process", "Test dataset:"))
         self.buttonLoadTestingData.setText(_translate("Process", "Load"))
         self.label_3.setText(_translate("Process", "Data Description"))
         self.label_5.setText(_translate("Process", "Verbose"))

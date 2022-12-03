@@ -36,7 +36,7 @@
                 <item>
                  <widget class="QLabel" name="label">
                   <property name="text">
-                   <string>Training data</string>
+                   <string>Training dataset:</string>
                   </property>
                  </widget>
                 </item>
@@ -61,7 +61,7 @@
                 <item>
                  <widget class="QLabel" name="label_2">
                   <property name="text">
-                   <string>Testing data</string>
+                   <string>Test dataset:</string>
                   </property>
                  </widget>
                 </item>
