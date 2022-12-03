@@ -81,7 +81,7 @@ class DownSampling(DataBalance):
 
     def Run(self, data_container, store_path=''):
         data, label, feature_name, label_name = data_container.GetData()
-        data_resampled, label_resampled = self._model.fit_sample(data, label)
+        data_resampled, label_resampled = self._model.fit_resample(data, label)
 
         new_case_name = []
         for index in range(data_resampled.shape[0]):
@@ -121,7 +121,7 @@ class UpSampling(DataBalance):
 
     def Run(self, data_container, store_path=''):
         data, label, feature_name, label_name = data_container.GetData()
-        data_resampled, label_resampled = self._model.fit_sample(data, label)
+        data_resampled, label_resampled = self._model.fit_resample(data, label)
 
         new_case_name = []
         for index in range(data_resampled.shape[0]):
@@ -147,7 +147,7 @@ class SmoteSampling(DataBalance):
 
     def Run(self, data_container, store_path=''):
         data, label, feature_name, label_name = data_container.GetData()
-        data_resampled, label_resampled = self._model.fit_sample(data, label)
+        data_resampled, label_resampled = self._model.fit_resample(data, label)
 
         new_case_name = ['Generate' + str(index) for index in range(data_resampled.shape[0])]
         new_data_container = DataContainer(data_resampled, label_resampled, data_container.GetFeatureName(),
@@ -171,7 +171,7 @@ class SmoteTomekSampling(DataBalance):
 
     def Run(self, data_container, store_path=''):
         data, label, feature_name, label_name = data_container.GetData()
-        data_resampled, label_resampled = self._model.fit_sample(data, label)
+        data_resampled, label_resampled = self._model.fit_resample(data, label)
 
         new_case_name = ['Generate' + str(index) for index in range(data_resampled.shape[0])]
         new_data_container = DataContainer(data_resampled, label_resampled, data_container.GetFeatureName(),
