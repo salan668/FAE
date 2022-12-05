@@ -110,8 +110,14 @@ class FeatureExtractThread(QThread):
             count += 1
             self.progress_signal.emit(100 * count / self.case_number)
 
-        all_features.to_csv(str(self.store_path))
-        self.text_signal.emit(message + '\nAll Done')
+        try:
+            all_features.to_csv(str(self.store_path))
+            self.text_signal.emit(message + '\nAll Done')
+        except PermissionError:
+            self.text_signal.emit(message + '\nThe File can not be saved, maybe the feature matrix does not close.')
+        except Exception as e:
+            self.text_signal.emit(message + '\n{}'.format(traceback.format_exc()))
+
         self.progress_signal.emit(100)
         self.finish_signal.emit(True)
         self.quit()
