@@ -679,7 +679,7 @@
                        <double>10000000.000000000000000</double>
                       </property>
                       <property name="value">
-                       <double>0.000000000000000</double>
+                       <double>1000.000000000000000</double>
                       </property>
                      </widget>
                     </item>
@@ -731,7 +731,11 @@
              <item>
               <layout class="QGridLayout" name="gridLayout_3">
                <item row="0" column="1">
-                <widget class="QSpinBox" name="spinMinRoiSize"/>
+                <widget class="QSpinBox" name="spinMinRoiSize">
+                 <property name="minimum">
+                  <number>1</number>
+                 </property>
+                </widget>
                </item>
                <item row="0" column="2">
                 <widget class="QLabel" name="label_11">
