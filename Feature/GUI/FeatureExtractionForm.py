@@ -428,19 +428,9 @@ class FeatureExtractionForm(QWidget):
         self.analysis_thread.start()
 
 
-def TestConfigFile():
-    extractor = RadiomicsFeatureExtractor(r'C:\Users\Suns\Desktop\radiomics_config_param.yaml')
-    image_path = r'D:\Data\EEnt\GENGYue\patient-22-05-06\p00447397 2.37E-5 low\ADC.nii'
-    roi_path = r'D:\Data\EEnt\GENGYue\patient-22-05-06\p00447397 2.37E-5 low\ADC ROI.nii'
-    result = extractor.execute(image_path, roi_path)
-    print(result)
-
-
 if __name__ == '__main__':
     import sys
     app = QApplication(sys.argv)
     main_frame = FeatureExtractionForm()
     main_frame.show()
     sys.exit(app.exec_())
-
-    # TestConfigFile()

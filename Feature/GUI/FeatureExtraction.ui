@@ -342,7 +342,7 @@
               </font>
              </property>
              <property name="title">
-              <string>Extract</string>
+              <string>Step3. Extract (Usually [None] is used)</string>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_3">
               <item>
@@ -427,7 +427,7 @@
             </font>
            </property>
            <property name="text">
-            <string>Step1. Set the config of the extracted features</string>
+            <string>Set the config of the extracted features</string>
            </property>
           </widget>
          </item>
@@ -847,26 +847,7 @@
             </layout>
            </item>
            <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_15">
-             <item>
-              <widget class="QPushButton" name="buttonSaveConfig">
-               <property name="minimumSize">
-                <size>
-                 <width>0</width>
-                 <height>30</height>
-                </size>
-               </property>
-               <property name="font">
-                <font>
-                 <family>Times New Roman</family>
-                </font>
-               </property>
-               <property name="text">
-                <string>Save Config</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
+            <layout class="QHBoxLayout" name="horizontalLayout_15"/>
            </item>
           </layout>
          </item>
@@ -1033,18 +1014,33 @@
            </item>
            <item>
             <layout class="QGridLayout" name="gridLayout_5">
-             <item row="0" column="0">
-              <widget class="QCheckBox" name="checkBoxFirstOrderStatistics">
+             <item row="1" column="2">
+              <widget class="QCheckBox" name="checkBoxNGTDM">
                <property name="font">
                 <font>
                  <family>Times New Roman</family>
                 </font>
                </property>
-               <property name="text">
-                <string>First Order</string>
+               <property name="toolTip">
+                <string>Neigboring Gray Tone Difference Matrix</string>
                </property>
-               <property name="checked">
-                <bool>true</bool>
+               <property name="text">
+                <string>NGTDM</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QCheckBox" name="checkBoxGLSZM">
+               <property name="font">
+                <font>
+                 <family>Times New Roman</family>
+                </font>
+               </property>
+               <property name="toolTip">
+                <string>Gray Level Size Zone Matrix</string>
+               </property>
+               <property name="text">
+                <string>GLSZM</string>
                </property>
               </widget>
              </item>
@@ -1057,6 +1053,51 @@
                </property>
                <property name="text">
                 <string>Shape-based</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="3">
+              <widget class="QCheckBox" name="checkBoxGLRLM">
+               <property name="font">
+                <font>
+                 <family>Times New Roman</family>
+                </font>
+               </property>
+               <property name="toolTip">
+                <string>Gray Level Run Length Matrix</string>
+               </property>
+               <property name="text">
+                <string>GLRLM</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QCheckBox" name="checkBoxGLDM">
+               <property name="font">
+                <font>
+                 <family>Times New Roman</family>
+                </font>
+               </property>
+               <property name="toolTip">
+                <string>Gray Level Dependence Matrix</string>
+               </property>
+               <property name="text">
+                <string>GLDM</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="0">
+              <widget class="QCheckBox" name="checkBoxFirstOrderStatistics">
+               <property name="font">
+                <font>
+                 <family>Times New Roman</family>
+                </font>
+               </property>
+               <property name="text">
+                <string>First Order</string>
                </property>
                <property name="checked">
                 <bool>true</bool>
@@ -1081,67 +1122,25 @@
                </property>
               </widget>
              </item>
-             <item row="0" column="3">
-              <widget class="QCheckBox" name="checkBoxGLRLM">
-               <property name="font">
-                <font>
-                 <family>Times New Roman</family>
-                </font>
-               </property>
-               <property name="toolTip">
-                <string>Gray Level Run Length Matrix</string>
-               </property>
-               <property name="text">
-                <string>GLRLM</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="0">
-              <widget class="QCheckBox" name="checkBoxGLSZM">
-               <property name="font">
-                <font>
-                 <family>Times New Roman</family>
-                </font>
-               </property>
-               <property name="toolTip">
-                <string>Gray Level Size Zone Matrix</string>
-               </property>
-               <property name="text">
-                <string>GLSZM</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="1">
-              <widget class="QCheckBox" name="checkBoxGLDM">
-               <property name="font">
-                <font>
-                 <family>Times New Roman</family>
-                </font>
-               </property>
-               <property name="toolTip">
-                <string>Gray Level Dependence Matrix</string>
-               </property>
-               <property name="text">
-                <string>GLDM</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="2">
-              <widget class="QCheckBox" name="checkBoxNGTDM">
-               <property name="font">
-                <font>
-                 <family>Times New Roman</family>
-                </font>
-               </property>
-               <property name="toolTip">
-                <string>Neigboring Gray Tone Difference Matrix</string>
-               </property>
-               <property name="text">
-                <string>NGTDM</string>
-               </property>
-              </widget>
-             </item>
             </layout>
+           </item>
+           <item>
+            <widget class="QPushButton" name="buttonSaveConfig">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>30</height>
+              </size>
+             </property>
+             <property name="font">
+              <font>
+               <family>Times New Roman</family>
+              </font>
+             </property>
+             <property name="text">
+              <string>Save Config</string>
+             </property>
+            </widget>
            </item>
           </layout>
          </item>
