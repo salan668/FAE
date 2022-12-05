@@ -1,6 +1,18 @@
 featureClass:
   firstorder: null
-  glcm: null
-  shape: null
 imageType:
   Original: {}
+setting:
+  additionalInfo: false
+  binWidth: 25.0
+  force2D: true
+  geometryTolerance: 1e-6
+  label: 1
+  minimumROISize: 1
+  normalize: true
+  normalizeScale: 1000
+  resampledPixelSpacing:
+  - 1.0
+  - 1.0
+  - 0.0
+  resegmentMode: sigma

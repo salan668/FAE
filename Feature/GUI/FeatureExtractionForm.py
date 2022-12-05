@@ -2,8 +2,6 @@
 All rights reserved.
 Author: Yang SONG (songyangmri@gmail.com)
 """
-import os
-import sys
 import traceback
 from pathlib import Path
 
@@ -14,9 +12,8 @@ from PyQt5 import QtCore
 from PyQt5.QtCore import QThread
 
 from Feature.GUI.FeatureExtraction import Ui_FeatureExtraction
-from BC.Utility.RadiomicsParamsConfig import RadiomicsParamsConfig
-from BC.Utility.SeriesMatcher import SeriesStringMatcher
-from BC.Image2Feature.MyFeatureExtractor import MyFeatureExtractor
+from Feature.RadiomicsParamsConfig import RadiomicsParamsConfig, feature_classes_inface2yaml, image_classes_inface2yaml
+from Feature.SeriesMatcher import SeriesStringMatcher
 from radiomics.featureextractor import RadiomicsFeatureExtractor
 
 from Feature.FileMatcher import UniqueFileMatcherManager
@@ -38,20 +35,10 @@ class FileCheckerThread(QThread):
         self.text_signal.emit(message)
         self.progress_signal.emit(0)
 
-        current_name = None
         count = 0
         for state, case_name, series_name in manager.MatchVerbose(self.root):
-            if current_name is None:
-                current_name = case_name
-                message += '\n{}: '.format(case_name)
-                count += 1
-            elif current_name != case_name:
-                current_name = case_name
-                message += '\n{}: '.format(case_name)
-                count += 1
-
             if not state:
-                message += '{} {}'.format(series_name, manager.error_info.loc[case_name, series_name])
+                message += '{}-{} {}'.format(case_name, series_name, manager.error_info.loc[case_name, series_name])
 
             self.progress_signal.emit(int(100 * count / case_number))
             self.text_signal.emit(message)
@@ -64,7 +51,7 @@ class FileCheckerThread(QThread):
 
     def run(self):
         case_number = self.image_match_manager.EstimateCaseNumber(self.root)
-        message = 'Checking the Image Path: \n'
+        message = '\nChecking the Image Path: \n'
         message = self.MatchOneManager(self.image_match_manager, case_number, message)
         message += '\n\nChecking the Roi Path: \n'
         self.MatchOneManager(self.roi_match_manager, case_number, message)
@@ -78,7 +65,7 @@ class FeatureExtractThread(QThread):
     finish_signal = QtCore.pyqtSignal(bool)
 
     def __init__(self, image_paths, roi_paths, store_path, extractor: RadiomicsFeatureExtractor,
-                 resample_roi: bool, only_matrix: bool):
+                 only_matrix: bool):
         super().__init__()
         self.image_paths = image_paths
         self.roi_paths = roi_paths
@@ -87,7 +74,6 @@ class FeatureExtractThread(QThread):
         self.extractor = extractor
 
         self.only_matrix = only_matrix
-        self.extractor.settings['correctMask'] = resample_roi
 
     def run(self):
         self.finish_signal.emit(False)
@@ -100,16 +86,15 @@ class FeatureExtractThread(QThread):
         count = 0
 
         for case_name in self.image_paths.index:
-            # message += '{}: '.format(case_name)
             self.text_signal.emit(message)
             one_case_feature = {}
             try:
                 for image_name in self.image_paths.columns:
-                    roi_image = sitk.ReadImage(str(self.roi_paths.loc[case_name, 'roi']))
+                    roi_image = sitk.ReadImage(str(self.roi_paths.loc[case_name, 'FAE_ROI']))
                     image = sitk.ReadImage(str(self.image_paths.loc[case_name, image_name]))
-                    # assert (image.GetSize() == roi_image.GetSize())
 
                     if self.only_matrix:
+                        assert (image.GetSize() == roi_image.GetSize())
                         roi_image.CopyInformation(image)
 
                     for key, value in self.extractor.execute(image, roi_image).items():
@@ -117,7 +102,6 @@ class FeatureExtractThread(QThread):
                             one_case_feature['{}_{}'.format(image_name, key)] = value
 
                 all_features = pd.concat([all_features, pd.DataFrame(one_case_feature, index=[case_name])], axis=0)
-                # message += 'Done.\n'.format(case_name)
                 self.text_signal.emit(message)
             except Exception as e:
                 message += '{}.\n'.format(e.__str__())
@@ -159,14 +143,24 @@ class FeatureExtractionForm(QWidget):
         self.ui.buttonBrowseSourceFolder.clicked.connect(self.LoadDataRoot)
         self.ui.buttonAddOne.clicked.connect(self.AddOnePattern)
         self.ui.buttonRemoveOne.clicked.connect(self.RemoveOnePattern)
-        self.ui.useExistConfigcheckBox.clicked.connect(self.UseExitingConfig)
-        self.ui.configPushButton.clicked.connect(self.BrowseRadiomicsFeatureCofigFile)
+
+        self.ui.useExistConfigcheckBox.clicked.connect(self.UpdateInterfaceByUseExitingConfig)
+        self.ui.buttonLoadConfig.clicked.connect(self.BrowseRadiomicsFeatureCofigFile)
         self.ui.configLineEdit.setText(r'')
-        self.ui.configLineEdit.setEnabled(False)
-        self.ui.configPushButton.setEnabled(False)
+        self.ui.checkNormalize.clicked.connect(self.UpdateFeatureConfigInterface)
+        self.ui.checkResample.clicked.connect(self.UpdateFeatureConfigInterface)
+        self.ui.checkResegment.clicked.connect(self.UpdateFeatureConfigInterface)
+        self.ui.radioResegmentAbsolute.clicked.connect(self.UpdateFeatureConfigInterface)
+        self.ui.radioResegmenSigma.clicked.connect(self.UpdateFeatureConfigInterface)
+        self.ui.checkRoiFilter.clicked.connect(self.UpdateFeatureConfigInterface)
+        self.ui.radioBinCount.clicked.connect(self.UpdateFeatureConfigInterface)
+        self.ui.radioBinWidth.clicked.connect(self.UpdateFeatureConfigInterface)
+        self.ui.buttonSaveConfig.clicked.connect(self.SaveParamConfig)
 
         self.ui.buttonCheckPath.clicked.connect(self.CheckPath)
         self.ui.buttonExtract.clicked.connect(self.FeatureExtract)
+
+        self.UpdateInterfaceByUseExitingConfig()
 
     def closeEvent(self, event):
         self.close_signal.emit(True)
@@ -237,24 +231,6 @@ class FeatureExtractionForm(QWidget):
             self.ui.tableFilePattern.setItem(current_row_count, 2, QTableWidgetItem(','.join(one_pattern.include_key)))
             self.ui.tableFilePattern.setItem(current_row_count, 3, QTableWidgetItem(','.join(one_pattern.exclude_key)))
 
-        # if self._PatternNameExist(name):
-        #     message.about(self, '', 'Same image pattern exists')
-        #     return
-
-        # current_row_count = self.ui.tableFilePattern.rowCount()
-        # self.ui.tableFilePattern.insertRow(current_row_count)
-        # if self.ui.radioImagePattern.isChecked():
-        #     self.ui.tableFilePattern.setItem(current_row_count, 0, QTableWidgetItem('Image'))
-        #     self.image_matcher_manager.AddOne(name, one_pattern)
-        #
-        # elif self.ui.radioRoiPattern.isChecked():
-        #     self.ui.tableFilePattern.setItem(current_row_count, 0, QTableWidgetItem('ROI'))
-        #     self.roi_matcher_manager.AddOne('FAE_ROI', one_pattern)
-        #
-        # self.ui.tableFilePattern.setItem(current_row_count, 1, QTableWidgetItem(name))
-        # self.ui.tableFilePattern.setItem(current_row_count, 2, QTableWidgetItem(','.join(one_pattern.include_key)))
-        # self.ui.tableFilePattern.setItem(current_row_count, 3, QTableWidgetItem(','.join(one_pattern.exclude_key)))
-
     def RemoveOnePattern(self):
         if not self.ui.tableFilePattern.selectedIndexes():
             return None
@@ -265,7 +241,7 @@ class FeatureExtractionForm(QWidget):
         image_type = self.ui.tableFilePattern.item(index, 0).text()
         if image_type == 'Image':
             self.image_matcher_manager.RemoveOne(name)
-        elif image_type == 'ROI':
+        elif image_type == 'Roi':
             self.roi_matcher_manager.ClearMatcher()
 
         self.ui.tableFilePattern.removeRow(index)
@@ -298,7 +274,7 @@ class FeatureExtractionForm(QWidget):
                 ctrl.setChecked(ctrl.text() in image_types)
 
     def _UpdateFeatureClasses(self, update_data, feature_classes):
-        feature_classes_ctrl = {self.ui.checkBoxFirstOrderStatistics, self.ui.checkBoxShapeBased2D,
+        feature_classes_ctrl = {self.ui.checkBoxFirstOrderStatistics, self.ui.checkBoxShape,
                                 self.ui.checkBoxGLCM, self.ui.checkBoxGLRLM, self.ui.checkBoxGLSZM,
                                 self.ui.checkBoxGLDM, self.ui.checkBoxNGTDM}
         if update_data:
@@ -309,10 +285,37 @@ class FeatureExtractionForm(QWidget):
             for ctrl in feature_classes_ctrl:
                 ctrl.setChecked(ctrl.text() in feature_classes)
 
-    def UseExitingConfig(self):
+    def IsCheckAndEnable(self, wdiget):
+        return wdiget.isEnabled() and wdiget.isChecked()
+
+    def UpdateFeatureConfigInterface(self):
+        self.ui.spinNormalizeScale.setEnabled(self.IsCheckAndEnable(self.ui.checkNormalize))
+        self.ui.doubleSpinResampleX.setEnabled(self.IsCheckAndEnable(self.ui.checkResample))
+        self.ui.doubleSpinResampleY.setEnabled(self.IsCheckAndEnable(self.ui.checkResample))
+        self.ui.doubleSpinResampleZ.setEnabled(self.IsCheckAndEnable(self.ui.checkResample))
+        self.ui.radioResegmentAbsolute.setEnabled(self.IsCheckAndEnable(self.ui.checkResegment))
+        self.ui.radioResegmenSigma.setEnabled(self.IsCheckAndEnable(self.ui.checkResegment))
+        self.ui.doubleSpinReSegmentMin.setEnabled(self.IsCheckAndEnable(self.ui.radioResegmentAbsolute))
+        self.ui.doubleSpinReSegmentMax.setEnabled(self.IsCheckAndEnable(self.ui.radioResegmentAbsolute))
+        self.ui.spinMinRoiSize.setEnabled(self.IsCheckAndEnable(self.ui.checkRoiFilter))
+        self.ui.doubleSpinBinWidth.setEnabled(self.IsCheckAndEnable(self.ui.radioBinWidth))
+        self.ui.spinBinCount.setEnabled(self.IsCheckAndEnable(self.ui.radioBinCount))
+
+    def UpdateInterfaceByUseExitingConfig(self):
         use_exist = self.ui.useExistConfigcheckBox.isChecked()
         self.ui.configLineEdit.setEnabled(use_exist)
-        self.ui.configPushButton.setEnabled(use_exist)
+        self.ui.buttonLoadConfig.setEnabled(use_exist)
+
+        self.ui.checkNormalize.setEnabled(not use_exist)
+        self.ui.checkResample.setEnabled(not use_exist)
+        self.ui.checkResegment.setEnabled(not use_exist)
+        self.ui.checkRoiFilter.setEnabled(not use_exist)
+        self.ui.radioBinCount.setEnabled(not use_exist)
+        self.ui.radioBinWidth.setEnabled(not use_exist)
+        self.ui.checkForce2DExtraction.setEnabled(not use_exist)
+        self.ui.checkCorrectMask.setEnabled(not use_exist)
+        self.ui.spinLabelValue.setEnabled(not use_exist)
+        self.ui.buttonSaveConfig.setEnabled(not use_exist)
 
         self.ui.checkBoxOriginal.setEnabled(not use_exist)
         self.ui.checkBoxWavelet.setEnabled(not use_exist)
@@ -326,32 +329,80 @@ class FeatureExtractionForm(QWidget):
         self.ui.checkBoxLocalBinaryPattern3D.setEnabled(not use_exist)
 
         self.ui.checkBoxFirstOrderStatistics.setEnabled(not use_exist)
-        self.ui.checkBoxShapeBased2D.setEnabled(not use_exist)
+        self.ui.checkBoxShape.setEnabled(not use_exist)
         self.ui.checkBoxGLCM.setEnabled(not use_exist)
         self.ui.checkBoxGLRLM.setEnabled(not use_exist)
         self.ui.checkBoxGLSZM.setEnabled(not use_exist)
         self.ui.checkBoxGLDM.setEnabled(not use_exist)
         self.ui.checkBoxNGTDM.setEnabled(not use_exist)
 
+        self.UpdateFeatureConfigInterface()
+
         if not use_exist:
             self.radiomics_params = RadiomicsParamsConfig(r'Feature\GUI\RadiomicsParams.yaml')
 
     def BrowseRadiomicsFeatureCofigFile(self):
         dlg = QFileDialog()
-        file_name, _ = dlg.getOpenFileName(self, 'Open Radiomics Config file', directory=r'D:\research',
+        file_name, _ = dlg.getOpenFileName(self, 'Open Radiomics Config file', directory='',
                                            filter="Config (*.yaml)")
         if file_name:
             self.ui.configLineEdit.setText(file_name)
             self.radiomics_params = RadiomicsParamsConfig(file_name)
 
-    def _UpdateRadiomicsConfig(self):
-        image_types = list()
-        self._UpdateImageClassesFeature(True, image_types)
-        feature_classes = list()
-        self._UpdateFeatureClasses(True, feature_classes)
-        self.radiomics_params.SetImageClasses(image_types)
-        self.radiomics_params.SetFeatureClasses(feature_classes)
-        self.radiomics_params.SaveConfig()
+    def SaveParamConfig(self):
+        dlg = QFileDialog()
+        file_name, _ = dlg.getSaveFileName(self, 'Open Radiomics Config file', 'radiomics_config_param.yaml',
+                                           filter="Config (*.yaml)")
+        if file_name:
+            config_dict = self.UpdateConfigFile()
+            RadiomicsParamsConfig(file_name).SaveConfig(config_dict)
+
+    def UpdateConfigFile(self):
+        config_dict = {'featureClass': {}, 'imageType': {}, 'setting': {}}
+        for image_type in [self.ui.checkBoxOriginal, self.ui.checkBoxWavelet, self.ui.checkBoxSquare,
+                            self.ui.checkBoxSquareRoot, self.ui.checkBoxLoG, self.ui.checkBoxLogarithm,
+                            self.ui.checkBoxExponential, self.ui.checkBoxGradient, self.ui.checkBoxLocalBinaryPattern2D,
+                            self.ui.checkBoxLocalBinaryPattern3D]:
+            if image_type.isChecked():
+                config_dict['imageType'][image_classes_inface2yaml[image_type.text()]] = {}
+        for feature_type in [self.ui.checkBoxFirstOrderStatistics, self.ui.checkBoxShape,
+                                self.ui.checkBoxGLCM, self.ui.checkBoxGLRLM, self.ui.checkBoxGLSZM,
+                                self.ui.checkBoxGLDM, self.ui.checkBoxNGTDM]:
+            if feature_type.isChecked():
+                config_dict['featureClass'][feature_classes_inface2yaml[feature_type.text()]] = None
+
+        # Set the settings
+        if self.ui.checkNormalize.isChecked():
+            config_dict['setting']['normalize'] = True
+            config_dict['setting']['normalizeScale'] = round(self.ui.spinNormalizeScale.value(), 2)
+        if self.ui.checkResample.isChecked():
+            config_dict['setting']['resampledPixelSpacing'] = [round(self.ui.doubleSpinResampleX.value(), 2),
+                                                                round(self.ui.doubleSpinResampleY.value(), 2),
+                                                                round(self.ui.doubleSpinResampleZ.value(), 2)]
+        if self.ui.checkResegment.isChecked():
+            if self.ui.radioResegmentAbsolute.isChecked():
+                config_dict['setting']['resegmentMode'] = 'absolute'
+                config_dict['setting']['resegmentRange'] = [round(self.ui.doubleSpinReSegmentMin.value(), 2),
+                                                             round(self.ui.doubleSpinReSegmentMax.value(), 2)]
+            elif self.ui.radioResegmenSigma.isChecked():
+                config_dict['setting']['resegmentMode'] = 'sigma'
+        if self.ui.checkRoiFilter.isChecked():
+            config_dict['setting']['minimumROISize'] = self.ui.spinMinRoiSize.value()
+        if self.ui.checkForce2DExtraction.isChecked():
+            config_dict['setting']['force2D'] = True
+        if self.ui.checkCorrectMask.isChecked():
+            config_dict['setting']['correctMask'] = True
+        if self.ui.radioBinWidth.isChecked():
+            config_dict['setting']['binWidth'] = round(self.ui.doubleSpinBinWidth.value(), 2)
+        elif self.ui.radioBinCount.isChecked():
+            config_dict['setting']['binCount'] = self.ui.spinBinCount.value()
+
+        config_dict['setting']['label'] = self.ui.spinLabelValue.value()
+
+        config_dict['setting']['geometryTolerance'] = '1e-6'
+        config_dict['setting']['additionalInfo'] = False
+
+        return config_dict
 
     def FeatureExtract(self):
         if not (self.image_matcher_manager.IsAllMatched() and self.roi_matcher_manager.IsAllMatched()):
@@ -365,19 +416,31 @@ class FeatureExtractionForm(QWidget):
             return None
 
         if not self.ui.useExistConfigcheckBox.isChecked():
-            self._UpdateRadiomicsConfig()
+            config_dict = self.UpdateConfigFile()
+            self.radiomics_params.SaveConfig(config_dict)
 
         self.analysis_thread = FeatureExtractThread(
-            self.image_matcher_manager.results, self.roi_matcher_manager.results, file_name, RadiomicsFeatureExtractor(self.radiomics_params.config_path), self.ui.radioExtractResample.isChecked(), self.ui.radioExtractCopyInfo.isChecked()
-            )
+            self.image_matcher_manager.results, self.roi_matcher_manager.results, file_name, RadiomicsFeatureExtractor(self.radiomics_params.config_path), self.ui.radioExtractCopyInfo.isChecked()
+        )
 
         self.analysis_thread.progress_signal.connect(self.UpdateProgressBar)
         self.analysis_thread.text_signal.connect(self.ui.plainTextOutput.setPlainText)
         self.analysis_thread.start()
 
 
+def TestConfigFile():
+    extractor = RadiomicsFeatureExtractor(r'C:\Users\Suns\Desktop\radiomics_config_param.yaml')
+    image_path = r'D:\Data\EEnt\GENGYue\patient-22-05-06\p00447397 2.37E-5 low\ADC.nii'
+    roi_path = r'D:\Data\EEnt\GENGYue\patient-22-05-06\p00447397 2.37E-5 low\ADC ROI.nii'
+    result = extractor.execute(image_path, roi_path)
+    print(result)
+
+
 if __name__ == '__main__':
+    import sys
     app = QApplication(sys.argv)
     main_frame = FeatureExtractionForm()
     main_frame.show()
     sys.exit(app.exec_())
+
+    # TestConfigFile()
