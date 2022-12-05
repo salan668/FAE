@@ -417,7 +417,7 @@ class FeatureSelectByRFE(FeatureSelectByAnalysis):
         self._selected_features = []
 
     def GetDescription(self):
-        text = "Before build the model, we used recursive feature elimination (RFE) to select features. The goal of RFE " \
+        text = "Before building the model, we used recursive feature elimination (RFE) to select features. The goal of RFE " \
                "is to select features based on a classifier by recursively considering smaller set of the features. "
         return text
 
@@ -431,7 +431,7 @@ class FeatureSelectByRFE(FeatureSelectByAnalysis):
                 data.shape[1], self.GetSelectedFeatureNumber()))
             self.SetSelectedFeatureNumber(data.shape[1])
 
-        fs = RFE(self.__classifier, self.GetSelectedFeatureNumber(), step=0.05)
+        fs = RFE(self.__classifier, n_features_to_select=self.GetSelectedFeatureNumber(), step=0.05)
         fs.fit(data, label)
         feature_index = fs.get_support(True)
         self._rank = fs.ranking_

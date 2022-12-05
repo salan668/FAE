@@ -68,11 +68,11 @@ class ProcessConnection(QWidget, Ui_Process):
         self.testing_data_container = DataContainer()
         self.logger = eclog(os.path.split(__file__)[-1]).GetLogger()
         self.fae = PipelinesManager(logger=self.logger)
-        self.__process_normalizer_list = []
-        self.__process_dimension_reduction_list = []
-        self.__process_feature_selector_list = []
-        self.__process_feature_number_list = []
-        self.__process_classifier_list = []
+        self.__normalizers = []
+        self.__dimension_reducers = []
+        self.__feature_selectors = []
+        self.__feature_number_list = []
+        self.__classifiers = []
 
         self.thread = CVRun()
 
@@ -163,12 +163,13 @@ class ProcessConnection(QWidget, Ui_Process):
                 self.spinBoxMaxFeatureNumber.setValue(len(self.training_data_container.GetFeatureName()))
                 self.SetDefaultParam()
             except OSError as reason:
-                self.logger.log('Open SCV file Error, The reason is ' + str(reason))
-                print('Load Error！' + str(reason))
+                error_message = 'Error opening CSV file. The reason is ' + str(reason)
+                self.logger.log(error_message)
+                QMessageBox.warning(self, 'Error', error_message)
             except ValueError:
-                self.logger.error('Open SCV file ' + file_name + ' Failed. because of value error.')
-                QMessageBox.information(self, 'Error',
-                                        'The selected training data mismatch.')
+                error_message = 'Error opening CSV file ' + file_name + ' because of invalid values in the file.'
+                self.logger.error(error_message)
+                QMessageBox.warning(self, 'Error', error_message)
 
     def LoadTestingData(self):
         dlg = QFileDialog()
@@ -210,17 +211,17 @@ class ProcessConnection(QWidget, Ui_Process):
                                        self.__process_normalizer_list))
 
         text_list.append(FormatOneLine(dimension_reduction_name,
-                                       self.__process_dimension_reduction_list))
+                                       self.__dimension_reducers))
 
         text_list.append(FormatOneLine(feature_selector_name,
-                                       self.__process_feature_selector_list))
+                                       self.__feature_selectors))
 
         text_list.append("Feature Number: {:d} / [{:d}-{:d}]".format(feature_num,
                                                                      self.spinBoxMinFeatureNumber.value(),
                                                                      self.spinBoxMaxFeatureNumber.value()))
 
         text_list.append(FormatOneLine(classifier_name,
-                                       self.__process_classifier_list))
+                                       self.__classifiers))
 
         text_list.append("Total process: {:d} / {:d}".format(current_num, total_num))
         return "\n".join(text_list)
@@ -393,60 +394,60 @@ class ProcessConnection(QWidget, Ui_Process):
         else:
             return False
 
-        self.__process_normalizer_list = []
+        self.__normalizers = []
         if self.checkNormalizeNone.isChecked():
-            self.__process_normalizer_list.append(NormalizerNone)
+            self.__normalizers.append(NormalizerNone)
         if self.checkNormalizeMinMax.isChecked():
-            self.__process_normalizer_list.append(NormalizerMinMax)
+            self.__normalizers.append(NormalizerMinMax)
         if self.checkNormalizeZscore.isChecked():
-            self.__process_normalizer_list.append(NormalizerZscore)
+            self.__normalizers.append(NormalizerZscore)
         if self.checkNormalizeMean.isChecked():
-            self.__process_normalizer_list.append(NormalizerMean)
+            self.__normalizers.append(NormalizerMean)
 
-        self.__process_dimension_reduction_list = []
+        self.__dimension_reducers = []
         if self.checkPCA.isChecked():
-            self.__process_dimension_reduction_list.append(DimensionReductionByPCA())
+            self.__dimension_reducers.append(DimensionReductionByPCA())
         if self.checkRemoveSimilarFeatures.isChecked():
-            self.__process_dimension_reduction_list.append(DimensionReductionByPCC(self.pcccoefdoubleSpinBox.value()))
+            self.__dimension_reducers.append(DimensionReductionByPCC(self.pcccoefdoubleSpinBox.value()))
         self.saveDefaultValue()
 
-        self.__process_feature_selector_list = []
+        self.__feature_selectors = []
         if self.checkANOVA.isChecked():
-            self.__process_feature_selector_list.append(FeatureSelectByANOVA())
+            self.__feature_selectors.append(FeatureSelectByANOVA())
         if self.checkKW.isChecked():
-            self.__process_feature_selector_list.append(FeatureSelectByKruskalWallis())
+            self.__feature_selectors.append(FeatureSelectByKruskalWallis())
         if self.checkRFE.isChecked():
-            self.__process_feature_selector_list.append(FeatureSelectByRFE())
+            self.__feature_selectors.append(FeatureSelectByRFE())
         if self.checkRelief.isChecked():
-            self.__process_feature_selector_list.append(FeatureSelectByRelief())
+            self.__feature_selectors.append(FeatureSelectByRelief())
         # if self.checkMRMR.isChecked():
         #     self.__process_feature_selector_list.append(eatureSelectByMrmr())
 
-        self.__process_feature_number_list = np.arange(self.spinBoxMinFeatureNumber.value(),
+        self.__feature_number_list = np.arange(self.spinBoxMinFeatureNumber.value(),
                                                        self.spinBoxMaxFeatureNumber.value() + 1).tolist()
 
-        self.__process_classifier_list = []
+        self.__classifiers = []
         if self.checkSVM.isChecked():
-            self.__process_classifier_list.append(SVM())
+            self.__classifiers.append(SVM())
         if self.checkLDA.isChecked():
-            self.__process_classifier_list.append(LDA())
+            self.__classifiers.append(LDA())
         if self.checkAE.isChecked():
-            self.__process_classifier_list.append(AE())
+            self.__classifiers.append(AE())
         if self.checkRF.isChecked():
-            self.__process_classifier_list.append(RandomForest())
+            self.__classifiers.append(RandomForest())
         if self.checkLogisticRegression.isChecked():
-            self.__process_classifier_list.append(LR())
+            self.__classifiers.append(LR())
         if self.checkLRLasso.isChecked():
-            self.__process_classifier_list.append(LRLasso())
+            self.__classifiers.append(LRLasso())
         if self.checkAdaboost.isChecked():
-            self.__process_classifier_list.append(AdaBoost())
+            self.__classifiers.append(AdaBoost())
         if self.checkDecisionTree.isChecked():
-            self.__process_classifier_list.append(DecisionTree())
+            self.__classifiers.append(DecisionTree())
         if self.checkGaussianProcess.isChecked():
-            self.__process_classifier_list.append(GaussianProcess())
+            self.__classifiers.append(GaussianProcess())
         if self.checkNaiveBayes.isChecked():
-            self.__process_classifier_list.append(NaiveBayes())
-        if len(self.__process_classifier_list) == 0:
+            self.__classifiers.append(NaiveBayes())
+        if len(self.__classifiers) == 0:
             self.logger.error('Process classifier list length is zero.')
             return False
 
@@ -460,11 +461,11 @@ class ProcessConnection(QWidget, Ui_Process):
             return False
 
         self.fae.balance = data_balance
-        self.fae.normalizer_list = self.__process_normalizer_list
-        self.fae.dimension_reduction_list = self.__process_dimension_reduction_list
-        self.fae.feature_selector_list = self.__process_feature_selector_list
-        self.fae.feature_selector_num_list = self.__process_feature_number_list
-        self.fae.classifier_list = self.__process_classifier_list
+        self.fae.normalizer_list = self.__normalizers
+        self.fae.dimension_reduction_list = self.__dimension_reducers
+        self.fae.feature_selector_list = self.__feature_selectors
+        self.fae.feature_selector_num_list = self.__feature_number_list
+        self.fae.classifier_list = self.__classifiers
         self.fae.cv = cv
         self.fae.GenerateAucDict()
 
@@ -473,31 +474,29 @@ class ProcessConnection(QWidget, Ui_Process):
     def UpdateDataDescription(self):
         show_text = ""
         if self.training_data_container.GetArray().size > 0:
-            show_text += "The number of training cases: {:d}\n".format(len(self.training_data_container.GetCaseName()))
-            show_text += "The number of training features: {:d}\n".format(
-                len(self.training_data_container.GetFeatureName()))
+            show_text += f"Training dataset:\nNumber of cases: {len(self.training_data_container.GetCaseName())}\n"
+            show_text += f"Number of features: {len(self.training_data_container.GetFeatureName())}\n"
             if len(np.unique(self.training_data_container.GetLabel())) == 2:
                 positive_number = len(
                     np.where(
                         self.training_data_container.GetLabel() == np.max(self.training_data_container.GetLabel()))[0])
                 negative_number = len(self.training_data_container.GetLabel()) - positive_number
                 assert (positive_number + negative_number == len(self.training_data_container.GetLabel()))
-                show_text += "The number of training positive samples: {:d}\n".format(positive_number)
-                show_text += "The number of training negative samples: {:d}\n".format(negative_number)
+                show_text += f"Positive: {positive_number}\n"
+                show_text += f"Negative: {negative_number}\n"
 
         show_text += '\n'
         if self.testing_data_container.GetArray().size > 0:
-            show_text += "The number of testing cases: {:d}\n".format(len(self.testing_data_container.GetCaseName()))
-            show_text += "The number of testing features: {:d}\n".format(
-                len(self.testing_data_container.GetFeatureName()))
+            show_text += f"Test dataset:\nNumber of cases: {len(self.testing_data_container.GetCaseName())}\n"
+            show_text += f"Number of features: {len(self.testing_data_container.GetFeatureName())}\n"                
             if len(np.unique(self.testing_data_container.GetLabel())) == 2:
                 positive_number = len(
                     np.where(
                         self.testing_data_container.GetLabel() == np.max(self.testing_data_container.GetLabel()))[0])
                 negative_number = len(self.testing_data_container.GetLabel()) - positive_number
                 assert (positive_number + negative_number == len(self.testing_data_container.GetLabel()))
-                show_text += "The number of testing positive samples: {:d}\n".format(positive_number)
-                show_text += "The number of testing negative samples: {:d}\n".format(negative_number)
+                show_text += f"Positive: {positive_number}\n"
+                show_text += f"Negative: {negative_number}\n"
 
         self.textEditDescription.setText(show_text)
 
