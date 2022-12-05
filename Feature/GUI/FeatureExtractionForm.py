@@ -140,6 +140,8 @@ class FeatureExtractionForm(QWidget):
         self.ui.tableFilePattern.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.ui.tableFilePattern.setSelectionBehavior(QAbstractItemView.SelectRows)
 
+        self.ui.radioImagePattern.clicked.connect(self.UpdatePatternInterface)
+        self.ui.radioRoiPattern.clicked.connect(self.UpdatePatternInterface)
         self.ui.buttonBrowseSourceFolder.clicked.connect(self.LoadDataRoot)
         self.ui.buttonAddOne.clicked.connect(self.AddOnePattern)
         self.ui.buttonRemoveOne.clicked.connect(self.RemoveOnePattern)
@@ -176,6 +178,9 @@ class FeatureExtractionForm(QWidget):
         if dlg.exec_():
             self._root_folder = dlg.selectedFiles()[0]
             self.ui.lineEditSourceFolder.setText(self._root_folder)
+
+    def UpdatePatternInterface(self):
+        self.ui.lineEditStoreName.setEnabled(not self.ui.radioRoiPattern.isChecked())
 
     def _PatternNameExist(self, one_name):
         exist_name_list = [item['name'] for item in self._image_patten_list]
