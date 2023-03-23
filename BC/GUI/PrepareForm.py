@@ -1,3 +1,5 @@
+import traceback
+
 import numpy as np
 import os
 from copy import deepcopy
@@ -280,6 +282,7 @@ class PrepareConnection(QWidget, Ui_Prepare):
                     content = 'PrepareConnection, splitting failed: '
                     eclog(self._filename).GetLogger().error('Split Error:  ' + e.__str__())
                     QMessageBox.about(self, content, e.__str__())
+                    print(traceback.format_exc())
 
         else:
             file_name, _ = QFileDialog.getSaveFileName(self, "Save data", filter="csv files (*.csv)")

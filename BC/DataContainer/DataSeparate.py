@@ -119,7 +119,6 @@ class FeatureMatrixStatistics(object):
 
         return result
 
-
 class DataSeparate:
     def __init__(self):
         self.clinic_split_result = pd.DataFrame()

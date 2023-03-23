@@ -160,8 +160,8 @@ class DataContainer:
             print('The number of negative samples is ', str(negative_number))
 
     def UpdateDataByFrame(self, emu_label=False):
-        self._case_name = list(self._df.index)
-        self._feature_name = list(self._df.columns)
+        self._case_name = [str(one) for one in self._df.index]
+        self._feature_name = [str(one) for one in self._df.columns]
         label_name = ''
         if 'label' in self._feature_name:
             label_name = 'label'
@@ -177,7 +177,7 @@ class DataContainer:
 
         index = self._feature_name.index(label_name)
         self._feature_name.pop(index)
-        self._label = np.asarray(self._df[label_name].values, dtype=np.int)
+        self._label = np.asarray(self._df[label_name].values, dtype=np.int8)
         self._array = np.asarray(self._df[self._feature_name].values, dtype=np.float64)
         return True
 
