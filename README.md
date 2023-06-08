@@ -23,7 +23,7 @@ The below modules must be installed first to make the FAE work.
 - imbalanced-learn=0.6.2
 - lifelines=0.26.0
 - matplotlib=3.2.0
-- numpy=1.18.1
+- numpy=1.21.0
 - pandas=1.0.1
 - pdfdocument=3.3
 - pillow=7.0.0
@@ -37,7 +37,9 @@ The below modules must be installed first to make the FAE work.
 - scipy=1.4.1
 - seaborn=0.10.0
 - statsmodels=0.11.1
+- pytorch=2.0.1
 - trimesh=3.9.29
+- yaml=6.0
 ```
 
 ### Installing
@@ -49,14 +51,20 @@ git clone https://github.com/salan668/FAE.git
 The .ui file has to be transferred to the .py file by pyuic manually. For example, GUI/HomePage.ui should be transferred to GUI/HomePage.py file. 
 
 ### Main Architecture of Project 
+- **HomePage**: The ui file and the Starting page for all modules.
+- **Feature**
+  - **SeriesMatcher**. The File matcher to help determine the image files and the ROI files for each folder.
+  - **GUI**. The ui file and the corresponding logical files including feature extraction and feature merge.
 - **BC**: Binary Classification Pipeline
   - **DataContainer**. The data structure including feature array, label, cases ID, and feature names. 
   - **Description**. The PDF generator to describe the developed BC model.
-  - **FeatureAnalysis**. The module of the feature pipeline, including Data Balance, Normalization, Dimension Reduction, Feature Selector, Classifier, and Cross Validation.
+  - **FeatureAnalysis**. The module of the feature pipeline, including Data Balance, Normalization, Dimension Reduction, Feature Selector, Classifier, Cross Validation and the Pipeline Structure.
   - **Visualization**. The common visualized plots, like ROC curve and the plot of AUC against different parameters.
-- **Image2Feature**
-    - **RadiomicsFeatureExtractor**. An Extractor to get features from self-config multi-aligned images with defined ROI.
+  - **GUI**. The ui files and the corresponding logical files including pre-process, model development, and visualization.
 - **SA**: Survival Analysis Pipeline
+  - **Pipeline**. Similar structure to BC and different modules.
+  - **GUI**. The ui files and the corresponding logical files including model development, and visualization.
+- **Plugin**: Plugin manager
 
 ## License 
 This project is licensed under the GPL 3.0 License
@@ -71,6 +79,6 @@ This project is licensed under the GPL 3.0 License
 - [**Tian-jing Zhang**](mailto:tianjingz@nvidia.com)
 - Yi-lai Pei
 - [**jmtaysom**](https://github.com/jmtaysom)
-- Zhiyong Zhao
+- Zhiyong Zhang
 - Yu-dong Zhang
  
