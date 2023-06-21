@@ -156,6 +156,16 @@ class ProcessConnection(QWidget, Ui_Process):
         if file_name:
             try:
                 self.training_data_container.Load(file_name)
+                if self.training_data_container.GetLabel().max() != 1:
+                    QMessageBox.warning(self, 'Error', 'The Label only should be 0 and 1.')
+                    self.training_data_container.Clear()
+                    return
+                if (self.training_data_container.GetLabel() == 0).astype(int).sum() < 10 or \
+                    (self.training_data_container.GetLabel() == 1).astype(int).sum() < 10:
+                    QMessageBox.warning(self, 'Error', 'The cases of each group should be large enough.')
+                    self.training_data_container.Clear()
+                    return
+
                 self.SetStateButtonBeforeLoading(True)
                 self.lineEditTrainingData.setText(file_name)
                 self.UpdateDataDescription()
@@ -177,6 +187,15 @@ class ProcessConnection(QWidget, Ui_Process):
         if file_name:
             try:
                 self.testing_data_container.Load(file_name)
+                if self.testing_data_container.GetLabel().max() != 1:
+                    QMessageBox.warning(self, 'Error', 'The Label only should be 0 and 1.')
+                    self.testing_data_container.Clear()
+                    return
+                if self.training_data_container.IsEmpty():
+                    QMessageBox.warning(self, 'Error', 'Load training data set first.')
+                    self.testing_data_container.Clear()
+                    return
+
                 self.lineEditTestingData.setText(file_name)
                 self.UpdateDataDescription()
                 self.logger.info('Loading testing data ' + file_name + ' succeed.')

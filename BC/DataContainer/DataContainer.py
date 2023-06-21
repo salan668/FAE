@@ -126,6 +126,13 @@ class DataContainer:
 
         return False
 
+    def Clear(self):
+        self._feature_name = []
+        self._case_name = []
+        self._label = np.array([], dtype=int)
+        self._array = np.array([])
+        self._df = pd.DataFrame()
+
     def LoadWithoutLabel(self, file_path, is_update=True):
         assert (os.path.exists(file_path))
         self.__init__()

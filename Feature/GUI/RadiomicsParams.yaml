@@ -1,10 +1,11 @@
 featureClass:
   firstorder: null
+  glcm: null
+  shape: null
 imageType:
   Original: {}
 setting:
   additionalInfo: false
-  binCount: 4
-  force2D: true
+  binCount: 16
   geometryTolerance: 1e-6
   label: 1
