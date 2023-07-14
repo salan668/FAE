@@ -4,6 +4,7 @@ All rights reserved.
 """
 import sys
 import shutil
+import traceback
 
 from PyQt5.QtWidgets import *
 from BC.GUI.Process import Ui_Process
@@ -30,32 +31,41 @@ class CVRun(QThread):
         self.is_train_cutoff = is_train_cutoff
 
     def run(self):
+        valid_features = RemoveSameFeatures().Run(self._process_connection.training_data_container).GetFeatureName()
         try:
-            for total, num in self._process_connection.fae.RunWithoutCV(self._process_connection.training_data_container,
-                                                                        self._process_connection.testing_data_container,
-                                                                        self.store_folder,
-                                                                        self.is_train_cutoff):
-                text = "Model Developing:\n{} / {}".format(num, total)
-                self.signal.emit(text)
+            train_dc = FeatureSelector().SelectFeatureByName(
+                self._process_connection.training_data_container, valid_features
+            )
+            if not self._process_connection.testing_data_container.IsEmpty():
+                test_dc = FeatureSelector().SelectFeatureByName(
+                    self._process_connection.testing_data_container, valid_features)
+                for total, num in self._process_connection.fae.RunWithoutCV(train_dc, test_dc,
+                                                                            self.store_folder,
+                                                                            self.is_train_cutoff):
+                    self.signal.emit("Model Developing:\n{} / {}...".format(num, total))
+                self.signal.emit("Model Developing: Done")
+
         except Exception as e:
-            print('Thread RunWithoutCV Failed: ', e.__str__())
+            print('Selecting valid features wrong')
+            print(traceback.format_exc())
             raise Exception
 
         for total, num, group in self._process_connection.fae.RunWithCV(
-                self._process_connection.training_data_container,
+                train_dc,
                 self.store_folder):
             text = "Model Developing:\nDone.\n\n" \
-                   "Cross Validation:\nGroup {}: {} / {}".format(int(group) + 1, num, total)
+                   "Cross Validation:\nGroup {}: {} / {}...".format(int(group) + 1, num, total)
             self.signal.emit(text)
+        self.signal.emit("Model Developing:\nDone.\n\nCross Validation:\nDone.\n\n")
 
         for total, num in self._process_connection.fae.MergeCvResult(self.store_folder):
             text = "Model Developing:\nDone.\n\nCross Validation:\nDone.\n\n" \
-                   "Merging CV Results:\n{} / {}".format(num, total)
+                   "Merging CV Results:\n{} / {}...".format(num, total)
             self.signal.emit(text)
 
         self._process_connection.fae.SaveAucDict(self.store_folder)
 
-        text = "Model Developing:\nDone.\n\nCross Validation:\nDone.\n\nMerging CV Results:\nDone.\n"
+        text = "Model Developing:\nDone.\n\nCross Validation:\nDone.\n\nMerging CV Results:\nDone.\n\nAll Done, please check the result in Visualization."
         self.signal.emit(text)
         self._process_connection.SetStateAllButtonWhenRunning(True)
 
@@ -159,11 +169,15 @@ class ProcessConnection(QWidget, Ui_Process):
                 if self.training_data_container.GetLabel().max() != 1:
                     QMessageBox.warning(self, 'Error', 'The Label only should be 0 and 1.')
                     self.training_data_container.Clear()
+                    self.lineEditTrainingData.setText(file_name)
+                    self.UpdateDataDescription()
                     return
                 if (self.training_data_container.GetLabel() == 0).astype(int).sum() < 10 or \
                     (self.training_data_container.GetLabel() == 1).astype(int).sum() < 10:
                     QMessageBox.warning(self, 'Error', 'The cases of each group should be large enough.')
                     self.training_data_container.Clear()
+                    self.lineEditTrainingData.setText(file_name)
+                    self.UpdateDataDescription()
                     return
 
                 self.SetStateButtonBeforeLoading(True)
@@ -190,10 +204,20 @@ class ProcessConnection(QWidget, Ui_Process):
                 if self.testing_data_container.GetLabel().max() != 1:
                     QMessageBox.warning(self, 'Error', 'The Label only should be 0 and 1.')
                     self.testing_data_container.Clear()
+                    self.lineEditTestingData.setText(file_name)
+                    self.UpdateDataDescription()
                     return
                 if self.training_data_container.IsEmpty():
                     QMessageBox.warning(self, 'Error', 'Load training data set first.')
                     self.testing_data_container.Clear()
+                    self.lineEditTestingData.setText(file_name)
+                    self.UpdateDataDescription()
+                    return
+                if self.training_data_container.GetFeatureName() != self.testing_data_container.GetFeatureName():
+                    QMessageBox.warning(self, 'Error', 'Test has different features from Train.')
+                    self.testing_data_container.Clear()
+                    self.lineEditTestingData.setText(file_name)
+                    self.UpdateDataDescription()
                     return
 
                 self.lineEditTestingData.setText(file_name)

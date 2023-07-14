@@ -104,8 +104,8 @@ class FeatureExtractThread(QThread):
                 all_features = pd.concat([all_features, pd.DataFrame(one_case_feature, index=[case_name])], axis=0)
                 self.text_signal.emit(message)
             except Exception as e:
-                message += '{}.\n'.format(e.__str__())
-                message += '{}.\n'.format(traceback.format_exc())
+                message += '{}: \n{}.\n'.format(case_name, e.__str__())
+                message += '{}: \n{}.\n'.format(case_name, traceback.format_exc())
                 self.text_signal.emit(message)
             count += 1
             self.progress_signal.emit(100 * count / self.case_number)
