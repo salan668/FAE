@@ -51,12 +51,20 @@ class FileCheckerThread(QThread):
 
     def run(self):
         case_number = self.image_match_manager.EstimateCaseNumber(self.root)
-        message = '\nChecking the Image Path: \n'
-        message = self.MatchOneManager(self.image_match_manager, case_number, message)
-        message += '\n\nChecking the Roi Path: \n'
-        self.MatchOneManager(self.roi_match_manager, case_number, message)
+        if case_number == 0:
+            self.text_signal.emit('No cases are found. Maybe you should choose the root folder instead of the specific case')
+            self.quit()
+            return
+        else:
+            message = 'There are a total of {} cases. \n'.format(case_number)
+            self.text_signal.emit(message)
 
-        self.quit()
+            message += '\nChecking the Image  Path:\n'
+            message = self.MatchOneManager(self.image_match_manager, case_number, message)
+            message += '\n\nChecking the Roi Path: \n'
+            self.MatchOneManager(self.roi_match_manager, case_number, message)
+
+            self.quit()
 
 
 class FeatureExtractThread(QThread):

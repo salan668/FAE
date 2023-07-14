@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1057</width>
+    <width>1063</width>
     <height>892</height>
    </rect>
   </property>
@@ -567,8 +567,11 @@
              </item>
              <item>
               <widget class="QDoubleSpinBox" name="doubleSpinResampleX">
-               <property name="value">
+               <property name="minimum">
                 <double>0.000000000000000</double>
+               </property>
+               <property name="value">
+                <double>1.000000000000000</double>
                </property>
               </widget>
              </item>
@@ -584,8 +587,11 @@
              </item>
              <item>
               <widget class="QDoubleSpinBox" name="doubleSpinResampleY">
-               <property name="value">
+               <property name="minimum">
                 <double>0.000000000000000</double>
+               </property>
+               <property name="value">
+                <double>1.000000000000000</double>
                </property>
               </widget>
              </item>
@@ -601,8 +607,11 @@
              </item>
              <item>
               <widget class="QDoubleSpinBox" name="doubleSpinResampleZ">
-               <property name="value">
+               <property name="minimum">
                 <double>0.000000000000000</double>
+               </property>
+               <property name="value">
+                <double>1.000000000000000</double>
                </property>
               </widget>
              </item>
