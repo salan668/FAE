@@ -401,10 +401,15 @@ class VisualizationForm(QWidget, Ui_Visualization):
                 legend_list.append('{} C-Index={}'.format(CV_VAL,
                                                           self.sae.result[CV_VAL].loc[pipeline_name][METRIC_CINDEX]))
             if self.checkSurvivalTest.isChecked():
-                self.__AddSurvivalByDataset(fitter_folder, TEST, surv, event, duration)
-                name_list.append(TEST)
-                legend_list.append('{} C-Index={}'.format(TEST,
-                                                          self.sae.result[TEST].loc[pipeline_name][METRIC_CINDEX]))
+                try:
+                    self.__AddSurvivalByDataset(fitter_folder, TEST, surv, event, duration)
+                    name_list.append(TEST)
+                    legend_list.append('{} C-Index={}'.format(TEST,
+                                                              self.sae.result[TEST].loc[pipeline_name][METRIC_CINDEX]))
+                except FileNotFoundError:
+                    QMessageBox.about(self, '', 'No Test Data found.')
+                    self.checkSurvivalTest.setChecked(False)
+                    return
 
         elif self.radioSurvivalSplitFeature.isChecked():
             if self.ref_df.size == 0 or self.lineEditRefSplit.text == '':

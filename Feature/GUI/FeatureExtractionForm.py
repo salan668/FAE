@@ -38,7 +38,7 @@ class FileCheckerThread(QThread):
         count = 0
         for state, case_name, series_name in manager.MatchVerbose(self.root):
             if not state:
-                message += '{}-{} {}'.format(case_name, series_name, manager.error_info.loc[case_name, series_name])
+                message += '{}-{} {}\n'.format(case_name, series_name, manager.error_info.loc[case_name, series_name])
 
             self.progress_signal.emit(int(100 * count / case_number))
             self.text_signal.emit(message)

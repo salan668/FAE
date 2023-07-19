@@ -28,9 +28,8 @@ def SurvivalPlot(surv_list, event_list, duration_list, name_list, legend_list, f
                                                                         name_list, legend_list)):
         if is_show_KM:
             km.fit(duration, event, timeline=surv_df.index)
-            km.plot_survival_function(color=color_list[index], ax=ax, ci_show=False,
-                                      linestyle='--', label='{}-KM'.format(name))
-        ax.step(surv_df.index, surv_df.values.mean(axis=1),
+            ax = km.plot_survival_function(color=color_list[index], ax=ax, ci_show=False, linestyle='--', label='{}-KM'.format(name))
+        ax.step(list(surv_df.index), surv_df.values.mean(axis=1),
                 color=color_list[index], label=legend)
 
     ax.legend()

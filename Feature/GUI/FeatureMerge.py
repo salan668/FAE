@@ -177,10 +177,11 @@ class Ui_FeatureMerge(object):
         self.label.setText(_translate("FeatureMerge", "Feature Matrix 1"))
         self.buttonLoadFeatureMatrix1.setText(_translate("FeatureMerge", "Load"))
         self.textEditDescription.setHtml(_translate("FeatureMerge", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
+"hr { height: 1px; border-width: 0; }\n"
 "</style></head><body style=\" font-family:\'Adobe Devanagari\'; font-size:10pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'SimSun\'; font-size:6pt;\">DESCRIPTION: Make sure the case ID is in the first columne.</span></p></body></html>"))
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'SimSun\'; font-size:6pt;\">NOTE: Make sure the case ID is in the first columne.</span></p></body></html>"))
         self.label_2.setText(_translate("FeatureMerge", "Feature Matrix 2"))
         self.buttonLoadFeatureMatrix2.setText(_translate("FeatureMerge", "Load"))
         self.label_5.setText(_translate("FeatureMerge", "Feature Matrix 1"))
