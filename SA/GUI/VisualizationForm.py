@@ -351,8 +351,8 @@ class VisualizationForm(QWidget, Ui_Visualization):
         if os.path.exists(test_surv_path):
             test_surv, test_event, test_duration = self.sae.SurvivalLoad(test_surv_path)
             surv = pd.concat((surv, test_surv), axis=1)
-            event = event.append(test_event)
-            duration = duration.append(test_duration)
+            event = pd.concat([event, test_event])
+            duration = pd.concat([duration, test_duration])
 
         # To find the sub-survivals
         not_exist_case, sub_index = [], []
