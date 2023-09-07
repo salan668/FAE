@@ -53,8 +53,7 @@ class CoxPH(BaseFitter):
         super(CoxPH, self).__init__(CoxPHFitter(), self.__class__.__name__)
 
     def Fit(self, dc: DataContainer):
-        self.fitter.fit(dc.df, duration_col=dc.duration_name, event_col=dc.event_name,
-                        step_size=0.5)
+        self.fitter.fit(dc.df, duration_col=dc.duration_name, event_col=dc.event_name)
 
 
 class AalenAdditive(BaseFitter):

@@ -2,7 +2,7 @@ import csv
 import copy
 
 from radiomics.featureextractor import *
-from BC.Utility.SeriesMatcher import SeriesStringMatcher
+from Feature.SeriesMatcher import SeriesStringMatcher
 
 
 class MyFeatureExtractor:

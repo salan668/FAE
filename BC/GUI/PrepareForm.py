@@ -1,3 +1,5 @@
+import traceback
+
 import numpy as np
 import os
 from copy import deepcopy
@@ -25,7 +27,7 @@ class PrepareConnection(QWidget, Ui_Prepare):
         self.buttonLoad.clicked.connect(self.LoadData)
         self.buttonRemoveAndExport.clicked.connect(self.RemoveInvalidValue)
 
-        self.__testing_ref_data_container = DataContainer()
+        self.testing_ref_data_container = DataContainer()
         self.__clinical_ref = pd.DataFrame()
 
         self.radioSplitRandom.clicked.connect(self.ChangeSeparateMethod)
@@ -118,24 +120,26 @@ class PrepareConnection(QWidget, Ui_Prepare):
         file_name, _ = dlg.getOpenFileName(self, 'Open SCV file', filter="csv files (*.csv)")
         if file_name:
             try:
-                self.__testing_ref_data_container.Load(file_name)
+                self.testing_ref_data_container.Load(file_name)
                 self.loadTestingReference.setEnabled(False)
                 self.clearTestingReference.setEnabled(True)
                 self.spinBoxSeparate.setEnabled(False)
             except OSError as reason:
                 eclog(self._filename).GetLogger().error('Load Testing Ref Error: {}'.format(reason))
                 print('Error！' + str(reason))
+                self.ClearTestingReferenceDataContainer()
             except ValueError:
                 eclog(self._filename).GetLogger().error('Open CSV Error: {}'.format(file_name))
                 QMessageBox.information(self, 'Error',
                                         'The selected data file mismatch.')
+                self.ClearTestingReferenceDataContainer()
 
     def ClearTestingReferenceDataContainer(self):
-        del self.__testing_ref_data_container
-        self.__testing_ref_data_container = DataContainer()
+        self.testing_ref_data_container.Clear()
+
         self.loadTestingReference.setEnabled(True)
         self.clearTestingReference.setEnabled(False)
-        self.spinBoxSeparate.setEnabled(False)
+        self.spinBoxSeparate.setEnabled(True)
 
     def LoadClinicalRef(self):
         dlg = QFileDialog()
@@ -195,7 +199,7 @@ class PrepareConnection(QWidget, Ui_Prepare):
         elif self.radioSplitRef.isChecked():
             self.spinBoxSeparate.setEnabled(False)
             self.checkUseClinicRef.setEnabled(False)
-            if self.__testing_ref_data_container.IsEmpty():
+            if self.testing_ref_data_container.IsEmpty():
                 self.loadTestingReference.setEnabled(True)
                 self.clearTestingReference.setEnabled(False)
             else:
@@ -252,7 +256,7 @@ class PrepareConnection(QWidget, Ui_Prepare):
             if folder_name != '':
                 data_separate = DataSeparate.DataSeparate()
                 try:
-                    if self.__testing_ref_data_container.IsEmpty():
+                    if self.testing_ref_data_container.IsEmpty():
                         testing_data_percentage = self.spinBoxSeparate.value()
                         if self.__clinical_ref.size == 0:
                             training_data_container, _, = \
@@ -268,7 +272,7 @@ class PrepareConnection(QWidget, Ui_Prepare):
                     else:
                         training_data_container, _, = \
                             data_separate.RunByTestingReference(self.data_container,
-                                                                self.__testing_ref_data_container,
+                                                                self.testing_ref_data_container,
                                                                 folder_name)
                         if training_data_container.IsEmpty():
                             QMessageBox.information(self, 'Error',
@@ -280,6 +284,7 @@ class PrepareConnection(QWidget, Ui_Prepare):
                     content = 'PrepareConnection, splitting failed: '
                     eclog(self._filename).GetLogger().error('Split Error:  ' + e.__str__())
                     QMessageBox.about(self, content, e.__str__())
+                    print(traceback.format_exc())
 
         else:
             file_name, _ = QFileDialog.getSaveFileName(self, "Save data", filter="csv files (*.csv)")

@@ -350,9 +350,9 @@ class LR(Classifier):
     def __init__(self, **kwargs):
         super(LR, self).__init__()
         if 'solver' in kwargs.keys():
-            super(LR, self).SetModel(LogisticRegression(penalty='none', **kwargs))
+            super(LR, self).SetModel(LogisticRegression(penalty=None, **kwargs))
         else:
-            super(LR, self).SetModel(LogisticRegression(penalty='none', solver='saga', tol=0.01,
+            super(LR, self).SetModel(LogisticRegression(penalty=None, solver='saga', tol=0.01,
                                                         random_state=RANDOM_SEED[CLASSIFIER_LR], **kwargs))
 
     def GetName(self):

@@ -261,8 +261,6 @@ class PipelinesManager(object):
                                                            str(fn),
                                                            cls.GetName())
                             matrics_index = (norm_index, dr_index, fs_index, fn_index, cls_index)
-                            num += 1
-                            yield self.total_num, num
 
                             cls.SetDataContainer(fs_balance_train_container)
                             cls.Fit()
@@ -300,6 +298,9 @@ class PipelinesManager(object):
                                     self.SaveOneResult(test_pred, test_label,
                                                        TEST, fs_test_container.GetCaseName(),
                                                        matrics_index, model_name, store_folder, cls_store_folder)
+
+                            num += 1
+                            yield self.total_num, num
 
         self.total_metric[BALANCE_TRAIN].to_csv(os.path.join(store_folder, '{}_results.csv'.format(BALANCE_TRAIN)))
         self.total_metric[TRAIN].to_csv(os.path.join(store_folder, '{}_results.csv'.format(TRAIN)))
@@ -345,8 +346,6 @@ class PipelinesManager(object):
                                                                fs.GetName(),
                                                                str(fn),
                                                                cls.GetName())
-                                num += 1
-                                yield self.total_num, num, group
 
                                 cls.SetDataContainer(fs_cv_train_container)
                                 cls.Fit()
@@ -368,6 +367,9 @@ class PipelinesManager(object):
                                         cls_store_folder,'{}_prediction.csv'.format(CV_TRAIN)), cv_train_info)
                                     self._AddOneCvPrediction(os.path.join(
                                         cls_store_folder, '{}_prediction.csv'.format(CV_VAL)), cv_val_info)
+
+                                num += 1
+                                yield self.total_num, num, group
 
     def MergeCvResult(self, store_folder):
         num = 0

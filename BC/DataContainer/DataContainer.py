@@ -15,9 +15,9 @@ from BC.Utility.Constants import REMOVE_CASE, REMOVE_FEATURE, REMOVE_NONE
 
 def LoadCSVwithChineseInPandas(file_path, **kwargs):
     if 'encoding' not in kwargs.keys():
-        return pd.read_csv(file_path, encoding="gbk", **kwargs).sort_index()
+        return pd.read_csv(file_path, encoding="gbk", **kwargs).sort_index().sort_index(axis=1)
     else:
-        return pd.read_csv(file_path, **kwargs).sort_index()
+        return pd.read_csv(file_path, **kwargs).sort_index().sort_index(axis=1)
 
 class DataContainer:
     '''
@@ -110,7 +110,7 @@ class DataContainer:
         assert(os.path.exists(file_path))
         self.__init__()
         try:
-            self._df = pd.read_csv(file_path, header=0, index_col=0).sort_index()
+            self._df = pd.read_csv(file_path, header=0, index_col=0).sort_index().sort_index(axis=1)
             if is_update:
                 self.UpdateDataByFrame()
             return True
@@ -126,11 +126,18 @@ class DataContainer:
 
         return False
 
+    def Clear(self):
+        self._feature_name = []
+        self._case_name = []
+        self._label = np.array([], dtype=int)
+        self._array = np.array([])
+        self._df = pd.DataFrame()
+
     def LoadWithoutLabel(self, file_path, is_update=True):
         assert (os.path.exists(file_path))
         self.__init__()
         try:
-            self._df = pd.read_csv(file_path, header=0, index_col=0)
+            self._df = pd.read_csv(file_path, header=0, index_col=0).sort_index().sort_index(axis=1)
             if is_update:
                 self.UpdateDataByFrame(emu_label=True)
             return True
@@ -160,8 +167,8 @@ class DataContainer:
             print('The number of negative samples is ', str(negative_number))
 
     def UpdateDataByFrame(self, emu_label=False):
-        self._case_name = list(self._df.index)
-        self._feature_name = list(self._df.columns)
+        self._case_name = [str(one) for one in self._df.index]
+        self._feature_name = [str(one) for one in self._df.columns]
         label_name = ''
         if 'label' in self._feature_name:
             label_name = 'label'
@@ -177,7 +184,7 @@ class DataContainer:
 
         index = self._feature_name.index(label_name)
         self._feature_name.pop(index)
-        self._label = np.asarray(self._df[label_name].values, dtype=np.int)
+        self._label = np.asarray(self._df[label_name].values, dtype=np.int8)
         self._array = np.asarray(self._df[self._feature_name].values, dtype=np.float64)
         return True
 

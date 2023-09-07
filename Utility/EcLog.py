@@ -31,22 +31,10 @@ class eclog(Singleton):
             self.rotate_handler.setFormatter(formatter)
             self.eclogger.addHandler(self.rotate_handler)
 
-    # def __deepcopy__(self, memodict={}):
-    #     copy_object = type(self)("new_FECA.log")
-    #     copy_object.rotate_handler = copy.deepcopy(self.rotate_handler, memodict)
-    #     copy_object.eclogger = copy.deepcopy(self.eclogger, memodict)
-        # return copy_object
 
     def GetLogger(self):
         return self.eclogger
 
-    #def LogInfo(self, info):
-     #   self.eclogger.info(info)
-
-   # def LogError(self, info):
-     #   self.eclogger.error(info)
 
 if __name__ == '__main__':
-    #eclog("t").LogInfo('test')
-    #eclog("t").LogError('error test')
     eclog("t").GetLogger().error('test')

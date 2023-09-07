@@ -114,19 +114,31 @@ Example/
 
 # vscode setting
 .vscode/settings.json
-BC/GUI/Process.py
-BC/GUI/FeatureExtraction2.py
-BC/GUI/FeatureExtraction.py
-BC/GUI/Prepare.py
-BC/GUI/Visualization.py
-HomeUI/HomePage.py
-SA/GUI/Prepare.py
-SA/GUI/Process.py
-SA/GUI/Visualization.py
-GUI/FeatureExtraction2.py
-GUI/FeatureExtraction.py
-GUI/Prepare.py
-GUI/Process.py
-GUI/Visualization.py
-GUI/HomePage.py
 
+#BC/GUI/Process.py
+#BC/GUI/FeatureExtraction2.py
+#BC/GUI/FeatureExtraction.py
+#BC/GUI/Prepare.py
+#BC/GUI/Visualization.py
+#HomeUI/HomePage.py
+#SA/GUI/Prepare.py
+#SA/GUI/Process.py
+#SA/GUI/Visualization.py
+#GUI/FeatureExtraction2.py
+#GUI/FeatureExtraction.py
+#GUI/Prepare.py
+#GUI/Process.py
+#GUI/Visualization.py
+#GUI/HomePage.py
+
+/Plugin/IBSI_Extraction
+/Plugin/VidaProcess
+BC/DataContainer/MergePrediction.py
+BC/Image2Feature/FeatureExtractionTemp.py
+BuildScript.bat
+# Feature/GUI/FeatureExtraction.py
+# Feature/GUI/FeatureMerge.py
+Feature/GUI/RadiomicsParams2.yaml
+src/FAE-icon-py.ico
+src/FAE-icon.png
+src/FAE-icon.pptx

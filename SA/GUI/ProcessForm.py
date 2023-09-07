@@ -43,7 +43,7 @@ class CVRun(QThread):
                 self.signal.emit(text)
         except Exception as e:
             print(traceback.format_exc())
-            mylog.error('Thread RunCV Failed: ', e.__str__())
+            mylog.error('Thread RunCV Failed: ', traceback.format_exc())
 
         try:
             for total, num in self._process_form.pipeline_manager.EstimateCV(
@@ -54,7 +54,7 @@ class CVRun(QThread):
                        "Merging CV Results:\n{} / {}".format(num, total)
                 self.signal.emit(text)
         except Exception as e:
-            mylog.error('Thread MergeCV Result Failed: ', e.__str__())
+            mylog.error('Thread MergeCV Result Failed: ', traceback.format_exc())
 
         try:
             for total, num in self._process_form.pipeline_manager.RunWithoutCV(self._process_form.train_dc,
@@ -64,7 +64,7 @@ class CVRun(QThread):
                        "Model Developing:\n{} / {}".format(num, total)
                 self.signal.emit(text)
         except Exception as e:
-            mylog.error("Thread RunWithoutCV Failed: ", e.__str__())
+            mylog.error("Thread RunWithoutCV Failed: ", traceback.format_exc())
 
         text = "Model Developing:\nDone.\n\nCross Validation:\nDone.\n\nMerging CV Results:\nDone.\n"
         self.signal.emit(text)

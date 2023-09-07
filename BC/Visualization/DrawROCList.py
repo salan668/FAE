@@ -1,18 +1,12 @@
 from sklearn.metrics import roc_curve, roc_auc_score, precision_recall_curve, auc
 import matplotlib.pyplot as plt
-from matplotlib import cm
 import numpy as np
 import seaborn as sns
 
+from . import LegendRename
+
 color_list = sns.color_palette('deep') + sns.color_palette('bright')
 
-
-def LegendRename(name_list):
-    rename_dict= {'cv_train': 'CV Training', 'cv_val': 'Validation',
-                  'balance_train': 'Balance Training',
-                  'train': 'Training', 'test': 'Test'}
-    new_name_list = [rename_dict[i] for i in name_list]
-    return new_name_list
 
 
 def DrawROCList(pred_list, label_list, name_list='', store_path='', is_show=True, fig=plt.figure()):
@@ -80,6 +74,8 @@ def DrawPRCurveList(pred_list, label_list, name_list='', store_path='', is_show=
         label_list = [label_list]
     if not isinstance(name_list, list):
         name_list = [name_list]
+
+    name_list = LegendRename(name_list)
 
     fig.clear()
     axes = fig.add_subplot(1, 1, 1)

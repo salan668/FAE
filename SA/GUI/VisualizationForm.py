@@ -351,8 +351,8 @@ class VisualizationForm(QWidget, Ui_Visualization):
         if os.path.exists(test_surv_path):
             test_surv, test_event, test_duration = self.sae.SurvivalLoad(test_surv_path)
             surv = pd.concat((surv, test_surv), axis=1)
-            event = event.append(test_event)
-            duration = duration.append(test_duration)
+            event = pd.concat([event, test_event])
+            duration = pd.concat([duration, test_duration])
 
         # To find the sub-survivals
         not_exist_case, sub_index = [], []
@@ -401,10 +401,15 @@ class VisualizationForm(QWidget, Ui_Visualization):
                 legend_list.append('{} C-Index={}'.format(CV_VAL,
                                                           self.sae.result[CV_VAL].loc[pipeline_name][METRIC_CINDEX]))
             if self.checkSurvivalTest.isChecked():
-                self.__AddSurvivalByDataset(fitter_folder, TEST, surv, event, duration)
-                name_list.append(TEST)
-                legend_list.append('{} C-Index={}'.format(TEST,
-                                                          self.sae.result[TEST].loc[pipeline_name][METRIC_CINDEX]))
+                try:
+                    self.__AddSurvivalByDataset(fitter_folder, TEST, surv, event, duration)
+                    name_list.append(TEST)
+                    legend_list.append('{} C-Index={}'.format(TEST,
+                                                              self.sae.result[TEST].loc[pipeline_name][METRIC_CINDEX]))
+                except FileNotFoundError:
+                    QMessageBox.about(self, '', 'No Test Data found.')
+                    self.checkSurvivalTest.setChecked(False)
+                    return
 
         elif self.radioSurvivalSplitFeature.isChecked():
             if self.ref_df.size == 0 or self.lineEditRefSplit.text == '':
