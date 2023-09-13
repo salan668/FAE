@@ -24,6 +24,12 @@ from BC.Utility.Constants import *
 from BC.HyperParameterConfig.HyperParamManager import RANDOM_SEED
 
 
+def LoadModel(store_path):
+    with open(store_path, 'rb') as f:
+        model = pickle.load(f)
+        return model
+
+
 class Classifier:
     """
     This is the base class of the classifer. All the specific classifier need to be artributed from this base class.

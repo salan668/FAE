@@ -45,7 +45,6 @@ PPV = 'PPV'
 NPV = 'NPV'
 HEADER = [NUMBER, POS_NUM, NEG_NUM, AUC, AUC_CI, AUC_STD, AUC_PR, CUTOFF, MCC, ACC, YI, SEN, SPE, PPV, NPV]
 
-
 # Type Key
 CV_TRAIN = 'cv_train'
 CV_VAL = 'cv_val'
@@ -53,3 +52,11 @@ BALANCE_TRAIN = 'balance_train'
 TRAIN = 'train'
 TEST = 'test'
 
+# Plot Type
+ROC_CURVE = 'ROC'
+PR_CURVE = 'PR Curve'
+BOX_PLOT = 'Box Plot'
+CALIBRATION_CURVE = 'Calibration Curve'
+PROBABILITY = 'Probability'
+VIOLIN_PLOT = 'Violin Plot'
+PLOT_TYPE = [ROC_CURVE, PR_CURVE, BOX_PLOT, CALIBRATION_CURVE, PROBABILITY, VIOLIN_PLOT]

@@ -9,7 +9,7 @@ from PyQt5.QtGui import *
 
 from HomeUI.HomePage import Ui_HomePage
 from Feature.GUI import FeatureMergeForm, FeatureExtractionForm
-from BC.GUI import PrepareConnection, ProcessConnection, VisualizationConnection
+from BC.GUI import PrepareConnection, ProcessConnection, VisualizationConnection, ModelPredictionForm
 from VersionConstant import VERSION
 
 from SA.GUI.ProcessForm import ProcessForm
@@ -29,6 +29,7 @@ class HomePageForm(QDialog, Ui_HomePage):
         self.bc_preprocessing = PrepareConnection()
         self.bc_model_exploration = ProcessConnection()
         self.bc_visualization = VisualizationConnection()
+        self.bc_prediction = ModelPredictionForm()
         self.sa_model_exploration = ProcessForm()
         self.sa_visualization = VisualizationForm()
 
@@ -43,6 +44,8 @@ class HomePageForm(QDialog, Ui_HomePage):
         self.bc_model_exploration.close_signal.connect(self.CloseBcModelExploration)
         self.buttonBcVisulization.clicked.connect(self.OpenBcVisualization)
         self.bc_visualization.close_signal.connect(self.CloseBcVisualization)
+        self.buttonBcPrediction.clicked.connect(self.RunBcPrediction)
+        self.bc_prediction.close_signal.connect(self.CloseBcPrediction)
 
         self.buttonSaModelExploration.clicked.connect(self.OpenSaModelExploration)
         self.sa_model_exploration.close_signal.connect(self.CloseSaModelExploration)
@@ -88,6 +91,13 @@ class HomePageForm(QDialog, Ui_HomePage):
         self.bc_visualization.show()
         self.hide()
     def CloseBcVisualization(self, is_close):
+        if is_close:
+            self.show()
+
+    def RunBcPrediction(self):
+        self.bc_prediction.show()
+        self.hide()
+    def CloseBcPrediction(self, is_close):
         if is_close:
             self.show()
 

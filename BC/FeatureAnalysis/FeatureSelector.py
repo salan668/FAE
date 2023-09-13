@@ -35,6 +35,18 @@ def SaveSelectInfo(feature_name, store_path, is_merge=False):
         writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         writer.writerows(write_info)
 
+def LoadSelectInfo(store_path):
+    with open(os.path.join(store_path), 'r', newline='') as csvfile:
+        reader = csv.reader(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        feature_number = 0
+        selected_features = []
+        for row in reader:
+            if row[0] == 'feature_number':
+                feature_number = row[1]
+            if row[0] == 'selected_feature':
+                selected_features = row[1:]
+    return feature_number, selected_features
+
 
 class FeatureSelector(object):
     def __init__(self):

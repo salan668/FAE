@@ -27,7 +27,8 @@ def DrawROCList(pred_list, label_list, name_list='', store_path='', is_show=True
     if not isinstance(name_list, list):
         name_list = [name_list]
 
-    name_list = LegendRename(name_list)
+    if name_list != ['']:
+        name_list = LegendRename(name_list)
 
     fig.clear()
     axes = fig.add_subplot(1, 1, 1)
@@ -75,7 +76,8 @@ def DrawPRCurveList(pred_list, label_list, name_list='', store_path='', is_show=
     if not isinstance(name_list, list):
         name_list = [name_list]
 
-    name_list = LegendRename(name_list)
+    if name_list != ['']:
+        name_list = LegendRename(name_list)
 
     fig.clear()
     axes = fig.add_subplot(1, 1, 1)
