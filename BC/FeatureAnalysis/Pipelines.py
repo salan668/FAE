@@ -223,7 +223,8 @@ class PipelinesManager(object):
             norm_store_folder = MakeFolder(store_folder, normalizer.GetName())
             norm_balance_train_container = normalizer.Run(balance_train_container, norm_store_folder, store_key=BALANCE_TRAIN)
             norm_train_container = normalizer.Transform(train_container, norm_store_folder, store_key=TRAIN)
-            norm_test_container = normalizer.Transform(test_container, norm_store_folder, store_key=TEST)
+            if not test_container.IsEmpty():
+                norm_test_container = normalizer.Transform(test_container, norm_store_folder, store_key=TEST)
 
             for dr_index, dr in enumerate(self.dimension_reduction_list):
                 dr_store_folder = MakeFolder(norm_store_folder, dr.GetName())
@@ -232,12 +233,11 @@ class PipelinesManager(object):
                     dr_train_container = dr.Transform(norm_train_container, dr_store_folder, TRAIN)
                     if not test_container.IsEmpty():
                         dr_test_container = dr.Transform(norm_test_container, dr_store_folder, TEST)
-                    else:
-                        dr_test_container = norm_test_container
                 else:
                     dr_balance_train_container = norm_balance_train_container
                     dr_train_container = norm_train_container
-                    dr_test_container = norm_test_container
+                    if not test_container.IsEmpty():
+                        dr_test_container = norm_test_container
 
                 for fs_index, fs in enumerate(self.feature_selector_list):
                     for fn_index, fn in enumerate(self.feature_selector_num_list):
@@ -246,12 +246,14 @@ class PipelinesManager(object):
                             fs.SetSelectedFeatureNumber(fn)
                             fs_balance_train_container = fs.Run(dr_balance_train_container, fs_store_folder, BALANCE_TRAIN)
                             fs_train_container = fs.Transform(dr_train_container, fs_store_folder, TRAIN)
-                            fs_test_container = fs.Transform(dr_test_container, fs_store_folder, TEST)
+                            if not test_container.IsEmpty():
+                                fs_test_container = fs.Transform(dr_test_container, fs_store_folder, TEST)
                         else:
                             fs_store_folder = dr_store_folder
                             fs_balance_train_container = dr_balance_train_container
                             fs_train_container = dr_train_container
-                            fs_test_container = dr_test_container
+                            if not test_container.IsEmpty():
+                                fs_test_container = dr_test_container
 
                         for cls_index, cls in enumerate(self.classifier_list):
                             cls_store_folder = MakeFolder(fs_store_folder, cls.GetName())

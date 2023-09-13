@@ -39,11 +39,14 @@ class CVRun(QThread):
             if not self._process_connection.testing_data_container.IsEmpty():
                 test_dc = FeatureSelector().SelectFeatureByName(
                     self._process_connection.testing_data_container, valid_features)
-                for total, num in self._process_connection.fae.RunWithoutCV(train_dc, test_dc,
-                                                                            self.store_folder,
-                                                                            self.is_train_cutoff):
-                    self.signal.emit("Model Developing:\n{} / {}...".format(num, total))
-                self.signal.emit("Model Developing: Done")
+            else:
+                test_dc = DataContainer()
+
+            for total, num in self._process_connection.fae.RunWithoutCV(train_dc, test_dc,
+                                                                        self.store_folder,
+                                                                        self.is_train_cutoff):
+                self.signal.emit("Model Developing:\n{} / {}...".format(num, total))
+            self.signal.emit("Model Developing: Done")
 
         except Exception as e:
             print('Selecting valid features wrong')
