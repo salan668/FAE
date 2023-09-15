@@ -52,9 +52,15 @@ class ModelPredictionForm(QWidget):
         file_name, _ = dlg.getOpenFileName(self, 'Open CSV file', filter="csv files (*.csv)")
         if file_name:
             try:
-                self.dc.Load(file_name)
-                self.label = self.dc.GetLabel()
-                self.ui.lineTestFeatureMatrixLoader.setText(file_name)
+                self.ui.tableResult.clear()
+                self.ui.canvas.getFigure().clear()
+                self.ui.canvas.draw()
+
+                if self.dc.Load(file_name):
+                    self.label = self.dc.GetLabel()
+                    self.ui.lineTestFeatureMatrixLoader.setText(file_name)
+                else:
+                    QMessageBox().about(self, 'Error', 'Load Failed. May there is no Label')
             except Exception as e:
                 QMessageBox().about(self, 'Error', format_exc())
 
@@ -71,6 +77,15 @@ class ModelPredictionForm(QWidget):
             if not os.path.exists(pipeline_info_path):
                 message_box.about(self, 'File Error', 'The file pipeline_info does not exists')
                 return
+
+            self.ui.comboNormalizer.clear()
+            self.ui.comboDimensionReduction.clear()
+            self.ui.comboFeatureSelector.clear()
+            self.ui.comboClassifier.clear()
+            self.ui.spinBoxFeatureNumber.setValue(0)
+            self.ui.tableResult.clear()
+            self.ui.canvas.getFigure().clear()
+            self.ui.canvas.draw()
 
             with open(pipeline_info_path, 'r', newline='') as csvfile:
                 reader = csv.reader(csvfile)
@@ -109,6 +124,9 @@ class ModelPredictionForm(QWidget):
 
         # Normalize Features
         norm_path = os.path.join(self._model_root, norm_name, '{}_normalization_training.csv'.format(norm_name))
+        if not os.path.exists(norm_path):
+            QMessageBox().about(self, '', '{} not exists'.format(norm_path))
+            return
         normalizer = index_dictor.GetInstantByIndex(norm_name)
         normalizer.LoadInfo(norm_path)
         try:
@@ -119,23 +137,31 @@ class ModelPredictionForm(QWidget):
 
         # Dimension Reducer
         dr_folder = os.path.join(self._model_root, norm_name, reduce_name)
+        if not os.path.exists(dr_folder):
+            QMessageBox().about(self, '', '{} not exists'.format(dr_folder))
+            return
         reducer = index_dictor.GetInstantByIndex(reduce_name)
         reducer.LoadInfo(dr_folder)
         dr_dc = reducer.Transform(norm_dc)
 
         # Feature Select
-        fs_info = os.path.join(self._model_root, norm_name, reduce_name, '{}_{}'.format(select_name, feature_number),
+        fs_info_path = os.path.join(self._model_root, norm_name, reduce_name, '{}_{}'.format(select_name, feature_number),
                                'feature_select_info.csv')
-        _, selected_features = LoadSelectInfo(fs_info)
+        if not os.path.exists(fs_info_path):
+            QMessageBox().about(self, '', '{} not exists'.format(fs_info_path))
+            return
+        _, selected_features = LoadSelectInfo(fs_info_path)
         selector = FeatureSelector()
         fs_dc = selector.SelectFeatureByName(dr_dc, selected_features)
 
         # Predict
         cls_path = os.path.join(self._model_root, norm_name, reduce_name,
                                   '{}_{}'.format(select_name, feature_number), classifier_name, 'model.pickle')
+        if not os.path.exists(cls_path):
+            QMessageBox().about(self, '', '{} not exists'.format(cls_path))
+            return
         model = LoadModel(cls_path)
         array = fs_dc.GetArray()
-        # self.prediction = model.predict_proba(array)[:, 1].tolist()
         self.prediction = model.predict_proba(array)[:, 1]
 
         self.ShowResult()

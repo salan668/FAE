@@ -103,7 +103,7 @@ class PrepareConnection(QWidget, Ui_Prepare):
         file_name, _ = dlg.getOpenFileName(self, 'Open SCV file', filter="csv files (*.csv)")
         if file_name:
             try:
-                if self.data_container.Load(file_name, is_update=False):
+                if self.data_container.Load(file_name):
                     self.UpdateTable()
                     self.SetButtonsState(True)
 
