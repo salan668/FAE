@@ -5,6 +5,8 @@ FeAture Explorer (FAE), a radiomics (or medical analysis) tool that helps radiol
 If FAE could help in your project, We appreciate that you could cite this work:
 
 > Y. Song, J. Zhang, Y. Zhang, Y. Hou, X. Yan, Y. Wang, M. Zhou, Y. Yao, G. Yang. FeAture Explorer (FAE): A tool for developing and comparing radiomics models. PLoS One. 2020. DOI: https://doi.org/10.1371/journal.pone.0237587
+        
+        
 
 Welcome any issues and PR. 
 
@@ -70,15 +72,18 @@ The .ui file has to be transferred to the .py file by pyuic manually. For exampl
 This project is licensed under the GPL 3.0 License
 
 ## Contributor and Acknowledge List
-- [**Yang Song**](https://github.com/salan668)
-- [**Jing Zhang**](https://github.com/zhangjingcode)
-- [**Guang Yang**](https://github.com/yg88)
-- **Chengxiu Zhang**
-- [**Xue-xiang Cao**](mailto:xuer_cao@hotmail.com)
-- Xu Yan
-- [**Tian-jing Zhang**](mailto:tianjingz@nvidia.com)
-- Yi-lai Pei
-- [**jmtaysom**](https://github.com/jmtaysom)
-- Zhiyong Zhang
-- Yu-dong Zhang
+- Developer:
+  - [**Yang Song**](https://github.com/salan668)
+  - [**Jing Zhang**](https://github.com/zhangjingcode)
+  - [**Guang Yang**](https://github.com/yg88)
+  - **Chengxiu Zhang**
+  - [**Xue-xiang Cao**](mailto:xuer_cao@hotmail.com)
+- Tester: 
+  - Xu Yan
+  - [**Tian-jing Zhang**](mailto:tianjingz@nvidia.com)
+  - Yi-lai Pei
+  - [**jmtaysom**](https://github.com/jmtaysom)
+  - Zhiyong Zhang
+  - Yu-dong Zhang
+  - [**Wei Guo**](mailto:guowei_fy@fjmu.edu.cn)
  
