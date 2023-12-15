@@ -19,7 +19,7 @@ from BC.Func.Metric import EstimatePrediction
 from BC.Utility.PathManager import MakeFolder
 from BC.Utility.Constants import *
 
-from VersionConstant import *
+from HomeUI.VersionConstant import *
 
 
 class PipelinesManager(object):

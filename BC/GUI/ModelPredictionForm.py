@@ -3,6 +3,8 @@ All rights reserved.
 Author: Yang SONG (songyangmri@gmail.com)
 """
 import os, csv
+import shutil
+import pandas as pd
 from traceback import format_exc
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import pyqtSignal
@@ -42,6 +44,8 @@ class ModelPredictionForm(QWidget):
         self.ui.comboCurve.currentIndexChanged.connect(self.ShowCurve)
         self.ui.checkAutoCutoff.stateChanged.connect(self.ShowResult)
         self.ui.spinCutoff.valueChanged.connect(self.ShowResult)
+
+        self.ui.buttonSave.clicked.connect(self.Save)
 
     def closeEvent(self, event):
         self.close_signal.emit(True)
@@ -204,6 +208,49 @@ class ModelPredictionForm(QWidget):
             raise KeyError('Not existed method')
 
         self.ui.canvas.draw()
+
+    def Save(self):
+        dlg = QFileDialog()
+        dlg.setFileMode(QFileDialog.DirectoryOnly)
+        dlg.setOption(QFileDialog.ShowDirsOnly)
+
+        if dlg.exec_():
+            store_folder = dlg.selectedFiles()[0]
+            if len(os.listdir(store_folder)) > 0:
+                reply = QMessageBox.question(self, 'Continue?',
+                                             'The folder is not empty, if you click Yes, the data would be over-written in this folder',
+                                             QMessageBox.Yes, QMessageBox.No)
+                if reply == QMessageBox.Yes:
+                    try:
+                        for file in os.listdir(store_folder):
+                            if os.path.isdir(os.path.join(store_folder, file)):
+                                shutil.rmtree(os.path.join(store_folder, file))
+                            else:
+                                os.remove(os.path.join(store_folder, file))
+                    except PermissionError:
+                        QMessageBox().about(self, 'Warning', 'Is there any opened files?')
+                        return
+                    except OSError:
+                        QMessageBox().about(self, 'Warning', 'Is there any opened files?')
+                        return
+
+            # Store the prediction and the related figures
+            if len(self.binary_metric) > 0:
+                pred_df = pd.DataFrame({'prediction': self.prediction, 'label': self.label}, index=self.dc.GetCaseName())
+                pred_df.to_csv(os.path.join(store_folder, 'prediction.csv'))
+                metric_df = pd.DataFrame(self.binary_metric, index=['Metric'])
+                metric_df.to_csv(os.path.join(store_folder, 'metric.csv'))
+
+                DrawROCList([self.prediction], [self.label], store_path=os.path.join(store_folder, 'ROC.jpg'), is_show=False)
+                DrawPRCurveList([self.prediction], [self.label], store_path=os.path.join(store_folder, 'PR-ROC.jpg'), is_show=False)
+                DrawProbability(self.prediction, self.label, cut_off=float(self.binary_metric[CUTOFF]), store_path=os.path.join(store_folder, 'probability.jpg'))
+                DrawCalibrationCurve(self.prediction, self.label, store_path=os.path.join(store_folder, 'calibration.jpg'))
+                DrawBoxPlot(self.prediction, self.label, store_path=os.path.join(store_folder, 'boxplot.jpg'))
+                DrawViolinPlot(self.prediction, self.label, store_path=os.path.join(store_folder, 'violinplot.jpg'))
+
+                os.system("explorer.exe {:s}".format(os.path.normpath(store_folder)))
+
+
 
 
 if __name__ == '__main__':

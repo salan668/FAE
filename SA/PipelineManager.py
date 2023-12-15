@@ -13,7 +13,7 @@ from SA.CrossValidation import CrossValidation
 from SA.Utility import MakeFolder, Metric, MakeFile
 from SA.Utility.Constant import *
 from SA.Utility.Index2Dict import Index2Dict
-from VersionConstant import *
+from HomeUI.VersionConstant import *
 
 
 class PipelineManager(object):
@@ -317,7 +317,6 @@ class PipelineManager(object):
 if __name__ == '__main__':
     from SA.Normalizer import NormalizerMinMax, NormalizerZscore, NormalizerMean
     from SA.DimensionReducer import DimensionReducerPcc
-    from SA.DataContainer import DataContainer
     from SA.FeatureSelector import FeatureSelectorCluster, FeatureSelectorAll
     from SA.Fitter import CoxPH
 

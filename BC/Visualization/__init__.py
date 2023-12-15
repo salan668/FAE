@@ -15,7 +15,7 @@ from sklearn.calibration import calibration_curve
 
 color_list = sns.color_palette('deep') + sns.color_palette('bright')
 
-def DrawViolinPlot(prediction, label, fig=plt.figure()):
+def DrawViolinPlot(prediction, label, fig=plt.figure(), store_path=''):
     prediction, label = np.array(prediction), np.array(label)
     positive = prediction[label == 1]
     negative = prediction[label == 0]
@@ -24,9 +24,15 @@ def DrawViolinPlot(prediction, label, fig=plt.figure()):
     axes.violinplot([negative, positive], showmeans=False, showmedians=False, showextrema=False)
     axes.set_xticks([1, 2])
     axes.set_xticklabels(['Negative', 'Positive'])
+    if store_path:
+        fig.set_tight_layout(True)
+        if store_path[-3:] == 'jpg':
+            fig.savefig(store_path, dpi=300, format='jpeg')
+        elif store_path[-3:] == 'eps':
+            fig.savefig(store_path, dpi=1200, format='eps')
     return axes
 
-def DrawCalibrationCurve(prediction, label, fig=plt.figure()):
+def DrawCalibrationCurve(prediction, label, fig=plt.figure(), store_path=''):
     F, threshold = calibration_curve(label, prediction, n_bins=100)
     clf_score = metrics.brier_score_loss(label, prediction, pos_label=1)
     fig.clear()
@@ -36,19 +42,31 @@ def DrawCalibrationCurve(prediction, label, fig=plt.figure()):
     axes.set_ylabel("Fraction of positives")
     axes.set_ylim([-0.05, 1.05])
     axes.legend(loc="lower right")
+    if store_path:
+        fig.set_tight_layout(True)
+        if store_path[-3:] == 'jpg':
+            fig.savefig(store_path, dpi=300, format='jpeg')
+        elif store_path[-3:] == 'eps':
+            fig.savefig(store_path, dpi=1200, format='eps')
     return axes
 
-def DrawBoxPlot(prediction, label, fig=plt.figure()):
+def DrawBoxPlot(prediction, label, fig=plt.figure(), store_path=''):
     prediction, label = np.array(prediction), np.array(label)
     positive = np.asarray(prediction[label == 1], dtype=object)
     negative = np.asarray(prediction[label == 0], dtype=object)
     fig.clear()
     axes = fig.add_subplot(1, 1, 1)
     axes.boxplot([negative, positive], labels=['Negative', 'Positive'], vert=True)
+    if store_path:
+        fig.set_tight_layout(True)
+        if store_path[-3:] == 'jpg':
+            fig.savefig(store_path, dpi=300, format='jpeg')
+        elif store_path[-3:] == 'eps':
+            fig.savefig(store_path, dpi=1200, format='eps')
     return axes
 
 
-def DrawProbability(prediction, label, cut_off, fig=plt.figure()):
+def DrawProbability(prediction, label, cut_off, fig=plt.figure(), store_path=''):
     import pandas as pd
     df = pd.DataFrame({'prob': prediction, 'label': label})
     df = df.sort_values('prob')
@@ -63,4 +81,10 @@ def DrawProbability(prediction, label, cut_off, fig=plt.figure()):
         ['{:.2f}'.format(df['prob'].values.min()), '{:.2f}'.format(cut_off), '{:.2f}'.format(df['prob'].max())])
     ax.set_ylabel('Prediction')
     ax.set_xlabel('Case Index')
+    if store_path:
+        fig.set_tight_layout(True)
+        if store_path[-3:] == 'jpg':
+            fig.savefig(store_path, dpi=300, format='jpeg')
+        elif store_path[-3:] == 'eps':
+            fig.savefig(store_path, dpi=1200, format='eps')
     return ax

@@ -11,7 +11,7 @@ from BC.Description.MyPDFDocument import MyPdfDocument
 from BC.FeatureAnalysis.Pipelines import PipelinesManager
 from BC.FeatureAnalysis.IndexDict import Index2Dict
 from BC.Utility.Constants import *
-from VersionConstant import VERSION
+from HomeUI.VersionConstant import VERSION
 
 
 class Description:
