@@ -3,6 +3,8 @@ All rights reserved.
 Author: Yang SONG (songyangmri@gmail.com)
 """
 import os, csv
+import shutil
+import pandas as pd
 from traceback import format_exc
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import pyqtSignal
@@ -43,6 +45,8 @@ class ModelPredictionForm(QWidget):
         self.ui.checkAutoCutoff.stateChanged.connect(self.ShowResult)
         self.ui.spinCutoff.valueChanged.connect(self.ShowResult)
 
+        self.ui.buttonSave.clicked.connect(self.Save)
+
     def closeEvent(self, event):
         self.close_signal.emit(True)
         event.accept()
@@ -52,9 +56,15 @@ class ModelPredictionForm(QWidget):
         file_name, _ = dlg.getOpenFileName(self, 'Open CSV file', filter="csv files (*.csv)")
         if file_name:
             try:
-                self.dc.Load(file_name)
-                self.label = self.dc.GetLabel()
-                self.ui.lineTestFeatureMatrixLoader.setText(file_name)
+                self.ui.tableResult.clear()
+                self.ui.canvas.getFigure().clear()
+                self.ui.canvas.draw()
+
+                if self.dc.Load(file_name):
+                    self.label = self.dc.GetLabel()
+                    self.ui.lineTestFeatureMatrixLoader.setText(file_name)
+                else:
+                    QMessageBox().about(self, 'Error', 'Load Failed. May there is no Label')
             except Exception as e:
                 QMessageBox().about(self, 'Error', format_exc())
 
@@ -71,6 +81,15 @@ class ModelPredictionForm(QWidget):
             if not os.path.exists(pipeline_info_path):
                 message_box.about(self, 'File Error', 'The file pipeline_info does not exists')
                 return
+
+            self.ui.comboNormalizer.clear()
+            self.ui.comboDimensionReduction.clear()
+            self.ui.comboFeatureSelector.clear()
+            self.ui.comboClassifier.clear()
+            self.ui.spinBoxFeatureNumber.setValue(0)
+            self.ui.tableResult.clear()
+            self.ui.canvas.getFigure().clear()
+            self.ui.canvas.draw()
 
             with open(pipeline_info_path, 'r', newline='') as csvfile:
                 reader = csv.reader(csvfile)
@@ -109,6 +128,9 @@ class ModelPredictionForm(QWidget):
 
         # Normalize Features
         norm_path = os.path.join(self._model_root, norm_name, '{}_normalization_training.csv'.format(norm_name))
+        if not os.path.exists(norm_path):
+            QMessageBox().about(self, '', '{} not exists'.format(norm_path))
+            return
         normalizer = index_dictor.GetInstantByIndex(norm_name)
         normalizer.LoadInfo(norm_path)
         try:
@@ -119,23 +141,31 @@ class ModelPredictionForm(QWidget):
 
         # Dimension Reducer
         dr_folder = os.path.join(self._model_root, norm_name, reduce_name)
+        if not os.path.exists(dr_folder):
+            QMessageBox().about(self, '', '{} not exists'.format(dr_folder))
+            return
         reducer = index_dictor.GetInstantByIndex(reduce_name)
         reducer.LoadInfo(dr_folder)
         dr_dc = reducer.Transform(norm_dc)
 
         # Feature Select
-        fs_info = os.path.join(self._model_root, norm_name, reduce_name, '{}_{}'.format(select_name, feature_number),
+        fs_info_path = os.path.join(self._model_root, norm_name, reduce_name, '{}_{}'.format(select_name, feature_number),
                                'feature_select_info.csv')
-        _, selected_features = LoadSelectInfo(fs_info)
+        if not os.path.exists(fs_info_path):
+            QMessageBox().about(self, '', '{} not exists'.format(fs_info_path))
+            return
+        _, selected_features = LoadSelectInfo(fs_info_path)
         selector = FeatureSelector()
         fs_dc = selector.SelectFeatureByName(dr_dc, selected_features)
 
         # Predict
         cls_path = os.path.join(self._model_root, norm_name, reduce_name,
                                   '{}_{}'.format(select_name, feature_number), classifier_name, 'model.pickle')
+        if not os.path.exists(cls_path):
+            QMessageBox().about(self, '', '{} not exists'.format(cls_path))
+            return
         model = LoadModel(cls_path)
         array = fs_dc.GetArray()
-        # self.prediction = model.predict_proba(array)[:, 1].tolist()
         self.prediction = model.predict_proba(array)[:, 1]
 
         self.ShowResult()
@@ -178,6 +208,49 @@ class ModelPredictionForm(QWidget):
             raise KeyError('Not existed method')
 
         self.ui.canvas.draw()
+
+    def Save(self):
+        dlg = QFileDialog()
+        dlg.setFileMode(QFileDialog.DirectoryOnly)
+        dlg.setOption(QFileDialog.ShowDirsOnly)
+
+        if dlg.exec_():
+            store_folder = dlg.selectedFiles()[0]
+            if len(os.listdir(store_folder)) > 0:
+                reply = QMessageBox.question(self, 'Continue?',
+                                             'The folder is not empty, if you click Yes, the data would be over-written in this folder',
+                                             QMessageBox.Yes, QMessageBox.No)
+                if reply == QMessageBox.Yes:
+                    try:
+                        for file in os.listdir(store_folder):
+                            if os.path.isdir(os.path.join(store_folder, file)):
+                                shutil.rmtree(os.path.join(store_folder, file))
+                            else:
+                                os.remove(os.path.join(store_folder, file))
+                    except PermissionError:
+                        QMessageBox().about(self, 'Warning', 'Is there any opened files?')
+                        return
+                    except OSError:
+                        QMessageBox().about(self, 'Warning', 'Is there any opened files?')
+                        return
+
+            # Store the prediction and the related figures
+            if len(self.binary_metric) > 0:
+                pred_df = pd.DataFrame({'prediction': self.prediction, 'label': self.label}, index=self.dc.GetCaseName())
+                pred_df.to_csv(os.path.join(store_folder, 'prediction.csv'))
+                metric_df = pd.DataFrame(self.binary_metric, index=['Metric'])
+                metric_df.to_csv(os.path.join(store_folder, 'metric.csv'))
+
+                DrawROCList([self.prediction], [self.label], store_path=os.path.join(store_folder, 'ROC.jpg'), is_show=False)
+                DrawPRCurveList([self.prediction], [self.label], store_path=os.path.join(store_folder, 'PR-ROC.jpg'), is_show=False)
+                DrawProbability(self.prediction, self.label, cut_off=float(self.binary_metric[CUTOFF]), store_path=os.path.join(store_folder, 'probability.jpg'))
+                DrawCalibrationCurve(self.prediction, self.label, store_path=os.path.join(store_folder, 'calibration.jpg'))
+                DrawBoxPlot(self.prediction, self.label, store_path=os.path.join(store_folder, 'boxplot.jpg'))
+                DrawViolinPlot(self.prediction, self.label, store_path=os.path.join(store_folder, 'violinplot.jpg'))
+
+                os.system("explorer.exe {:s}".format(os.path.normpath(store_folder)))
+
+
 
 
 if __name__ == '__main__':

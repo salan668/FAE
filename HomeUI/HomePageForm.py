@@ -10,7 +10,7 @@ from PyQt5.QtGui import *
 from HomeUI.HomePage import Ui_HomePage
 from Feature.GUI import FeatureMergeForm, FeatureExtractionForm
 from BC.GUI import PrepareConnection, ProcessConnection, VisualizationConnection, ModelPredictionForm
-from VersionConstant import VERSION
+from HomeUI.VersionConstant import VERSION
 
 from SA.GUI.ProcessForm import ProcessForm
 from SA.GUI.VisualizationForm import VisualizationForm

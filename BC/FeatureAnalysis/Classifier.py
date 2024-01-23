@@ -223,7 +223,7 @@ class RandomForest(Classifier):
         super(RandomForest, self).__init__()
         if 'n_estimators' not in kwargs.keys():
             super(RandomForest, self).SetModel(RandomForestClassifier(random_state=RANDOM_SEED[CLASSIFIER_RF],
-                                                                      n_estimators=200,
+                                                                      n_estimators=10,
                                                                       **kwargs))
         else:
             super(RandomForest, self).SetModel(RandomForestClassifier(random_state=RANDOM_SEED[CLASSIFIER_RF],
