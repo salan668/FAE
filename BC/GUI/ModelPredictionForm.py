@@ -131,12 +131,20 @@ class ModelPredictionForm(QWidget):
         if not os.path.exists(norm_path):
             QMessageBox().about(self, '', '{} not exists'.format(norm_path))
             return
+        # To select if existing the invalid features
+        try:
+            used_features = pd.read_csv(norm_path)['feature_name'].tolist()
+            used_dc = FeatureSelector().SelectFeatureByName(self.dc, used_features)
+        except Exception:
+            message.about(self, 'Check the valid of the featrures.', format_exc())
+            return
+
         normalizer = index_dictor.GetInstantByIndex(norm_name)
         normalizer.LoadInfo(norm_path)
         try:
-            norm_dc = normalizer.Transform(self.dc)
+            norm_dc = normalizer.Transform(used_dc)
         except ValueError as e:
-            message.about(self, 'Normalization Wrong', e.__str__())
+            message.about(self, 'Normalization Wrong', format_exc())
             return
 
         # Dimension Reducer
