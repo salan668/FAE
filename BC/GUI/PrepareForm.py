@@ -79,7 +79,7 @@ class PrepareConnection(QWidget, Ui_Prepare):
             label_name = ''
             text += "The number of features: {:d}\n".format(self.data_container.GetFrame().shape[1])
         if label_name:
-            labels = np.asarray(self.data_container.GetFrame()[label_name].values, dtype=np.int)
+            labels = np.asarray(self.data_container.GetFrame()[label_name].values)
             if len(np.unique(labels)) == 2:
                 positive_number = len(np.where(labels == np.max(labels))[0])
                 negative_number = len(labels) - positive_number
