@@ -14,10 +14,11 @@ from SA.Utility import MakeFolder, Metric, MakeFile
 from SA.Utility.Constant import *
 from SA.Utility.Index2Dict import Index2Dict
 from HomeUI.VersionConstant import *
+from Utility.EcLog import eclog
 
 
 class PipelineManager(object):
-    def __init__(self):
+    def __init__(self, eclog=eclog):
         self.normalizers = None
         self.reducers = None
         self.feature_selectors = None
@@ -25,6 +26,7 @@ class PipelineManager(object):
         self.fitters = None
         self.cv = None
         self.total_num = 0
+        self.mylog = eclog
 
         self.metric = Metric()
         self.result = {}
@@ -125,7 +127,7 @@ class PipelineManager(object):
                 elif row[0] == FITTER:
                     self.fitters = [index_2_dict.GetInstantByIndex(index) for index in row[1:]]
                 else:
-                    mylog.error('Unknow key name {} when loading pipeline info {}'.format(row[0], info_path))
+                    self.mylog.error('Unknow key name {} when loading pipeline info {}'.format(row[0], info_path))
                     raise KeyError
         return True
 
@@ -136,7 +138,7 @@ class PipelineManager(object):
 
     def LoadResult(self, store_folder: str):
         if not os.path.isdir(store_folder):
-            mylog.error('Wrong folder path when loading Result of PipelineManager')
+            self.mylog.error('Wrong folder path when loading Result of PipelineManager')
             raise OSError
 
         self.LoadOneDf(store_folder, CV_TRAIN)
@@ -154,7 +156,7 @@ class PipelineManager(object):
                          len(self.feature_numbers)
 
         if len(self.interp_times) == 0:
-            mylog.error('The interp time does not initialized by CV.')
+            self.mylog.error('The interp time does not initialized by CV.')
             raise ValueError
 
         if not os.path.isdir(store_folder):

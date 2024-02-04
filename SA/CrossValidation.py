@@ -16,7 +16,7 @@ class CrossValidation(object):
     def Generate(self, dc: DataContainer):
         df = dc.df.copy()
 
-        df = df.reindex(np.random.permutation(df.index)).sort_values(dc.event_name)
+        df = df.reindex(np.random.default_rng(0).permutation(df.index)).sort_values(dc.event_name)
         assignments = np.array((dc.df.shape[0] // self.k + 1) * list(range(1, self.k + 1)))
         assignments = assignments[:dc.df.shape[0]]
 
