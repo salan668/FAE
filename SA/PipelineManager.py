@@ -5,6 +5,7 @@ All rights reserved.
 """
 import os
 import csv
+
 import numpy as np
 import pandas as pd
 
@@ -183,10 +184,15 @@ class PipelineManager(object):
                         fs_store_folder = MakeFolder(reduce_store_folder, '{}_{}'.format(
                             feature_selector.name, feature_number))
 
-                        feature_selector.selected_number = feature_number
+                        if feature_number >= len(dr_train_dc.GetFeatureName()):
+                            feature_selector.selected_number = len(dr_train_dc.GetFeatureName())
+                        else:
+                            feature_selector.selected_number = feature_number
+
                         feature_selector.Fit(dr_train_dc)
                         fs_train_dc = feature_selector.Transform(dr_train_dc, store_folder=fs_store_folder,
                                                                  store_key=TRAIN)
+
                         if test_dc is not None and not test_dc.IsEmpty():
                             fs_test_dc = feature_selector.Transform(dr_test_dc, store_folder=fs_store_folder,
                                                                     store_key=TEST)
@@ -259,10 +265,14 @@ class PipelineManager(object):
                             fs_store_folder = MakeFolder(reduce_store_folder, '{}_{}'.format(
                                 feature_selector.name, feature_number))
 
-                            feature_selector.selected_number = feature_number
-                            feature_selector.Fit(dr_cv_train_dc)
-                            fs_cv_train_dc = feature_selector.Transform(dr_cv_train_dc)
-                            fs_cv_val_dc = feature_selector.Transform(dr_cv_val_dc)
+                            if feature_number >= len(dr_cv_train_dc.GetFeatureName()):
+                                fs_cv_train_dc = dr_cv_train_dc
+                                fs_cv_val_dc = dr_cv_val_dc
+                            else:
+                                feature_selector.selected_number = feature_number
+                                feature_selector.Fit(dr_cv_train_dc)
+                                fs_cv_train_dc = feature_selector.Transform(dr_cv_train_dc)
+                                fs_cv_val_dc = feature_selector.Transform(dr_cv_val_dc)
 
                             for fitter_index, fitter in enumerate(self.fitters):
                                 fitter_store_folder = MakeFolder(fs_store_folder, fitter.name)

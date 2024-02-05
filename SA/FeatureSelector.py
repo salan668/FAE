@@ -118,12 +118,12 @@ def ClusterSelect(dc, number):
     sub_features = []
 
     if number == 1:
-        mylog.warning('The minimum number of KMeans is 2, Kmeans doesn\'t apply')
+        # mylog.warning('The minimum number of KMeans is 2, Kmeans doesn\'t apply')
         pccs = [abs(pearsonr(dc.df[one_feature].values, dc.event)[0]) for one_feature in dc.feature_name]
         selected_feature = dc.feature_name[pccs.index(max(pccs))]
         sub_features.append(selected_feature)
     else:
-        clusters = KMeans(n_clusters=number, random_state=0, init='k-means++').fit_predict(dc.array.transpose())
+        clusters = KMeans(n_clusters=number, random_state=0, init='k-means++', n_init="auto").fit_predict(dc.array.transpose())
 
         for i in range(number):
             clustering_features = [name for cluster_index, name in zip(clusters, dc.feature_name) if cluster_index == i]

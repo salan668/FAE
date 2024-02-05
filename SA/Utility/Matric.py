@@ -4,7 +4,7 @@ All rights reserved.
 --2021/1/18
 """
 import numpy as np
-from random import choices
+import random
 from pycox.evaluation import EvalSurv
 
 from SA.Utility.Constant import *
@@ -17,11 +17,11 @@ class Metric(object):
         self.bootstrap_n = bootstrap_n
 
     def Bootstrap(self, surv, event: list, duration: list):
-        np.random.seed(42)  # control reproducibility
+        random.seed(42)  # control reproducibility
 
         cindex, brier, nbll = [], [], []
         for _ in range(self.bootstrap_n):
-            sampled_index = choices(range(surv.shape[1]), k=surv.shape[1])
+            sampled_index = random.choices(range(surv.shape[1]), k=surv.shape[1])
 
             sampled_surv = surv.iloc[:, sampled_index]
             sampled_event = [event[i] for i in sampled_index]
