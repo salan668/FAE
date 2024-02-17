@@ -111,6 +111,8 @@ class DataContainer:
         self.__init__()
         try:
             self._df = pd.read_csv(file_path, header=0, index_col=0).sort_index().sort_index(axis=1)
+            self._df.index = [str(one) for one in self._df.index]
+            self._df = self._df.sort_index().sort_index(axis=1)
             if is_update:
                 return self.UpdateDataByFrame()
         except Exception as e:
@@ -137,6 +139,8 @@ class DataContainer:
         self.__init__()
         try:
             self._df = pd.read_csv(file_path, header=0, index_col=0).sort_index().sort_index(axis=1)
+            self._df.index = [str(one) for one in self._df.index]
+            self._df = self._df.sort_index().sort_index(axis=1)
             if is_update:
                 self.UpdateDataByFrame(emu_label=True)
             return True

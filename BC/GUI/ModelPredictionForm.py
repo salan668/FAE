@@ -259,11 +259,9 @@ class ModelPredictionForm(QWidget):
                 os.system("explorer.exe {:s}".format(os.path.normpath(store_folder)))
 
 
-
-
 if __name__ == '__main__':
     import sys
-    app = QApplication()
+    app = QApplication(sys.argv)
     frame = ModelPredictionForm()
     frame.show()
     sys.exit(app.exec_())
