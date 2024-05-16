@@ -36,18 +36,6 @@ class CVRun(QThread):
             train_dc = FeatureSelector().SelectFeatureByName(
                 self._process_connection.training_data_container, valid_features
             )
-            if not self._process_connection.testing_data_container.IsEmpty():
-                test_dc = FeatureSelector().SelectFeatureByName(
-                    self._process_connection.testing_data_container, valid_features)
-            else:
-                test_dc = DataContainer()
-
-            for total, num in self._process_connection.fae.RunWithoutCV(train_dc, test_dc,
-                                                                        self.store_folder,
-                                                                        self.is_train_cutoff):
-                self.signal.emit("Model Developing:\n{} / {}...".format(num, total))
-            self.signal.emit("Model Developing: Done")
-
         except Exception as e:
             print('Selecting valid features wrong')
             print(traceback.format_exc())
@@ -56,19 +44,29 @@ class CVRun(QThread):
         for total, num, group in self._process_connection.fae.RunWithCV(
                 train_dc,
                 self.store_folder):
-            text = "Model Developing:\nDone.\n\n" \
-                   "Cross Validation:\nGroup {}: {} / {}...".format(int(group) + 1, num, total)
+            text = "Cross Validation:\nGroup {}: {} / {}...".format(int(group) + 1, num, total)
             self.signal.emit(text)
-        self.signal.emit("Model Developing:\nDone.\n\nCross Validation:\nDone.\n\n")
+        self.signal.emit("Cross Validation: Done.\n\n")
+
+        if not self._process_connection.testing_data_container.IsEmpty():
+            test_dc = FeatureSelector().SelectFeatureByName(
+                self._process_connection.testing_data_container, valid_features)
+        else:
+            test_dc = DataContainer()
+        for total, num in self._process_connection.fae.RunWithoutCV(train_dc, test_dc,
+                                                                    self.store_folder,
+                                                                    self.is_train_cutoff):
+            self.signal.emit("Cross Validation: Done. \n\n Model Developing:\n{} / {}...".format(num, total))
+        self.signal.emit("Cross Validation: Done.\n\nModel Developing: Done")
 
         for total, num in self._process_connection.fae.MergeCvResult(self.store_folder):
-            text = "Model Developing:\nDone.\n\nCross Validation:\nDone.\n\n" \
-                   "Merging CV Results:\n{} / {}...".format(num, total)
+            text = "Cross Validation: Done.\n\nModel Developing: Done\n\n" \
+                   "Merging Results:\n{} / {}...".format(num, total)
             self.signal.emit(text)
 
         self._process_connection.fae.SaveAucDict(self.store_folder)
 
-        text = "Model Developing:\nDone.\n\nCross Validation:\nDone.\n\nMerging CV Results:\nDone.\n\nAll Done, please check the result in Visualization."
+        text = "Cross Validation: Done.\n\nModel Developing: Done\n\nMerging Results:\nDone.\n\nAll Done, please check the result in Visualization."
         self.signal.emit(text)
         self._process_connection.SetStateAllButtonWhenRunning(True)
 
@@ -399,7 +397,6 @@ class ProcessConnection(QWidget, Ui_Process):
                     return
 
             if self.MakePipelines():
-                # self.thread = CVRun()
                 self.thread.moveToThread(QThread())
                 self.thread.SetProcessConnectionAndStore_folder(self, store_folder, self.checkEstimatebyTraining.isChecked())
 
