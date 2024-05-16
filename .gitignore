@@ -143,3 +143,4 @@ src/FAE-icon-py.ico
 src/FAE-icon.png
 src/FAE-icon.pptx
 BC/GUI/ModelPrediction.py
+Feature/GUI/IccEstimation.py
