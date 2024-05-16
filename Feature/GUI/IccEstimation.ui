@@ -171,7 +171,26 @@ p, li { white-space: pre-wrap; }
         </widget>
        </item>
        <item>
-        <widget class="QComboBox" name="comboIccType"/>
+        <widget class="QComboBox" name="comboIccType">
+         <property name="currentIndex">
+          <number>1</number>
+         </property>
+         <item>
+          <property name="text">
+           <string>ICC1</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>ICC2</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>ICC3</string>
+          </property>
+         </item>
+        </widget>
        </item>
        <item>
         <widget class="QPushButton" name="buttonIccEstimate">
@@ -199,6 +218,13 @@ p, li { white-space: pre-wrap; }
         </widget>
        </item>
       </layout>
+     </item>
+     <item>
+      <widget class="QProgressBar" name="progressBar">
+       <property name="value">
+        <number>0</number>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>

@@ -9,10 +9,53 @@ import numpy as np
 import pandas as pd
 from pingouin import intraclass_corr
 from PyQt5.QtWidgets import *
+from PyQt5.QtCore import QThread, pyqtSignal
 from PyQt5 import QtCore
 
 from Feature.GUI.IccEstimation import Ui_IccEstimation
 from Utility.EcLog import eclog
+
+
+class IccEstimationThread(QThread):
+    progress_signal = pyqtSignal(int)
+    finish_signal = pyqtSignal(bool)
+
+    def __init__(self, feature1: pd.DataFrame, feature2: pd.DataFrame, store_path: str,
+                 icc_type: str):
+        super().__init__()
+        self.feature1 = feature1
+        self.feature2 = feature2
+        self.store_path = store_path
+        self.icc_type = icc_type
+
+    def run(self):
+        icc_df = {}
+        total = len(self.feature1.columns)
+        self.progress_signal.emit(0)
+
+        for ind, col in enumerate(self.feature1.columns):
+            temp_df = pd.DataFrame()
+            temp_df[col] = pd.concat([self.feature1[col], self.feature2[col]], axis=0)
+            temp_df["raters"] = ['A' for _ in self.feature1.index] + ['B' for _ in self.feature1.index]
+            temp_df['cases'] = [ind for ind in self.feature1.index] + [ind for ind in self.feature1.index]
+
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                result = intraclass_corr(temp_df, targets='cases', raters="raters", ratings=col)
+
+            icc = result.set_index('Type').loc[self.icc_type]['ICC']
+
+            if pd.isna(icc):
+                icc = 1
+
+            icc_df[col] = icc
+            self.progress_signal.emit(int((ind + 1) / total * 100))
+
+        print(icc_df)
+        df = pd.DataFrame(icc_df, index=['ICC'])
+        df.to_csv(self.store_path)
+        self.progress_signal.emit(100)
+        self.finish_signal.emit(True)
 
 
 class IccEstimationForm(QWidget):
@@ -31,6 +74,7 @@ class IccEstimationForm(QWidget):
         self.ui.buttonLoadFeatureMatrix2.clicked.connect(self.LoadFeature2)
 
         self.ui.buttonIccEstimate.clicked.connect(self.IccEstimation)
+
 
     def closeEvent(self, event):
         self.close_signal.emit(True)
@@ -82,8 +126,22 @@ class IccEstimationForm(QWidget):
             message += "Indices in df1 not in df2:\n" + "{}\n".format(diff1)
         if not diff2.empty:
             message += "Indices in df2 not in df1:\n" + "{}\n".format(diff2)
-
         return message
+
+    def compare_columns(self, df1, df2):
+        diff1 = df1.columns.difference(df2.columns)
+        diff2 = df2.columns.difference(df1.columns)
+
+        message = ''
+        if not diff1.empty:
+            message += "Columns in df1 not in df2:\n" + "{}\n".format(diff1)
+        if not diff2.empty:
+            message += "Columns in df2 not in df1:\n" + "{}\n".format(diff2)
+        return message
+
+    def IccEstimationFinish(self, state):
+        if state:
+            QMessageBox.about(self, 'Information', 'The ICC estimation is done')
 
     def IccEstimation(self):
         if self.feature1.empty or self.feature2.empty:
@@ -99,33 +157,22 @@ class IccEstimationForm(QWidget):
             self.eclog.GetLogger().error('The index of two feature matrix is not the same.\n{}'.format(messsage))
             return
 
-        store_path, _ = QFileDialog.getSaveFileName(self, 'Save file', '', 'CSV files (*.csv)')
+        if not self.feature1.columns.equals(self.feature2.columns):
+            messsage = self.compare_columns(self.feature1, self.feature2)
+            QMessageBox.warning(self, 'Warning', 'The columns of two feature matrix is not the same: \n' + '{}'.format(messsage))
+            self.eclog.GetLogger().error('The columns of two feature matrix is not the same.\n{}'.format(messsage))
+            return
+
+        store_path, _ = QFileDialog.getSaveFileName(self, 'Save file', 'ICC_Estimation.csv', 'CSV files (*.csv)')
         if not store_path:
             return
 
-        icc_df = {}
-        for col in self.feature1.columns:
-            temp_df = pd.DataFrame()
-            temp_df[col] = pd.concat([self.feature1[col], self.feature2[col]], axis=0)
-            temp_df["raters"] = ['A' for _ in self.feature1.index] + ['B' for _ in self.feature1.index]
-            temp_df['cases'] = [ind for ind in self.feature1.index] + [ind for ind in self.feature1.index]
+        self.thread = IccEstimationThread(self.feature1, self.feature2, store_path,
+                                          self.ui.comboIccType.currentText())
+        self.thread.progress_signal.connect(self.ui.progressBar.setValue)
+        self.thread.finish_signal.connect(self.IccEstimationFinish)
+        self.thread.start()
 
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore")
-                result = intraclass_corr(temp_df, targets='cases', raters="raters", ratings=col)
-
-            icc = result.set_index('Type').loc['ICC2']['ICC']
-
-            if pd.isna(icc):
-                icc = 1
-
-            icc_df[col] = icc
-
-        print(icc_df)
-        df = pd.DataFrame(icc_df, index=['ICC'])
-        df.to_csv(store_path)
-
-        QMessageBox.about(self, 'Information', 'The ICC estimation is done')
 
 
 if __name__ == '__main__':
