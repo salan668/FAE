@@ -75,7 +75,6 @@ class IccEstimationForm(QWidget):
 
         self.ui.buttonIccEstimate.clicked.connect(self.IccEstimation)
 
-
     def closeEvent(self, event):
         self.close_signal.emit(True)
         event.accept()
@@ -146,21 +145,21 @@ class IccEstimationForm(QWidget):
     def IccEstimation(self):
         if self.feature1.empty or self.feature2.empty:
             QMessageBox.warning(self, 'Warning', 'Please load the feature matrix first')
-            self.eclog.GetLogger().error('Please load the feature matrix first')
+            self.eclog.error('Please load the feature matrix first')
             return
 
-        self.eclog.GetLogger().info('Icc estimation is running')
+        self.eclog.info('Icc estimation is running')
 
         if not self.feature1.index.equals(self.feature2.index):
             messsage = self.compare_indices(self.feature1, self.feature2)
             QMessageBox.warning(self, 'Warning', 'The index of two feature matrix is not the same: \n' + '{}'.format(messsage))
-            self.eclog.GetLogger().error('The index of two feature matrix is not the same.\n{}'.format(messsage))
+            self.eclog.error('The index of two feature matrix is not the same.\n{}'.format(messsage))
             return
 
         if not self.feature1.columns.equals(self.feature2.columns):
             messsage = self.compare_columns(self.feature1, self.feature2)
             QMessageBox.warning(self, 'Warning', 'The columns of two feature matrix is not the same: \n' + '{}'.format(messsage))
-            self.eclog.GetLogger().error('The columns of two feature matrix is not the same.\n{}'.format(messsage))
+            self.eclog.error('The columns of two feature matrix is not the same.\n{}'.format(messsage))
             return
 
         store_path, _ = QFileDialog.getSaveFileName(self, 'Save file', 'ICC_Estimation.csv', 'CSV files (*.csv)')
@@ -178,6 +177,6 @@ class IccEstimationForm(QWidget):
 if __name__ == '__main__':
     import sys
     app = QApplication(sys.argv)
-    main_frame = IccEstimationForm(eclog('Eclog.txt'))
+    main_frame = IccEstimationForm(eclog('Eclog.txt').GetLogger())
     main_frame.show()
     sys.exit(app.exec_())

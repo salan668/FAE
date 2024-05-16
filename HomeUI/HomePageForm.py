@@ -8,12 +8,14 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 
 from HomeUI.HomePage import Ui_HomePage
-from Feature.GUI import FeatureMergeForm, FeatureExtractionForm
+from Feature.GUI import FeatureMergeForm, FeatureExtractionForm, IccEstimationForm
 from BC.GUI import PrepareConnection, ProcessConnection, VisualizationConnection, ModelPredictionForm
 from HomeUI.VersionConstant import VERSION
 
 from SA.GUI.ProcessForm import ProcessForm
 from SA.GUI.VisualizationForm import VisualizationForm
+
+from Utility.EcLog import mylog
 
 from Plugin.PluginManager import PluginManager
 
@@ -22,10 +24,13 @@ class HomePageForm(QDialog, Ui_HomePage):
         super(HomePageForm, self).__init__(parent)
         self.setupUi(self)
 
+        self.eclog = mylog
+
         self.labelTitle.setText("FeAture Explorer V. {}".format(VERSION))
 
         self.feature_extraction = FeatureExtractionForm()
         self.feature_merge = FeatureMergeForm()
+        self.feature_icc_estimation = IccEstimationForm(self.eclog)
         self.bc_preprocessing = PrepareConnection()
         self.bc_model_exploration = ProcessConnection()
         self.bc_visualization = VisualizationConnection()
@@ -37,6 +42,8 @@ class HomePageForm(QDialog, Ui_HomePage):
         self.feature_extraction.close_signal.connect(self.CloseFeatureExtraction)
         self.buttonFeatureMerge.clicked.connect(self.OpenFeatureMerge)
         self.feature_merge.close_signal.connect(self.CloseFeatureMerge)
+        self.buttonIccEstimation.clicked.connect(self.OpenIccEstimation)
+        self.feature_icc_estimation.close_signal.connect(self.CloseIccEstimation)
 
         self.buttonBcFeaturePreprocessing.clicked.connect(self.OpenBcPreprocessing)
         self.bc_preprocessing.close_signal.connect(self.CloseBcPreprocessing)
@@ -70,6 +77,13 @@ class HomePageForm(QDialog, Ui_HomePage):
         self.feature_merge.show()
         self.hide()
     def CloseFeatureMerge(self, is_close):
+        if is_close:
+            self.show()
+
+    def OpenIccEstimation(self):
+        self.feature_icc_estimation.show()
+        self.hide()
+    def CloseIccEstimation(self, is_close):
         if is_close:
             self.show()
 

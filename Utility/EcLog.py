@@ -31,10 +31,10 @@ class eclog(Singleton):
             self.rotate_handler.setFormatter(formatter)
             self.eclogger.addHandler(self.rotate_handler)
 
-
     def GetLogger(self):
         return self.eclogger
 
+mylog = eclog("FAE_Log.log").GetLogger()
 
 if __name__ == '__main__':
     eclog("t").GetLogger().error('test')
