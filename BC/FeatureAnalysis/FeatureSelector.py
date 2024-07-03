@@ -57,6 +57,7 @@ class FeatureSelector(object):
         return copy_selector
 
     def SelectFeatureByIndex(self, data_container, selected_list, is_replace=False, store_path=''):
+        selected_list = sorted(selected_list)
         new_data = data_container.GetArray()[:, selected_list]
         new_feature = [data_container.GetFeatureName()[t] for t in selected_list]
 
@@ -340,10 +341,8 @@ class FeatureSelectByRelief(FeatureSelectByAnalysis):
         else:
             pass
 
-            # start iteration
-
+        # Start Iteration
         for iter_num in range(int(self.__iter_radio * n_samples)):
-            # print iter_num;
             # initialization
             nearHit = list()
             nearMiss = list()
@@ -380,7 +379,6 @@ class FeatureSelectByRelief(FeatureSelectByAnalysis):
                 else:
                     continue
 
-                    # update weight
             weight = weight - np.power(self_features - nearHit, 2) + np.power(self_features - nearMiss, 2)
         result = self.__SortByValue(weight / (self.__iter_radio * n_samples))
         self._weight = weight
@@ -650,7 +648,7 @@ if __name__ == '__main__':
 
     dc = DataContainer()
     pcc = DimensionReductionByPCC()
-    fs = FeatureSelectByKruskalWallis(selected_feature_number=5)
+    fs = FeatureSelectByRelief(selected_feature_number=8)
 
     dc.Load(r'..\..\Demo\train_numeric_feature.csv')
 
