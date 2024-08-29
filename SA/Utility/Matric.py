@@ -27,6 +27,9 @@ class Metric(object):
             sampled_event = [event[i] for i in sampled_index]
             sampled_duration = [duration[i] for i in sampled_index]
 
+            if int(sum(sampled_event)) == 0 or int(sum(sampled_event)) == len(sampled_event):
+                continue
+
             ev = EvalSurv(sampled_surv, np.array(sampled_duration),
                           np.array(sampled_event).astype(int), censor_surv='km')
             time_grid = np.linspace(min(sampled_duration), max(sampled_duration), 100)
