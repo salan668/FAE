@@ -28,7 +28,7 @@ class PrepareConnection(QWidget, Ui_Prepare):
         self.buttonRemoveAndExport.clicked.connect(self.RemoveInvalidValue)
 
         self.testing_ref_data_container = DataContainer()
-        self.__clinical_ref = pd.DataFrame()
+        self.clinical_ref = pd.DataFrame()
 
         self.radioSplitRandom.clicked.connect(self.ChangeSeparateMethod)
         self.radioSplitRef.clicked.connect(self.ChangeSeparateMethod)
@@ -146,11 +146,14 @@ class PrepareConnection(QWidget, Ui_Prepare):
         file_name, _ = dlg.getOpenFileName(self, 'Open SCV file', filter="csv files (*.csv)")
         if file_name:
             try:
-                self.__clinical_ref = pd.read_csv(file_name, index_col=0).sort_index()
-                if not self.__clinical_ref.index.equals(self.data_container.GetFrame().index):
-                    source_case = [case for case in self.__clinical_ref.index if case not in self.data_container.GetCaseName()]
+                self.clinical_ref = pd.read_csv(file_name, index_col=0).sort_index()
+                self.clinical_ref.index = [str(one) for one in self.clinical_ref.index]
+                self.clinical_ref = self.clinical_ref.sort_index().sort_index(axis=1)
+
+                if not self.clinical_ref.index.equals(self.data_container.GetFrame().index):
+                    source_case = [case for case in self.clinical_ref.index if case not in self.data_container.GetCaseName()]
                     dest_case = [case for case in self.data_container.GetCaseName() if
-                                   case not in self.__clinical_ref.index]
+                                 case not in self.clinical_ref.index]
                     QMessageBox.information(self, 'Error',
                                             'The index of clinical features is not consistent to the data. {} not in clinical infomations, and {} not in source features'.format(dest_case, source_case))
                     return None
@@ -167,8 +170,8 @@ class PrepareConnection(QWidget, Ui_Prepare):
             return None
 
     def ClearClinicalRef(self):
-        del self.__clinical_ref
-        self.__clinical_ref = pd.DataFrame()
+        del self.clinical_ref
+        self.clinical_ref = pd.DataFrame()
         self.loadClinicRef.setEnabled(True)
         self.clearClinicRef.setEnabled(False)
 
@@ -178,9 +181,6 @@ class PrepareConnection(QWidget, Ui_Prepare):
                 dlg = QFileDialog()
                 store_path, _ = dlg.getSaveFileName(self, 'Save CSV feature files', 'features.csv',
                                                    filter="CSV files (*.csv)")
-
-                # folder_name = QFileDialog.getExistingDirectory(self, "Save Invalid data")
-                # store_path = os.path.join(folder_name, 'invalid_feature.csv')
             else:
                 store_path = ''
 
@@ -209,7 +209,7 @@ class PrepareConnection(QWidget, Ui_Prepare):
 
     def RandomSeparateButtonUpdates(self):
         if self.checkUseClinicRef.isChecked():
-            if self.__clinical_ref.size > 0:
+            if self.clinical_ref.size > 0:
                 self.loadClinicRef.setEnabled(False)
                 self.clearClinicRef.setEnabled(True)
             else:
@@ -258,7 +258,7 @@ class PrepareConnection(QWidget, Ui_Prepare):
                 try:
                     if self.testing_ref_data_container.IsEmpty():
                         testing_data_percentage = self.spinBoxSeparate.value()
-                        if self.__clinical_ref.size == 0:
+                        if self.clinical_ref.size == 0:
                             training_data_container, _, = \
                                 data_separate.RunByTestingPercentage(self.data_container,
                                                                      testing_data_percentage,
@@ -267,7 +267,7 @@ class PrepareConnection(QWidget, Ui_Prepare):
                             training_data_container, _, = \
                                 data_separate.RunByTestingPercentage(self.data_container,
                                                                      testing_data_percentage,
-                                                                     clinic_df=self.__clinical_ref,
+                                                                     clinic_df=self.clinical_ref,
                                                                      store_folder=folder_name)
                     else:
                         training_data_container, _, = \
