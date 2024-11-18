@@ -3,12 +3,16 @@ All rights reserved.
 -- Yang Song.
 """
 import os
+import json
 import pickle
 from copy import deepcopy
 
 import pandas as pd
 import numpy as np
 from abc import abstractmethod
+
+# from future.utils import isint
+# from joblib.testing import param
 from sklearn.svm import SVC
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
@@ -17,11 +21,11 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.gaussian_process import GaussianProcessClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import GridSearchCV, cross_val_predict
 
 from BC.DataContainer.DataContainer import DataContainer
 from Utility.EcLog import eclog
 from BC.Utility.Constants import *
-from BC.HyperParameterConfig.HyperParamManager import RANDOM_SEED
 
 
 def LoadModel(store_path):
@@ -35,17 +39,19 @@ class Classifier:
     This is the base class of the classifer. All the specific classifier need to be artributed from this base class.
     """
     def __init__(self):
-        self.__model = None
+        self.model = None
         self._x = np.array([])
         self._y = np.array([])
         self._data_container = DataContainer()
         self.logger = eclog(os.path.split(__file__)[-1]).GetLogger()
 
+        self.random_seed = {}
+
     def __deepcopy__(self):
         copy_classifier = type(self)()
         copy_classifier._data_container = deepcopy(self._data_container)
         copy_classifier._x, copy_classifier._y = deepcopy(self._x), deepcopy(self._y)
-        copy_classifier.SetModel(deepcopy(self.__model))
+        copy_classifier.SetModel(deepcopy(self.model))
         return copy_classifier
 
     def SetDataContainer(self, data_container):
@@ -78,23 +84,48 @@ class Classifier:
             print('{} \n{}'.format(content, e.__str__()))
 
     def SetModel(self, model):
-        self.__model = model
+        self.model = model
 
     def GetModel(self):
-        return self.__model
+        return self.model
+
+    def SetSeed(self, seed):
+        self.random_seed = seed
 
     def SetModelParameter(self, param):
-        self.__model.set_params(**param)
+        self.model.set_params(**param)
 
-    def Fit(self):
-        self.__model.fit(self._x, self._y)
+    def Fit(self, hyper_param={}, cv_parts=5):
+        if len(hyper_param) > 0:
+            grid_search = GridSearchCV(estimator=self.model,
+                                       param_grid=hyper_param,
+                                       cv=cv_parts, scoring="accuracy",
+                                       n_jobs=-1)
+            grid_search.fit(self._x, self._y)
+            self.model = grid_search.best_estimator_
+        else:
+            self.model.fit(self._x, self._y)
+
+    def CvPredict(self, dc, cv_parts=5):
+        pred = cross_val_predict(self.model, dc.GetArray(), dc.GetLabel(), cv=cv_parts, method='predict_proba')[..., 1]
+        return pred, dc.GetLabel()
+
+    def HyperFit(self, param_grid, cv_parts=5):
+        if isinstance(param_grid, dict):
+            grid_search = GridSearchCV(estimator=self.model, param_grid=param_grid, cv=cv_parts, scoring="accuracy", n_jobs=-1)
+            grid_search.fit(self._x, self._y)
+
+            self.model = grid_search.best_estimator_
+        else:
+            self.model.fit(self._x, self._y)
+        return
 
     def GetDescription(self):
         text = "We did not use any classifier. "
         return text
 
     def Predict(self, x):
-        return self.__model.predict(x)
+        return self.model.predict(x)
 
     def Save(self, store_path):
         if os.path.isdir(store_path):
@@ -104,7 +135,13 @@ class Classifier:
             print('Check the store path. ')
         else:
             with open(store_path, 'wb') as f:
-                pickle.dump(self.__model, f)
+                pickle.dump(self.model, f)
+
+            store_folder = os.path.split(store_path)[0]
+            param_path = os.path.join(store_folder, 'model_param.json')
+            with open(param_path, 'w') as f:
+                json.dump(self.model.get_params(), f)
+
 
     def Load(self, store_path):
         if os.path.isdir(store_path):
@@ -114,7 +151,7 @@ class Classifier:
             print('Check the store path. ')
         else:
             with open(store_path, 'rb') as f:
-                self.__model = pickle.load(f)
+                self.model = pickle.load(f)
 
     @abstractmethod
     def GetName(self):
@@ -130,7 +167,7 @@ class SVM(Classifier):
             kwargs['C'] = 1.0
         if 'probability' not in kwargs.keys():
             kwargs['probability'] = True
-        super(SVM, self).SetModel(SVC(random_state=RANDOM_SEED[CLASSIFIER_SVM], **kwargs))
+        super(SVM, self).SetModel(SVC(**kwargs))
 
         self.__name = 'SVM_' + kwargs['kernel'] + '_C_' + '{:.3f}'.format(kwargs['C'])
 
@@ -221,13 +258,12 @@ class LDA(Classifier):
 class RandomForest(Classifier):
     def __init__(self, **kwargs):
         super(RandomForest, self).__init__()
+
         if 'n_estimators' not in kwargs.keys():
-            super(RandomForest, self).SetModel(RandomForestClassifier(random_state=RANDOM_SEED[CLASSIFIER_RF],
-                                                                      n_estimators=10,
+            super(RandomForest, self).SetModel(RandomForestClassifier(n_estimators=10,
                                                                       **kwargs))
         else:
-            super(RandomForest, self).SetModel(RandomForestClassifier(random_state=RANDOM_SEED[CLASSIFIER_RF],
-                                                                      **kwargs))
+            super(RandomForest, self).SetModel(RandomForestClassifier(**kwargs))
 
     def GetName(self):
         return CLASSIFIER_RF
@@ -250,7 +286,7 @@ class AE(Classifier):
         super(AE, self).__init__()
         if 'early_stopping' not in kwargs.keys():
             kwargs['early_stopping'] = True
-        super(AE, self).SetModel(MLPClassifier(random_state=RANDOM_SEED[CLASSIFIER_AE], **kwargs))
+        super(AE, self).SetModel(MLPClassifier(**kwargs))
 
     def GetName(self):
         return CLASSIFIER_AE
@@ -272,7 +308,7 @@ class AE(Classifier):
 class AdaBoost(Classifier):
     def __init__(self, **kwargs):
         super(AdaBoost, self).__init__()
-        super(AdaBoost, self).SetModel(AdaBoostClassifier(random_state=RANDOM_SEED[CLASSIFIER_AB], **kwargs))
+        super(AdaBoost, self).SetModel(AdaBoostClassifier(**kwargs))
 
     def GetName(self):
         return CLASSIFIER_AB
@@ -294,7 +330,7 @@ class AdaBoost(Classifier):
 class DecisionTree(Classifier):
     def __init__(self, **kwargs):
         super(DecisionTree, self).__init__()
-        super(DecisionTree, self).SetModel(DecisionTreeClassifier(random_state=RANDOM_SEED[CLASSIFIER_DT], **kwargs))
+        super(DecisionTree, self).SetModel(DecisionTreeClassifier(**kwargs))
 
     def GetName(self):
         return CLASSIFIER_DT
@@ -314,8 +350,7 @@ class DecisionTree(Classifier):
 class GaussianProcess(Classifier):
     def __init__(self, **kwargs):
         super(GaussianProcess, self).__init__()
-        super(GaussianProcess, self).SetModel(GaussianProcessClassifier(
-            random_state=RANDOM_SEED[CLASSIFIER_GP], **kwargs))
+        super(GaussianProcess, self).SetModel(GaussianProcessClassifier(**kwargs))
 
     def GetName(self):
         return CLASSIFIER_GP
@@ -358,8 +393,7 @@ class LR(Classifier):
         if 'solver' in kwargs.keys():
             super(LR, self).SetModel(LogisticRegression(penalty=None, **kwargs))
         else:
-            super(LR, self).SetModel(LogisticRegression(penalty=None, solver='saga', tol=0.01,
-                                                        random_state=RANDOM_SEED[CLASSIFIER_LR], **kwargs))
+            super(LR, self).SetModel(LogisticRegression(penalty=None, solver='saga', tol=0.01, **kwargs))
 
     def GetName(self):
         return CLASSIFIER_LR
@@ -410,8 +444,7 @@ class LRLasso(Classifier):
         if 'solver' in kwargs.keys():
             super(LRLasso, self).SetModel(LogisticRegression(penalty='l1', **kwargs))
         else:
-            super(LRLasso, self).SetModel(LogisticRegression(penalty='l1', solver='liblinear',
-                                                             random_state=RANDOM_SEED[CLASSIFIER_LRLasso], **kwargs))
+            super(LRLasso, self).SetModel(LogisticRegression(penalty='l1', solver='liblinear', **kwargs))
 
     def GetName(self):
         return CLASSIFIER_LRLasso

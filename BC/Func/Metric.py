@@ -3,17 +3,11 @@ All rights reserved.
 --Yang Song, Apr 8th, 2020.
 """
 import numpy as np
-import pandas as pd
-from sklearn.metrics import confusion_matrix, roc_curve, roc_auc_score, matthews_corrcoef, classification_report, precision_recall_curve, auc
+from sklearn.metrics import roc_curve, roc_auc_score, matthews_corrcoef, classification_report, precision_recall_curve, auc
 
 from BC.Func.DelongAUC import CalculateAUC
 from BC.Utility.Constants import *
 
-import matplotlib.pyplot as plt
-import seaborn as sns
-
-from sklearn import metrics
-from sklearn.calibration import calibration_curve
 
 def AUC_Confidence_Interval(y_true, y_pred, CI_index=0.95):
     '''

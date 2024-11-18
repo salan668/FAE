@@ -26,49 +26,49 @@ class CVRun(QThread):
         pass
 
     def SetProcessConnectionAndStore_folder(self, process_connection, store_folder, is_train_cutoff=False):
-        self._process_connection = process_connection
+        self.process_connection = process_connection
         self.store_folder = store_folder
         self.is_train_cutoff = is_train_cutoff
 
     def run(self):
-        valid_features = RemoveSameFeatures().Run(self._process_connection.training_data_container).GetFeatureName()
+        valid_features = RemoveSameFeatures().Run(self.process_connection.training_data_container).GetFeatureName()
         try:
             train_dc = FeatureSelector().SelectFeatureByName(
-                self._process_connection.training_data_container, valid_features
+                self.process_connection.training_data_container, valid_features
             )
         except Exception as e:
             print('Selecting valid features wrong')
             print(traceback.format_exc())
             raise Exception
 
-        for total, num, group in self._process_connection.fae.RunWithCV(
+        for total, num, group in self.process_connection.pipeline_manager.RunWithCV(
                 train_dc,
                 self.store_folder):
             text = "Cross Validation:\nGroup {}: {} / {}...".format(int(group) + 1, num, total)
             self.signal.emit(text)
         self.signal.emit("Cross Validation: Done.\n\n")
 
-        if not self._process_connection.testing_data_container.IsEmpty():
+        if not self.process_connection.testing_data_container.IsEmpty():
             test_dc = FeatureSelector().SelectFeatureByName(
-                self._process_connection.testing_data_container, valid_features)
+                self.process_connection.testing_data_container, valid_features)
         else:
             test_dc = DataContainer()
-        for total, num in self._process_connection.fae.RunWithoutCV(train_dc, test_dc,
-                                                                    self.store_folder,
-                                                                    self.is_train_cutoff):
+        for total, num in self.process_connection.pipeline_manager.RunWithoutCV(train_dc, test_dc,
+                                                                                self.store_folder,
+                                                                                self.is_train_cutoff):
             self.signal.emit("Cross Validation: Done. \n\n Model Developing:\n{} / {}...".format(num, total))
         self.signal.emit("Cross Validation: Done.\n\nModel Developing: Done")
 
-        for total, num in self._process_connection.fae.MergeCvResult(self.store_folder):
+        for total, num in self.process_connection.pipeline_manager.MergeCvResult(self.store_folder):
             text = "Cross Validation: Done.\n\nModel Developing: Done\n\n" \
                    "Merging Results:\n{} / {}...".format(num, total)
             self.signal.emit(text)
 
-        self._process_connection.fae.SaveAucDict(self.store_folder)
+        self.process_connection.pipeline_manager.SaveAucDict(self.store_folder)
 
         text = "Cross Validation: Done.\n\nModel Developing: Done\n\nMerging Results:\nDone.\n\nAll Done, please check the result in Visualization."
         self.signal.emit(text)
-        self._process_connection.SetStateAllButtonWhenRunning(True)
+        self.process_connection.SetStateAllButtonWhenRunning(True)
 
 
 class ProcessConnection(QWidget, Ui_Process):
@@ -78,7 +78,7 @@ class ProcessConnection(QWidget, Ui_Process):
         self.training_data_container = DataContainer()
         self.testing_data_container = DataContainer()
         self.logger = eclog(os.path.split(__file__)[-1]).GetLogger()
-        self.fae = PipelinesManager(logger=self.logger)
+        self.pipeline_manager = PipelinesManager(logger=self.logger)
         self.__normalizers = []
         self.__dimension_reducers = []
         self.__feature_selectors = []
@@ -503,14 +503,14 @@ class ProcessConnection(QWidget, Ui_Process):
         else:
             return False
 
-        self.fae.balance = data_balance
-        self.fae.normalizer_list = self.__normalizers
-        self.fae.dimension_reduction_list = self.__dimension_reducers
-        self.fae.feature_selector_list = self.__feature_selectors
-        self.fae.feature_selector_num_list = self.__feature_number_list
-        self.fae.classifier_list = self.__classifiers
-        self.fae.cv = cv
-        self.fae.GenerateAucDict()
+        self.pipeline_manager.balance = data_balance
+        self.pipeline_manager.normalizer_list = self.__normalizers
+        self.pipeline_manager.dimension_reduction_list = self.__dimension_reducers
+        self.pipeline_manager.feature_selector_list = self.__feature_selectors
+        self.pipeline_manager.feature_selector_num_list = self.__feature_number_list
+        self.pipeline_manager.classifier_list = self.__classifiers
+        self.pipeline_manager.cv = cv
+        self.pipeline_manager.GenerateAucDict()
 
         return True
 

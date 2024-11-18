@@ -172,7 +172,6 @@ class DataContainer:
     def UpdateDataByFrame(self, emu_label=False):
         self._case_name = [str(one) for one in self._df.index]
         self._feature_name = [str(one) for one in self._df.columns]
-        label_name = ''
         if 'label' in self._feature_name:
             label_name = 'label'
         elif 'Label' in self._feature_name:
