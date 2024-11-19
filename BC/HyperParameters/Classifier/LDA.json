@@ -9,7 +9,7 @@ The fitted model can also be used to reduce the dimensionality of the input by p
 
 "setting":
 [
-{"solver": ["svd"], "shrinkage": ["None"]},
+{"solver": ["svd"], "shrinkage": [None]},
 {"solver": ["lsqr"], "shrinkage": ["auto"]},
 {"solver": ["eigen"], "shrinkage": ["auto"]}
 ]}

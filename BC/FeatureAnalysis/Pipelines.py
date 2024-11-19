@@ -64,9 +64,9 @@ class PipelinesManager(object):
 
     def SaveAucDict(self, store_folder):
         with open(os.path.join(store_folder, 'auc_metric.pkl'), 'wb') as file:
-            pickle.dump(self.__auc_dict, file, pickle.HIGHEST_PROTOCOL)
+            pickle.dump(self.auc_dict, file, pickle.HIGHEST_PROTOCOL)
         with open(os.path.join(store_folder, 'auc_std_metric.pkl'), 'wb') as file:
-            pickle.dump(self.__auc_std_dict, file, pickle.HIGHEST_PROTOCOL)
+            pickle.dump(self.auc_std_dict, file, pickle.HIGHEST_PROTOCOL)
 
     def LoadAll(self, store_folder):
         return self.LoadAucDict(store_folder) and self.LoadPipelineInfo(store_folder)
@@ -121,9 +121,9 @@ class PipelinesManager(object):
             return False
 
         with open(auc_path, 'rb') as file:
-            self.__auc_dict = pickle.load(file)
+            self.auc_dict = pickle.load(file)
         with open(std_path, 'rb') as file:
-            self.__auc_std_dict = pickle.load(file)
+            self.auc_std_dict = pickle.load(file)
 
         return True
 
@@ -135,9 +135,9 @@ class PipelinesManager(object):
         info = pd.DataFrame({'Pred': pred, 'Label': label}, index=case_name)
         metric = EstimatePrediction(pred, label, key_name, cutoff=cutoff)
 
-        self.__auc_dict[key_name][norm_index, dr_index, fs_index, fn_index, cls_index] = \
+        self.auc_dict[key_name][norm_index, dr_index, fs_index, fn_index, cls_index] = \
             metric['{}_{}'.format(key_name, AUC)]
-        self.__auc_std_dict[key_name][norm_index, dr_index, fs_index, fn_index, cls_index] = \
+        self.auc_std_dict[key_name][norm_index, dr_index, fs_index, fn_index, cls_index] = \
             metric['{}_{}'.format(key_name, AUC_STD)]
 
         if store_root:
@@ -188,15 +188,15 @@ class PipelinesManager(object):
         except:
             matrix = np.zeros(())
 
-        self.__auc_dict = {CV_TRAIN: deepcopy(matrix), CV_VAL: deepcopy(matrix), TEST: deepcopy(matrix),
-                           TRAIN: deepcopy(matrix), BALANCE_TRAIN: deepcopy(matrix)}
-        self.__auc_std_dict = deepcopy(self.__auc_dict)
+        self.auc_dict = {CV_TRAIN: deepcopy(matrix), CV_VAL: deepcopy(matrix), TEST: deepcopy(matrix),
+                         TRAIN: deepcopy(matrix), BALANCE_TRAIN: deepcopy(matrix)}
+        self.auc_std_dict = deepcopy(self.auc_dict)
 
     def GetAuc(self):
-        return self.__auc_dict
+        return self.auc_dict
 
     def GetAucStd(self):
-        return self.__auc_std_dict
+        return self.auc_std_dict
 
     def GetStoreName(self, normalizer_name='', dimension_rediction_name='', feature_selector_name='',
                      feature_number='', classifer_name=''):
@@ -221,7 +221,6 @@ class PipelinesManager(object):
         self.SavePipelineInfo(store_folder)
         num = 0
 
-        # TODO: Balance后面也可以变成循环处理:
         balance_train_container = self.balance.Run(train_container, store_folder)
 
         for norm_index, normalizer in enumerate(self.normalizer_list):
@@ -398,17 +397,17 @@ class PipelinesManager(object):
                             yield self.total_num, num
 
                             # ADD CV Train
-                            cv_train_info = pd.read_csv(os.path.join(cls_store_folder,
-                                                                     '{}_prediction.csv'.format(CV_TRAIN)),
-                                                        index_col=0)
-                            cv_train_metric = EstimatePrediction(cv_train_info['Pred'].values, cv_train_info['Label'].values,
-                                                                 key_word=CV_TRAIN)
-                            self.__auc_dict[CV_TRAIN][norm_index, dr_index, fs_index, fn_index, cls_index] = \
-                                cv_train_metric['{}_{}'.format(CV_TRAIN, AUC)]
-                            self.__auc_std_dict[CV_TRAIN][norm_index, dr_index, fs_index, fn_index, cls_index] = \
-                                cv_train_metric['{}_{}'.format(CV_TRAIN, AUC_STD)]
-                            self._AddOneMetric(cv_train_metric, os.path.join(cls_store_folder, 'metrics.csv'))
-                            self._MergeOneMetric(cv_train_metric, CV_TRAIN, model_name)
+                            # cv_train_info = pd.read_csv(os.path.join(cls_store_folder,
+                            #                                          '{}_prediction.csv'.format(CV_TRAIN)),
+                            #                             index_col=0)
+                            # cv_train_metric = EstimatePrediction(cv_train_info['Pred'].values, cv_train_info['Label'].values,
+                            #                                      key_word=CV_TRAIN)
+                            # self.__auc_dict[CV_TRAIN][norm_index, dr_index, fs_index, fn_index, cls_index] = \
+                            #     cv_train_metric['{}_{}'.format(CV_TRAIN, AUC)]
+                            # self.__auc_std_dict[CV_TRAIN][norm_index, dr_index, fs_index, fn_index, cls_index] = \
+                            #     cv_train_metric['{}_{}'.format(CV_TRAIN, AUC_STD)]
+                            # self._AddOneMetric(cv_train_metric, os.path.join(cls_store_folder, 'metrics.csv'))
+                            # self._MergeOneMetric(cv_train_metric, CV_TRAIN, model_name)
 
                             # ADD CV Validation
                             cv_val_info = pd.read_csv(os.path.join(cls_store_folder,
@@ -416,14 +415,14 @@ class PipelinesManager(object):
                                                       index_col=0)
                             cv_val_metric = EstimatePrediction(cv_val_info['Pred'].values, cv_val_info['Label'].values,
                                                                key_word=CV_VAL)
-                            self.__auc_dict[CV_VAL][norm_index, dr_index, fs_index, fn_index, cls_index] = \
+                            self.auc_dict[CV_VAL][norm_index, dr_index, fs_index, fn_index, cls_index] = \
                                 cv_val_metric['{}_{}'.format(CV_VAL, AUC)]
-                            self.__auc_std_dict[CV_VAL][norm_index, dr_index, fs_index, fn_index, cls_index] = \
+                            self.auc_std_dict[CV_VAL][norm_index, dr_index, fs_index, fn_index, cls_index] = \
                                 cv_val_metric['{}_{}'.format(CV_VAL, AUC_STD)]
                             self._AddOneMetric(cv_val_metric, os.path.join(cls_store_folder, 'metrics.csv'))
                             self._MergeOneMetric(cv_val_metric, CV_VAL, model_name)
 
-        self.total_metric[CV_TRAIN].to_csv(os.path.join(store_folder, '{}_results.csv'.format(CV_TRAIN)))
+        # self.total_metric[CV_TRAIN].to_csv(os.path.join(store_folder, '{}_results.csv'.format(CV_TRAIN)))
         self.total_metric[CV_VAL].to_csv(os.path.join(store_folder, '{}_results.csv'.format(CV_VAL)))
 
     def Run(self, train_container, test_container=DataContainer(), store_folder='', is_train_cutoff=False):
@@ -481,7 +480,10 @@ class PipelinesManager(object):
 
                             cls.SetDataContainer(fs_balance_train_container)
                             cls.SetSeed(self.random_seed)
-                            cls.Fit(self.hyper_param[cls.GetName()], self.cv_part)
+                            if cls.GetName() in self.hyper_param.keys():
+                                cls.Fit(self.hyper_param[cls.GetName()], self.cv_part)
+                            else:
+                                cls.Fit(cv_part=self.cv_part)
 
                             val_pred, val_label = cls.CvPredict(fs_train_container, self.cv_part)
 
@@ -519,9 +521,15 @@ class PipelinesManager(object):
                                                    cutoff=cutoff)
 
                             num += 1
-                            print(self.total_num, num)
-                            # yield self.total_num, num
+                            # print(self.total_num, num)
+                            yield self.total_num, num
 
+                self.total_metric[BALANCE_TRAIN].to_csv(
+                    os.path.join(store_folder, '{}_results.csv'.format(BALANCE_TRAIN)))
+                self.total_metric[TRAIN].to_csv(os.path.join(store_folder, '{}_results.csv'.format(TRAIN)))
+                self.total_metric[CV_VAL].to_csv(os.path.join(store_folder, '{}_results.csv'.format(CV_VAL)))
+                if not test_container.IsEmpty():
+                    self.total_metric[TEST].to_csv(os.path.join(store_folder, '{}_results.csv'.format(TEST)))
 
 
 if __name__ == '__main__':

@@ -11,7 +11,10 @@ from BC.HyperParameterConfig.HyperParamManager import RandomSeed
 
 class Index2Dict:
     def __init__(self, root=None):
-        self.random_seed = RandomSeed(os.path.join(root, 'BC', 'HyperParameters', 'RandomSeed.json')).random_seed
+        if root is None:
+            self.random_seed = RandomSeed(os.path.join('BC', 'HyperParameters', 'RandomSeed.json')).random_seed
+        else:
+            self.random_seed = RandomSeed(os.path.join(root, 'BC', 'HyperParameters', 'RandomSeed.json')).random_seed
 
     def GetInstantByIndex(self, name):
         if name == NoneBalance().GetName():

@@ -95,11 +95,11 @@ class Classifier:
     def SetModelParameter(self, param):
         self.model.set_params(**param)
 
-    def Fit(self, hyper_param={}, cv_parts=5):
+    def Fit(self, hyper_param={}, cv_part=5):
         if len(hyper_param) > 0:
             grid_search = GridSearchCV(estimator=self.model,
                                        param_grid=hyper_param,
-                                       cv=cv_parts, scoring="accuracy",
+                                       cv=cv_part, scoring="accuracy",
                                        n_jobs=-1)
             grid_search.fit(self._x, self._y)
             self.model = grid_search.best_estimator_

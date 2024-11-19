@@ -83,13 +83,18 @@ class RandomSeed:
             if CLASSIFIER_SVM not in self.random_seed.keys():
                 self.random_seed[CLASSIFIER_SVM] = 0
 
-def GetClassifierHyperParams(root):
+def GetClassifierHyperParams(root=None):
+    if root is None:
+        root_folder = os.path.join('BC', 'HyperParameters', 'Classifier')
+    else:
+        root_folder = os.path.join(root, 'BC', 'HyperParameters', 'Classifier')
+
     param_dict = {}
-    for one_file in os.listdir(root):
+    for one_file in os.listdir(root_folder):
         if one_file.endswith('.json'):
             one_classifier = one_file.split('.')[0]
             one_hyper_param = HyperParameterManager()
-            one_hyper_param.LoadConfig(os.path.join(root, one_file))
+            one_hyper_param.LoadConfig(os.path.join(root_folder, one_file))
             param_dict[one_classifier] = one_hyper_param.GetParameterSetting()
     return param_dict
 

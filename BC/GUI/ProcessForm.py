@@ -7,6 +7,8 @@ import shutil
 import traceback
 
 from PyQt5.QtWidgets import *
+from sympy import hyper
+
 from BC.GUI.Process import Ui_Process
 from PyQt5.QtCore import *
 from BC.FeatureAnalysis.DataBalance import *
@@ -16,6 +18,9 @@ from BC.FeatureAnalysis.FeatureSelector import *
 from BC.FeatureAnalysis.Classifier import *
 from BC.FeatureAnalysis.Pipelines import PipelinesManager
 from BC.FeatureAnalysis.CrossValidation import *
+
+from BC.FeatureAnalysis.IndexDict import Index2Dict
+from BC.HyperParameterConfig.HyperParamManager import GetClassifierHyperParams
 
 
 class CVRun(QThread):
@@ -31,6 +36,7 @@ class CVRun(QThread):
         self.is_train_cutoff = is_train_cutoff
 
     def run(self):
+        self.signal.emit('Start Building')
         valid_features = RemoveSameFeatures().Run(self.process_connection.training_data_container).GetFeatureName()
         try:
             train_dc = FeatureSelector().SelectFeatureByName(
@@ -41,32 +47,44 @@ class CVRun(QThread):
             print(traceback.format_exc())
             raise Exception
 
-        for total, num, group in self.process_connection.pipeline_manager.RunWithCV(
-                train_dc,
-                self.store_folder):
-            text = "Cross Validation:\nGroup {}: {} / {}...".format(int(group) + 1, num, total)
-            self.signal.emit(text)
-        self.signal.emit("Cross Validation: Done.\n\n")
-
         if not self.process_connection.testing_data_container.IsEmpty():
             test_dc = FeatureSelector().SelectFeatureByName(
                 self.process_connection.testing_data_container, valid_features)
         else:
             test_dc = DataContainer()
-        for total, num in self.process_connection.pipeline_manager.RunWithoutCV(train_dc, test_dc,
-                                                                                self.store_folder,
-                                                                                self.is_train_cutoff):
-            self.signal.emit("Cross Validation: Done. \n\n Model Developing:\n{} / {}...".format(num, total))
-        self.signal.emit("Cross Validation: Done.\n\nModel Developing: Done")
+
+        for total, num in self.process_connection.pipeline_manager.Run(
+            train_dc, test_dc, self.store_folder, self.is_train_cutoff
+        ):
+            text = "Model Building: {} / {}".format(num, total)
+            self.signal.emit(text)
+        self.signal.emit("Model Building: Done")
+
+        # for total, num, group in self.process_connection.pipeline_manager.RunWithCV(
+        #         train_dc,
+        #         self.store_folder):
+        #     text = "Cross Validation:\nGroup {}: {} / {}...".format(int(group) + 1, num, total)
+        #     self.signal.emit(text)
+        # self.signal.emit("Cross Validation: Done.\n\n")
+        #
+        # if not self.process_connection.testing_data_container.IsEmpty():
+        #     test_dc = FeatureSelector().SelectFeatureByName(
+        #         self.process_connection.testing_data_container, valid_features)
+        # else:
+        #     test_dc = DataContainer()
+        # for total, num in self.process_connection.pipeline_manager.RunWithoutCV(train_dc, test_dc,
+        #                                                                         self.store_folder,
+        #                                                                         self.is_train_cutoff):
+        #     self.signal.emit("Cross Validation: Done. \n\n Model Developing:\n{} / {}...".format(num, total))
+        # self.signal.emit("Cross Validation: Done.\n\nModel Developing: Done")
 
         for total, num in self.process_connection.pipeline_manager.MergeCvResult(self.store_folder):
-            text = "Cross Validation: Done.\n\nModel Developing: Done\n\n" \
-                   "Merging Results:\n{} / {}...".format(num, total)
+            text = "Model Building: Done\n\nMerging Results:\n{} / {}...".format(num, total)
             self.signal.emit(text)
 
         self.process_connection.pipeline_manager.SaveAucDict(self.store_folder)
 
-        text = "Cross Validation: Done.\n\nModel Developing: Done\n\nMerging Results:\nDone.\n\nAll Done, please check the result in Visualization."
+        text = "Model Building: Done\n\nMerging Results:\nDone.\n\nAll Done, please check the result in Visualization."
         self.signal.emit(text)
         self.process_connection.SetStateAllButtonWhenRunning(True)
 
@@ -85,6 +103,7 @@ class ProcessConnection(QWidget, Ui_Process):
         self.__feature_number_list = []
         self.__classifiers = []
 
+        self.index2dict = Index2Dict()
         self.thread = CVRun()
 
         super(ProcessConnection, self).__init__(parent)
@@ -427,13 +446,13 @@ class ProcessConnection(QWidget, Ui_Process):
 
     def MakePipelines(self):
         if self.radioNoneBalance.isChecked():
-            data_balance = NoneBalance()
+            data_balance = self.index2dict.GetInstantByIndex(BALANCE_NONE)
         elif self.radioDownSampling.isChecked():
-            data_balance = DownSampling()
+            data_balance = self.index2dict.GetInstantByIndex(BALANCE_DOWN_SAMPLING)
         elif self.radioUpSampling.isChecked():
-            data_balance = UpSampling()
+            data_balance = self.index2dict.GetInstantByIndex(BALANCE_UP_SAMPLING)
         elif self.radioSmote.isChecked():
-            data_balance = SmoteSampling()
+            data_balance = self.index2dict.GetInstantByIndex(BALANCE_SMOTE)
         else:
             return False
 
@@ -471,35 +490,43 @@ class ProcessConnection(QWidget, Ui_Process):
 
         self.__classifiers = []
         if self.checkSVM.isChecked():
-            self.__classifiers.append(SVM())
+            self.__classifiers.append(self.index2dict.GetInstantByIndex(CLASSIFIER_SVM))
         if self.checkLDA.isChecked():
-            self.__classifiers.append(LDA())
+            self.__classifiers.append(self.index2dict.GetInstantByIndex(CLASSIFIER_LDA))
         if self.checkAE.isChecked():
-            self.__classifiers.append(AE())
+            self.__classifiers.append(self.index2dict.GetInstantByIndex(CLASSIFIER_AE))
         if self.checkRF.isChecked():
-            self.__classifiers.append(RandomForest())
+            self.__classifiers.append(self.index2dict.GetInstantByIndex(CLASSIFIER_RF))
         if self.checkLogisticRegression.isChecked():
-            self.__classifiers.append(LR())
+            self.__classifiers.append(self.index2dict.GetInstantByIndex(CLASSIFIER_LR))
         if self.checkLRLasso.isChecked():
-            self.__classifiers.append(LRLasso())
+            self.__classifiers.append(self.index2dict.GetInstantByIndex(CLASSIFIER_LRLasso))
         if self.checkAdaboost.isChecked():
-            self.__classifiers.append(AdaBoost())
+            self.__classifiers.append(self.index2dict.GetInstantByIndex(CLASSIFIER_AB))
         if self.checkDecisionTree.isChecked():
-            self.__classifiers.append(DecisionTree())
+            self.__classifiers.append(self.index2dict.GetInstantByIndex(CLASSIFIER_DT))
         if self.checkGaussianProcess.isChecked():
-            self.__classifiers.append(GaussianProcess())
+            self.__classifiers.append(self.index2dict.GetInstantByIndex(CLASSIFIER_GP))
         if self.checkNaiveBayes.isChecked():
-            self.__classifiers.append(NaiveBayes())
+            self.__classifiers.append(self.index2dict.GetInstantByIndex(CLASSIFIER_NB))
         if len(self.__classifiers) == 0:
             self.logger.error('Process classifier list length is zero.')
             return False
 
+        if self.checkHyperParameters.isChecked():
+            hyper_param = GetClassifierHyperParams()
+        else:
+            hyper_param = {}
+
         if self.radio5folder.isChecked():
             cv = CrossValidation5Fold
+            cv_part = 5
         elif self.radio10Folder.isChecked():
             cv = CrossValidation10Fold
+            cv_part = 10
         elif self.radioLOO.isChecked():
             cv = CrossValidationLOO
+            cv_part = 2
         else:
             return False
 
@@ -510,6 +537,8 @@ class ProcessConnection(QWidget, Ui_Process):
         self.pipeline_manager.feature_selector_num_list = self.__feature_number_list
         self.pipeline_manager.classifier_list = self.__classifiers
         self.pipeline_manager.cv = cv
+        self.pipeline_manager.cv_part = cv_part
+        self.pipeline_manager.hyper_param = hyper_param
         self.pipeline_manager.GenerateAucDict()
 
         return True
