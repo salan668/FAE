@@ -104,7 +104,7 @@ def GetClassifierHyperParams(root=None):
 
 if __name__ == '__main__':
     print(RandomSeed(r'D:\MyCode\FAE\FAE\BC\HyperParameters\RandomSeed.json').random_seed)
-    param_dict = GetClassifierHyperParams(r'D:\MyCode\FAE\FAE\BC\HyperParameters\Classifier')
+    param_dict = GetClassifierHyperParams(r'D:\MyCode\FAE\FAE')
     for key, item in param_dict.items():
         print(key)
         print(item)

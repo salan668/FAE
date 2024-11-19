@@ -78,9 +78,9 @@ class CVRun(QThread):
         #     self.signal.emit("Cross Validation: Done. \n\n Model Developing:\n{} / {}...".format(num, total))
         # self.signal.emit("Cross Validation: Done.\n\nModel Developing: Done")
 
-        for total, num in self.process_connection.pipeline_manager.MergeCvResult(self.store_folder):
-            text = "Model Building: Done\n\nMerging Results:\n{} / {}...".format(num, total)
-            self.signal.emit(text)
+        # for total, num in self.process_connection.pipeline_manager.MergeCvResult(self.store_folder):
+        #     text = "Model Building: Done\n\nMerging Results:\n{} / {}...".format(num, total)
+        #     self.signal.emit(text)
 
         self.process_connection.pipeline_manager.SaveAucDict(self.store_folder)
 

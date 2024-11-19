@@ -71,7 +71,7 @@ class Description:
     def _MetricDescription(self, fn, df):
         if '{}_{}'.format(TEST, NUMBER) in df.index:
             result_description = "We found that the model based on {:d} features can get the highest AUC on the " \
-                                 "validation data set. The AUC and the accuracy could achieve {:.3f} and {:.3f}, " \
+                                 "cross validation data set. The AUC and the accuracy could achieve {:.3f} and {:.3f}, " \
                                  "respectively. In this point, The AUC and the accuracy of the model achieve {:.3f} " \
                                  "and {:.3f} on testing data set. The clinical statistics in the diagonsis and " \
                                  "the selected features were shown in Table 1 and Table 2. The ROC curve was shown " \
