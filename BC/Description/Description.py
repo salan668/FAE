@@ -5,8 +5,6 @@ import csv
 import pandas as pd
 from reportlab.lib import colors
 
-from BC.FeatureAnalysis.FeaturePipeline import OnePipeline
-from BC.DataContainer.DataContainer import DataContainer
 from BC.Description.MyPDFDocument import MyPdfDocument
 from BC.FeatureAnalysis.Pipelines import PipelinesManager
 from BC.FeatureAnalysis.IndexDict import Index2Dict
@@ -194,16 +192,3 @@ class Description:
             "Welcome any co-operation and discussion.".format(VERSION))
         pdf.generate()
 
-def GenerateDescription():
-    training_data_container = DataContainer()
-    training_data_container.Load(r'..\..\Example\numeric_feature.csv')
-
-    one_pipeline = OnePipeline()
-    one_pipeline.LoadPipeline(r'C:\MyCode\FAEGitHub\FAE\Example\report_temp\NormUnit_Cos_ANOVA_5_SVM\pipeline_info.csv')
-
-    description = Description()
-    description.Run(training_data_container, one_pipeline, r'..\..\Example\report_temp', r'..\..\Example\report')
-
-
-if __name__ == '__main__':
-    GenerateDescription()

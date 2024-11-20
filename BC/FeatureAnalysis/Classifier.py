@@ -100,7 +100,7 @@ class Classifier:
             grid_search = GridSearchCV(estimator=self.model,
                                        param_grid=hyper_param,
                                        cv=cv_part, scoring="accuracy",
-                                       n_jobs=-1)
+                                       n_jobs=1)
             grid_search.fit(self._x, self._y)
             self.model = grid_search.best_estimator_
         else:
