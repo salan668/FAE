@@ -15,6 +15,7 @@ from BC.FeatureAnalysis.IndexDict import Index2Dict
 from BC.FeatureAnalysis.Normalizer import NormalizerNone
 from BC.FeatureAnalysis.DimensionReduction import DimensionReductionByPCC
 from BC.Func.Metric import EstimatePrediction
+from BC.HyperParamManager.HyperParamManager import GetClassifierHyperParams
 
 from BC.Utility.PathManager import MakeFolder
 from BC.Utility.Constants import *
@@ -26,15 +27,18 @@ class PipelinesManager(object):
     def __init__(self, balancer=None, normalizer_list=[NormalizerNone],
                  dimension_reduction_list=[DimensionReductionByPCC()], feature_selector_list=[],
                  feature_selector_num_list=[], classifier_list=[],
-                 cross_validation=None, is_hyper_parameter=False, logger=None):
+                 cv=None, hyper_param={}, random_seed={}, logger=None):
         self.balance = balancer
         self.normalizer_list = normalizer_list
         self.dimension_reduction_list = dimension_reduction_list
         self.feature_selector_list = feature_selector_list
         self.feature_selector_num_list = feature_selector_num_list
         self.classifier_list = classifier_list
-        self.cv = cross_validation
-        self.is_hyper_parameter = is_hyper_parameter
+
+        self.cv = cv
+        self.hyper_param = hyper_param
+        self.random_seed = random_seed
+
         self.__logger = logger
         self.version = VERSION
 
@@ -59,9 +63,9 @@ class PipelinesManager(object):
 
     def SaveAucDict(self, store_folder):
         with open(os.path.join(store_folder, 'auc_metric.pkl'), 'wb') as file:
-            pickle.dump(self.__auc_dict, file, pickle.HIGHEST_PROTOCOL)
+            pickle.dump(self.auc_dict, file, pickle.HIGHEST_PROTOCOL)
         with open(os.path.join(store_folder, 'auc_std_metric.pkl'), 'wb') as file:
-            pickle.dump(self.__auc_std_dict, file, pickle.HIGHEST_PROTOCOL)
+            pickle.dump(self.auc_std_dict, file, pickle.HIGHEST_PROTOCOL)
 
     def LoadAll(self, store_folder):
         return self.LoadAucDict(store_folder) and self.LoadPipelineInfo(store_folder)
@@ -116,9 +120,9 @@ class PipelinesManager(object):
             return False
 
         with open(auc_path, 'rb') as file:
-            self.__auc_dict = pickle.load(file)
+            self.auc_dict = pickle.load(file)
         with open(std_path, 'rb') as file:
-            self.__auc_std_dict = pickle.load(file)
+            self.auc_std_dict = pickle.load(file)
 
         return True
 
@@ -130,9 +134,9 @@ class PipelinesManager(object):
         info = pd.DataFrame({'Pred': pred, 'Label': label}, index=case_name)
         metric = EstimatePrediction(pred, label, key_name, cutoff=cutoff)
 
-        self.__auc_dict[key_name][norm_index, dr_index, fs_index, fn_index, cls_index] = \
+        self.auc_dict[key_name][norm_index, dr_index, fs_index, fn_index, cls_index] = \
             metric['{}_{}'.format(key_name, AUC)]
-        self.__auc_std_dict[key_name][norm_index, dr_index, fs_index, fn_index, cls_index] = \
+        self.auc_std_dict[key_name][norm_index, dr_index, fs_index, fn_index, cls_index] = \
             metric['{}_{}'.format(key_name, AUC_STD)]
 
         if store_root:
@@ -183,15 +187,15 @@ class PipelinesManager(object):
         except:
             matrix = np.zeros(())
 
-        self.__auc_dict = {CV_TRAIN: deepcopy(matrix), CV_VAL: deepcopy(matrix), TEST: deepcopy(matrix),
-                           TRAIN: deepcopy(matrix), BALANCE_TRAIN: deepcopy(matrix)}
-        self.__auc_std_dict = deepcopy(self.__auc_dict)
+        self.auc_dict = {CV_TRAIN: deepcopy(matrix), CV_VAL: deepcopy(matrix), TEST: deepcopy(matrix),
+                         TRAIN: deepcopy(matrix), BALANCE_TRAIN: deepcopy(matrix)}
+        self.auc_std_dict = deepcopy(self.auc_dict)
 
     def GetAuc(self):
-        return self.__auc_dict
+        return self.auc_dict
 
     def GetAucStd(self):
-        return self.__auc_std_dict
+        return self.auc_std_dict
 
     def GetStoreName(self, normalizer_name='', dimension_rediction_name='', feature_selector_name='',
                      feature_number='', classifer_name=''):
@@ -212,16 +216,16 @@ class PipelinesManager(object):
                os.path.isdir(fs_folder) and os.path.isdir(cls_folder))
         return normalizer_folder, dr_folder, fs_folder, cls_folder
 
-    def RunWithoutCV(self, train_container, test_container=DataContainer(), store_folder='', is_train_cutoff=False):
+    def Run(self, train_container, test_container=DataContainer(), store_folder='', is_train_cutoff=False):
         self.SavePipelineInfo(store_folder)
         num = 0
 
-        # TODO: Balance后面也可以变成循环处理:
         balance_train_container = self.balance.Run(train_container, store_folder)
 
         for norm_index, normalizer in enumerate(self.normalizer_list):
             norm_store_folder = MakeFolder(store_folder, normalizer.GetName())
-            norm_balance_train_container = normalizer.Run(balance_train_container, norm_store_folder, store_key=BALANCE_TRAIN)
+            norm_balance_train_container = normalizer.Run(balance_train_container, norm_store_folder,
+                                                          store_key=BALANCE_TRAIN)
             norm_train_container = normalizer.Transform(train_container, norm_store_folder, store_key=TRAIN)
             if not test_container.IsEmpty():
                 norm_test_container = normalizer.Transform(test_container, norm_store_folder, store_key=TEST)
@@ -244,7 +248,8 @@ class PipelinesManager(object):
                         if fs:
                             fs_store_folder = MakeFolder(dr_store_folder, '{}_{}'.format(fs.GetName(), fn))
                             fs.SetSelectedFeatureNumber(fn)
-                            fs_balance_train_container = fs.Run(dr_balance_train_container, fs_store_folder, BALANCE_TRAIN)
+                            fs_balance_train_container = fs.Run(dr_balance_train_container, fs_store_folder,
+                                                                BALANCE_TRAIN)
                             fs_train_container = fs.Transform(dr_train_container, fs_store_folder, TRAIN)
                             if not test_container.IsEmpty():
                                 fs_test_container = fs.Transform(dr_test_container, fs_store_folder, TEST)
@@ -265,186 +270,83 @@ class PipelinesManager(object):
                             matrics_index = (norm_index, dr_index, fs_index, fn_index, cls_index)
 
                             cls.SetDataContainer(fs_balance_train_container)
+                            cls.SetSeed(self.random_seed)
+                            if cls.GetName() in self.hyper_param.keys():
+                                cls.Fit(self.hyper_param[cls.GetName()], self.cv.cv_part)
+                            else:
+                                cls.Fit(cv_part=self.cv.cv_part)
+
+                            val_pred, val_label = cls.CvPredict(fs_train_container, self.cv.cv_part)
+
+                            # 根据best_param用所有数据重新训练
                             cls.Fit()
                             cls.Save(cls_store_folder)
 
-                            balance_train_pred = cls.Predict(fs_balance_train_container.GetArray())
-                            balance_train_label = fs_balance_train_container.GetLabel()
-                            balanced_metric = self.SaveOneResult(balance_train_pred, balance_train_label,
-                                               BALANCE_TRAIN, fs_balance_train_container.GetCaseName(),
-                                               matrics_index, model_name, store_folder, cls_store_folder)
+                            balanced_metric = self.SaveOneResult(cls.Predict(fs_balance_train_container.GetArray()),
+                                                                 fs_balance_train_container.GetLabel(),
+                                                                 BALANCE_TRAIN,
+                                                                 fs_balance_train_container.GetCaseName(),
+                                                                 matrics_index, model_name, store_folder,
+                                                                 cls_store_folder)
 
-                            train_data = fs_train_container.GetArray()
-                            train_label = fs_train_container.GetLabel()
-                            train_pred = cls.Predict(train_data)
                             if is_train_cutoff:
-                                self.SaveOneResult(train_pred, train_label,
-                                                   TRAIN, fs_train_container.GetCaseName(),
-                                                   matrics_index, model_name, store_folder, cls_store_folder,
-                                                   cutoff=float(balanced_metric[BALANCE_TRAIN + '_' + CUTOFF]))
+                                cutoff = float(balanced_metric[BALANCE_TRAIN + '_' + CUTOFF])
                             else:
-                                self.SaveOneResult(train_pred, train_label,
-                                                   TRAIN, fs_train_container.GetCaseName(),
-                                                   matrics_index, model_name, store_folder, cls_store_folder)
+                                cutoff = None
+
+                            self.SaveOneResult(cls.Predict(fs_train_container.GetArray()),
+                                               fs_train_container.GetLabel(),
+                                               TRAIN, fs_train_container.GetCaseName(),
+                                               matrics_index, model_name, store_folder, cls_store_folder,
+                                               cutoff=cutoff)
+                            self.SaveOneResult(val_pred, val_label,
+                                               CV_VAL, fs_train_container.GetCaseName(),
+                                               matrics_index, model_name, store_folder, cls_store_folder,
+                                               cutoff=cutoff)
 
                             if not test_container.IsEmpty():
-                                test_data = fs_test_container.GetArray()
-                                test_label = fs_test_container.GetLabel()
-                                test_pred = cls.Predict(test_data)
-                                if is_train_cutoff:
-                                    self.SaveOneResult(test_pred, test_label,
-                                                       TEST, fs_test_container.GetCaseName(),
-                                                       matrics_index, model_name, store_folder, cls_store_folder,
-                                                       cutoff=float(balanced_metric[BALANCE_TRAIN + '_' + CUTOFF]))
-                                else:
-                                    self.SaveOneResult(test_pred, test_label,
-                                                       TEST, fs_test_container.GetCaseName(),
-                                                       matrics_index, model_name, store_folder, cls_store_folder)
+                                self.SaveOneResult(cls.Predict(fs_test_container.GetArray()),
+                                                   fs_test_container.GetLabel(),
+                                                   TEST, fs_test_container.GetCaseName(),
+                                                   matrics_index, model_name, store_folder, cls_store_folder,
+                                                   cutoff=cutoff)
 
                             num += 1
+                            # print(self.total_num, num)
                             yield self.total_num, num
 
-        self.total_metric[BALANCE_TRAIN].to_csv(os.path.join(store_folder, '{}_results.csv'.format(BALANCE_TRAIN)))
-        self.total_metric[TRAIN].to_csv(os.path.join(store_folder, '{}_results.csv'.format(TRAIN)))
-        if not test_container.IsEmpty():
-            self.total_metric[TEST].to_csv(os.path.join(store_folder, '{}_results.csv'.format(TEST)))
-
-    def RunWithCV(self, train_container, store_folder=''):
-        for group, containers in enumerate(self.cv.Generate(train_container)):
-            cv_train_container, cv_val_container = containers
-
-            balance_cv_train_container = self.balance.Run(cv_train_container)
-            num = 0
-            for norm_index, normalizer in enumerate(self.normalizer_list):
-                norm_store_folder = MakeFolder(store_folder, normalizer.GetName())
-                norm_cv_train_container = normalizer.Run(balance_cv_train_container)
-                norm_cv_val_container = normalizer.Transform(cv_val_container)
-
-                for dr_index, dr in enumerate(self.dimension_reduction_list):
-                    dr_store_folder = MakeFolder(norm_store_folder, dr.GetName())
-                    if dr:
-                        dr_cv_train_container = dr.Run(norm_cv_train_container)
-                        dr_cv_val_container = dr.Transform(norm_cv_val_container)
-                    else:
-                        dr_cv_train_container = norm_cv_train_container
-                        dr_cv_val_container = norm_cv_val_container
-
-                    for fs_index, fs in enumerate(self.feature_selector_list):
-                        for fn_index, fn in enumerate(self.feature_selector_num_list):
-                            if fs:
-                                fs_store_folder = MakeFolder(dr_store_folder, '{}_{}'.format(fs.GetName(), fn))
-                                fs.SetSelectedFeatureNumber(fn)
-                                fs_cv_train_container = fs.Run(dr_cv_train_container)
-                                fs_cv_val_container = fs.Transform(dr_cv_val_container)
-                            else:
-                                fs_store_folder = dr_store_folder
-                                fs_cv_train_container = dr_cv_train_container
-                                fs_cv_val_container = dr_cv_val_container
-
-                            for cls_index, cls in enumerate(self.classifier_list):
-                                cls_store_folder = MakeFolder(fs_store_folder, cls.GetName())
-                                model_name = self.GetStoreName(normalizer.GetName(),
-                                                               dr.GetName(),
-                                                               fs.GetName(),
-                                                               str(fn),
-                                                               cls.GetName())
-
-                                cls.SetDataContainer(fs_cv_train_container)
-                                cls.Fit()
-
-                                cv_train_pred = cls.Predict(fs_cv_train_container.GetArray())
-                                cv_train_label = fs_cv_train_container.GetLabel()
-                                cv_train_info = pd.DataFrame({'Pred': cv_train_pred, 'Label': cv_train_label,
-                                                              'Group': [group for temp in cv_train_label]},
-                                                             index=fs_cv_train_container.GetCaseName())
-
-                                cv_val_pred = cls.Predict(fs_cv_val_container.GetArray())
-                                cv_val_label = fs_cv_val_container.GetLabel()
-                                cv_val_info = pd.DataFrame({'Pred': cv_val_pred, 'Label': cv_val_label,
-                                                            'Group': [group for temp in cv_val_label]},
-                                                           index=fs_cv_val_container.GetCaseName())
-
-                                if store_folder:
-                                    self._AddOneCvPrediction(os.path.join(
-                                        cls_store_folder,'{}_prediction.csv'.format(CV_TRAIN)), cv_train_info)
-                                    self._AddOneCvPrediction(os.path.join(
-                                        cls_store_folder, '{}_prediction.csv'.format(CV_VAL)), cv_val_info)
-
-                                num += 1
-                                yield self.total_num, num, group
-
-    def MergeCvResult(self, store_folder):
-        num = 0
-        for norm_index, normalizer in enumerate(self.normalizer_list):
-            norm_store_folder = MakeFolder(store_folder, normalizer.GetName())
-            for dr_index, dr in enumerate(self.dimension_reduction_list):
-                dr_store_folder = MakeFolder(norm_store_folder, dr.GetName())
-                for fs_index, fs in enumerate(self.feature_selector_list):
-                    for fn_index, fn in enumerate(self.feature_selector_num_list):
-                        fs_store_folder = MakeFolder(dr_store_folder, '{}_{}'.format(fs.GetName(), fn))
-                        for cls_index, cls in enumerate(self.classifier_list):
-                            cls_store_folder = MakeFolder(fs_store_folder, cls.GetName())
-                            model_name = self.GetStoreName(normalizer.GetName(),
-                                                           dr.GetName(),
-                                                           fs.GetName(),
-                                                           str(fn),
-                                                           cls.GetName())
-                            num += 1
-                            yield self.total_num, num
-
-                            # ADD CV Train
-                            cv_train_info = pd.read_csv(os.path.join(cls_store_folder,
-                                                                     '{}_prediction.csv'.format(CV_TRAIN)),
-                                                        index_col=0)
-                            cv_train_metric = EstimatePrediction(cv_train_info['Pred'].values, cv_train_info['Label'].values,
-                                                                 key_word=CV_TRAIN)
-                            self.__auc_dict[CV_TRAIN][norm_index, dr_index, fs_index, fn_index, cls_index] = \
-                                cv_train_metric['{}_{}'.format(CV_TRAIN, AUC)]
-                            self.__auc_std_dict[CV_TRAIN][norm_index, dr_index, fs_index, fn_index, cls_index] = \
-                                cv_train_metric['{}_{}'.format(CV_TRAIN, AUC_STD)]
-                            self._AddOneMetric(cv_train_metric, os.path.join(cls_store_folder, 'metrics.csv'))
-                            self._MergeOneMetric(cv_train_metric, CV_TRAIN, model_name)
-
-                            # ADD CV Validation
-                            cv_val_info = pd.read_csv(os.path.join(cls_store_folder,
-                                                                   '{}_prediction.csv'.format(CV_VAL)),
-                                                      index_col=0)
-                            cv_val_metric = EstimatePrediction(cv_val_info['Pred'].values, cv_val_info['Label'].values,
-                                                               key_word=CV_VAL)
-                            self.__auc_dict[CV_VAL][norm_index, dr_index, fs_index, fn_index, cls_index] = \
-                                cv_val_metric['{}_{}'.format(CV_VAL, AUC)]
-                            self.__auc_std_dict[CV_VAL][norm_index, dr_index, fs_index, fn_index, cls_index] = \
-                                cv_val_metric['{}_{}'.format(CV_VAL, AUC_STD)]
-                            self._AddOneMetric(cv_val_metric, os.path.join(cls_store_folder, 'metrics.csv'))
-                            self._MergeOneMetric(cv_val_metric, CV_VAL, model_name)
-
-        self.total_metric[CV_TRAIN].to_csv(os.path.join(store_folder, '{}_results.csv'.format(CV_TRAIN)))
-        self.total_metric[CV_VAL].to_csv(os.path.join(store_folder, '{}_results.csv'.format(CV_VAL)))
+                self.total_metric[BALANCE_TRAIN].to_csv(
+                    os.path.join(store_folder, '{}_results.csv'.format(BALANCE_TRAIN)))
+                self.total_metric[TRAIN].to_csv(os.path.join(store_folder, '{}_results.csv'.format(TRAIN)))
+                self.total_metric[CV_VAL].to_csv(os.path.join(store_folder, '{}_results.csv'.format(CV_VAL)))
+                if not test_container.IsEmpty():
+                    self.total_metric[TEST].to_csv(os.path.join(store_folder, '{}_results.csv'.format(TEST)))
 
 
 if __name__ == '__main__':
     manager = PipelinesManager()
 
-    index_dict = Index2Dict()
+    index_dict = Index2Dict(r'..\..')
 
     train = DataContainer()
     test = DataContainer()
-    train.Load(r'C:\Users\yangs\Desktop\train_numeric_feature.csv')
-    test.Load(r'C:\Users\yangs\Desktop\test_numeric_feature.csv')
+    train.Load(r'..\..\..\Demo\train_numeric_feature.csv')
+    test.Load(r'..\..\..\Demo\test_numeric_feature.csv')
 
-    faps = PipelinesManager(balancer=index_dict.GetInstantByIndex('UpSampling'),
+    hyper_param = GetClassifierHyperParams(r'D:\MyCode\FAE\FAE\BC\HyperParameters\Classifier')
+
+    faps = PipelinesManager(balancer=index_dict.GetInstantByIndex('SMOTE'),
                             normalizer_list=[index_dict.GetInstantByIndex('Mean')],
                             dimension_reduction_list=[index_dict.GetInstantByIndex('PCC')],
                             feature_selector_list=[index_dict.GetInstantByIndex('ANOVA')],
-                            feature_selector_num_list=list(np.arange(1, 18)),
+                            feature_selector_num_list=list(np.arange(1, 3)),
                             classifier_list=[index_dict.GetInstantByIndex('SVM')],
-                            cross_validation=index_dict.GetInstantByIndex('5-Fold'))
+                            cross_validation=index_dict.GetInstantByIndex('5-Fold'),
+                            hyper_param=hyper_param)
 
-    # for total, num in faps.RunWithoutCV(train, store_folder=r'..\..\Demo\db2-1'):
+    faps.Run(train, test, store_folder=r'..\..\..\Demo\DemoRun')
+    # for total, num in faps.Run(train, test, store_folder=r'..\..\..\Demo\DemoRun'):
     #     print(total, num)
-    for total, num, group in faps.RunWithCV(train, store_folder=r'..\..\Demo\db1'):
-        print(total, num, group)
-    for total, num in faps.MergeCvResult(store_folder=r'..\..\Demo\db2-1'):
-        print(total, num)
+
 
     print('Done')

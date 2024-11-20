@@ -1,4 +1,5 @@
 import re
+from traceback import format_exc
 
 from PyQt5.QtWidgets import *
 from PyQt5 import QtCore
@@ -54,7 +55,6 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.comboFeatureSelector.currentIndexChanged.connect(self.UpdateROC)
         self.comboClassifier.currentIndexChanged.connect(self.UpdateROC)
         self.spinBoxFeatureNumber.valueChanged.connect(self.UpdateROC)
-        self.checkROCCVTrain.stateChanged.connect(self.UpdateROC)
         self.checkROCCVValidation.stateChanged.connect(self.UpdateROC)
         self.checkROCTrain.stateChanged.connect(self.UpdateROC)
         self.checkROCTest.stateChanged.connect(self.UpdateROC)
@@ -68,7 +68,6 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.comboPlotClassifier.currentIndexChanged.connect(self.UpdatePlot)
         self.spinPlotFeatureNumber.valueChanged.connect(self.UpdatePlot)
 
-        self.checkPlotCVTrain.stateChanged.connect(self.UpdatePlot)
         self.checkPlotCVValidation.stateChanged.connect(self.UpdatePlot)
         self.checkPlotTrain.stateChanged.connect(self.UpdatePlot)
         self.checkPlotOneSE.stateChanged.connect(self.UpdatePlot)
@@ -135,11 +134,9 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.buttonClearResult.setEnabled(False)
         self.checkMaxFeatureNumber.setEnabled(False)
 
-        self.checkROCCVTrain.setChecked(False)
         self.checkROCCVValidation.setChecked(False)
         self.checkROCTrain.setChecked(False)
         self.checkROCTest.setChecked(False)
-        self.checkPlotCVTrain.setChecked(False)
         self.checkPlotCVValidation.setChecked(False)
         self.checkPlotTrain.setChecked(False)
         self.checkPlotOneSE.setChecked(False)
@@ -300,12 +297,10 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         cls_folder = self._fae.SplitFolder(pipeline_name, self._root_folder)[3]
 
         pred_list, label_list, name_list = [], [], []
-        if self.checkROCCVTrain.isChecked():
-            self.__AddOneCurveInRoc(pred_list, label_list, name_list, cls_folder, CV_TRAIN)
-        if self.checkROCCVValidation.isChecked():
-            self.__AddOneCurveInRoc(pred_list, label_list, name_list, cls_folder, CV_VAL)
         if self.checkROCTrain.isChecked():
             self.__AddOneCurveInRoc(pred_list, label_list, name_list, cls_folder, TRAIN)
+        if self.checkROCCVValidation.isChecked():
+            self.__AddOneCurveInRoc(pred_list, label_list, name_list, cls_folder, CV_VAL)
         if self.checkROCTest.isChecked():
             self.__AddOneCurveInRoc(pred_list, label_list, name_list, cls_folder, TEST)
 
@@ -391,24 +386,18 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         name_list = []
 
         if self.comboPlotY.currentText() == 'AUC':
-            if self.checkPlotCVTrain.isChecked():
-                temp = deepcopy(self._fae.GetAuc()[CV_TRAIN])
-                auc_std = deepcopy(self._fae.GetAucStd()[CV_TRAIN])
-                show_data.append(temp[tuple(index)].tolist())
-                show_data_std.append(auc_std[tuple(index)].tolist())
-                name_list.append(CV_TRAIN)
-            if self.checkPlotCVValidation.isChecked():
-                temp = deepcopy(self._fae.GetAuc()[CV_VAL])
-                auc_std = deepcopy(self._fae.GetAucStd()[CV_VAL])
-                show_data.append(temp[tuple(index)].tolist())
-                show_data_std.append(auc_std[tuple(index)].tolist())
-                name_list.append(CV_VAL)
             if self.checkPlotTrain.isChecked():
                 temp = deepcopy(self._fae.GetAuc()[TRAIN])
                 auc_std = deepcopy(self._fae.GetAucStd()[TRAIN])
                 show_data.append(temp[tuple(index)].tolist())
                 show_data_std.append(auc_std[tuple(index)].tolist())
                 name_list.append(TRAIN)
+            if self.checkPlotCVValidation.isChecked():
+                temp = deepcopy(self._fae.GetAuc()[CV_VAL])
+                auc_std = deepcopy(self._fae.GetAucStd()[CV_VAL])
+                show_data.append(temp[tuple(index)].tolist())
+                show_data_std.append(auc_std[tuple(index)].tolist())
+                name_list.append(CV_VAL)
             if self.checkPlotTest.isChecked():
                 temp = deepcopy(self._fae.GetAuc()[TEST])
                 auc_std = deepcopy(self._fae.GetAucStd()[TEST])
@@ -660,9 +649,9 @@ class VisualizationConnection(QWidget, Ui_Visualization):
             self.comboFeatureSelector.setCurrentText(current_fs)
             self.comboClassifier.setCurrentText(current_cls)
             self.spinBoxFeatureNumber.setValue(int(current_fn))
-            if not (self.checkROCTrain.isChecked() or self.checkROCCVTrain.isChecked() or
+            if not (self.checkROCTrain.isChecked()or
                     self.checkROCCVValidation.isChecked() or self.checkROCTrain.isChecked()):
-                self.checkROCCVTrain.setCheckState(True)
+                self.checkROCTrain.setCheckState(True)
                 self.checkROCCVValidation.setCheckState(True)
             self.UpdateROC()
 
@@ -673,7 +662,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
             self.comboPlotClassifier.setCurrentText(current_cls)
             self.comboPlotX.setCurrentText('Feature Number')
             if not (self.checkPlotTrain.isChecked() or
-                    self.checkPlotCVTrain.isChecked() or
+                    self.checkPlotTrain.isChecked() or
                     self.checkPlotCVValidation.isChecked()):
                 self.checkPlotCVValidation.setCheckState(True)
             self.UpdatePlot()
@@ -719,5 +708,5 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                 os.system("explorer.exe {:s}".format(os.path.normpath(store_folder)))
             except Exception as ex:
                 QMessageBox.about(self, 'Description Generate Error: ', ex.__str__())
-                print(eclog(self._filename))
-                eclog(self._filename).GetLogger().error('Description Generate Error:  ' + ex.__str__())
+                print(format_exc())
+                eclog(self._filename).GetLogger().error('Description Generate Error:  ' + format_exc())

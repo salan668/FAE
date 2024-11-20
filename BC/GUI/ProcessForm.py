@@ -7,6 +7,7 @@ import shutil
 import traceback
 
 from PyQt5.QtWidgets import *
+
 from BC.GUI.Process import Ui_Process
 from PyQt5.QtCore import *
 from BC.FeatureAnalysis.DataBalance import *
@@ -15,7 +16,10 @@ from BC.FeatureAnalysis.DimensionReduction import *
 from BC.FeatureAnalysis.FeatureSelector import *
 from BC.FeatureAnalysis.Classifier import *
 from BC.FeatureAnalysis.Pipelines import PipelinesManager
-from BC.FeatureAnalysis.CrossValidation import *
+from BC.FeatureAnalysis.CrossValidation import ArbitratyCrossValidation
+
+from BC.FeatureAnalysis.IndexDict import Index2Dict
+from BC.HyperParamManager.HyperParamManager import GetClassifierHyperParams
 
 
 class CVRun(QThread):
@@ -26,49 +30,40 @@ class CVRun(QThread):
         pass
 
     def SetProcessConnectionAndStore_folder(self, process_connection, store_folder, is_train_cutoff=False):
-        self._process_connection = process_connection
+        self.process_connection = process_connection
         self.store_folder = store_folder
         self.is_train_cutoff = is_train_cutoff
 
     def run(self):
-        valid_features = RemoveSameFeatures().Run(self._process_connection.training_data_container).GetFeatureName()
+        self.signal.emit('Start Building')
+        valid_features = RemoveSameFeatures().Run(self.process_connection.training_data_container).GetFeatureName()
         try:
             train_dc = FeatureSelector().SelectFeatureByName(
-                self._process_connection.training_data_container, valid_features
+                self.process_connection.training_data_container, valid_features
             )
         except Exception as e:
             print('Selecting valid features wrong')
             print(traceback.format_exc())
             raise Exception
 
-        for total, num, group in self._process_connection.fae.RunWithCV(
-                train_dc,
-                self.store_folder):
-            text = "Cross Validation:\nGroup {}: {} / {}...".format(int(group) + 1, num, total)
-            self.signal.emit(text)
-        self.signal.emit("Cross Validation: Done.\n\n")
-
-        if not self._process_connection.testing_data_container.IsEmpty():
+        if not self.process_connection.testing_data_container.IsEmpty():
             test_dc = FeatureSelector().SelectFeatureByName(
-                self._process_connection.testing_data_container, valid_features)
+                self.process_connection.testing_data_container, valid_features)
         else:
             test_dc = DataContainer()
-        for total, num in self._process_connection.fae.RunWithoutCV(train_dc, test_dc,
-                                                                    self.store_folder,
-                                                                    self.is_train_cutoff):
-            self.signal.emit("Cross Validation: Done. \n\n Model Developing:\n{} / {}...".format(num, total))
-        self.signal.emit("Cross Validation: Done.\n\nModel Developing: Done")
 
-        for total, num in self._process_connection.fae.MergeCvResult(self.store_folder):
-            text = "Cross Validation: Done.\n\nModel Developing: Done\n\n" \
-                   "Merging Results:\n{} / {}...".format(num, total)
+        for total, num in self.process_connection.pipeline_manager.Run(
+            train_dc, test_dc, self.store_folder, self.is_train_cutoff
+        ):
+            text = "Model Building: {} / {}".format(num, total)
             self.signal.emit(text)
+        self.signal.emit("Model Building: Done")
 
-        self._process_connection.fae.SaveAucDict(self.store_folder)
+        self.process_connection.pipeline_manager.SaveAucDict(self.store_folder)
 
-        text = "Cross Validation: Done.\n\nModel Developing: Done\n\nMerging Results:\nDone.\n\nAll Done, please check the result in Visualization."
+        text = "Model Building: Done\n\nMerging Results:\nDone.\n\nAll Done, please check the result in Visualization."
         self.signal.emit(text)
-        self._process_connection.SetStateAllButtonWhenRunning(True)
+        self.process_connection.SetStateAllButtonWhenRunning(True)
 
 
 class ProcessConnection(QWidget, Ui_Process):
@@ -78,13 +73,14 @@ class ProcessConnection(QWidget, Ui_Process):
         self.training_data_container = DataContainer()
         self.testing_data_container = DataContainer()
         self.logger = eclog(os.path.split(__file__)[-1]).GetLogger()
-        self.fae = PipelinesManager(logger=self.logger)
+        self.pipeline_manager = PipelinesManager(logger=self.logger)
         self.__normalizers = []
         self.__dimension_reducers = []
         self.__feature_selectors = []
         self.__feature_number_list = []
         self.__classifiers = []
 
+        self.index2dict = Index2Dict()
         self.thread = CVRun()
 
         super(ProcessConnection, self).__init__(parent)
@@ -133,9 +129,7 @@ class ProcessConnection(QWidget, Ui_Process):
         self.checkGaussianProcess.clicked.connect(self.UpdatePipelineText)
         self.checkClassifierAll.clicked.connect(self.SelectAllClassifier)
 
-        self.radio5folder.clicked.connect(self.UpdatePipelineText)
-        self.radio10Folder.clicked.connect(self.UpdatePipelineText)
-        self.radioLOO.clicked.connect(self.UpdatePipelineText)
+        self.spinCvFold.valueChanged.connect(self.UpdatePipelineText)
 
         self.buttonRun.clicked.connect(self.Run)
 
@@ -186,6 +180,7 @@ class ProcessConnection(QWidget, Ui_Process):
                 self.UpdateDataDescription()
                 self.logger.info('Open CSV file ' + file_name + ' succeed.')
                 self.spinBoxMaxFeatureNumber.setValue(len(self.training_data_container.GetFeatureName()))
+                self.spinCvFold.setMaximum(len(self.training_data_container.GetFeatureName()))
                 self.SetDefaultParam()
             except OSError as reason:
                 error_message = 'Error opening CSV file. The reason is ' + str(reason)
@@ -305,7 +300,7 @@ class ProcessConnection(QWidget, Ui_Process):
         self.checkGaussianProcess.setChecked(False)
         self.checkNaiveBayes.setChecked(False)
 
-        self.radio5folder.setChecked(True)
+        self.spinCvFold.setValue(5)
 
         self.UpdatePipelineText()
 
@@ -360,9 +355,7 @@ class ProcessConnection(QWidget, Ui_Process):
         self.checkClassifierAll.setEnabled(state)
         self.checkHyperParameters.setEnabled(state)
 
-        self.radio5folder.setEnabled(state)
-        self.radio10Folder.setEnabled(state)
-        self.radioLOO.setEnabled(state)
+        self.spinCvFold.setEnabled(state)
 
     def Run(self):
         if self.training_data_container.IsEmpty():
@@ -427,13 +420,13 @@ class ProcessConnection(QWidget, Ui_Process):
 
     def MakePipelines(self):
         if self.radioNoneBalance.isChecked():
-            data_balance = NoneBalance()
+            data_balance = self.index2dict.GetInstantByIndex(BALANCE_NONE)
         elif self.radioDownSampling.isChecked():
-            data_balance = DownSampling()
+            data_balance = self.index2dict.GetInstantByIndex(BALANCE_DOWN_SAMPLING)
         elif self.radioUpSampling.isChecked():
-            data_balance = UpSampling()
+            data_balance = self.index2dict.GetInstantByIndex(BALANCE_UP_SAMPLING)
         elif self.radioSmote.isChecked():
-            data_balance = SmoteSampling()
+            data_balance = self.index2dict.GetInstantByIndex(BALANCE_SMOTE)
         else:
             return False
 
@@ -471,46 +464,45 @@ class ProcessConnection(QWidget, Ui_Process):
 
         self.__classifiers = []
         if self.checkSVM.isChecked():
-            self.__classifiers.append(SVM())
+            self.__classifiers.append(self.index2dict.GetInstantByIndex(CLASSIFIER_SVM))
         if self.checkLDA.isChecked():
-            self.__classifiers.append(LDA())
+            self.__classifiers.append(self.index2dict.GetInstantByIndex(CLASSIFIER_LDA))
         if self.checkAE.isChecked():
-            self.__classifiers.append(AE())
+            self.__classifiers.append(self.index2dict.GetInstantByIndex(CLASSIFIER_AE))
         if self.checkRF.isChecked():
-            self.__classifiers.append(RandomForest())
+            self.__classifiers.append(self.index2dict.GetInstantByIndex(CLASSIFIER_RF))
         if self.checkLogisticRegression.isChecked():
-            self.__classifiers.append(LR())
+            self.__classifiers.append(self.index2dict.GetInstantByIndex(CLASSIFIER_LR))
         if self.checkLRLasso.isChecked():
-            self.__classifiers.append(LRLasso())
+            self.__classifiers.append(self.index2dict.GetInstantByIndex(CLASSIFIER_LRLasso))
         if self.checkAdaboost.isChecked():
-            self.__classifiers.append(AdaBoost())
+            self.__classifiers.append(self.index2dict.GetInstantByIndex(CLASSIFIER_AB))
         if self.checkDecisionTree.isChecked():
-            self.__classifiers.append(DecisionTree())
+            self.__classifiers.append(self.index2dict.GetInstantByIndex(CLASSIFIER_DT))
         if self.checkGaussianProcess.isChecked():
-            self.__classifiers.append(GaussianProcess())
+            self.__classifiers.append(self.index2dict.GetInstantByIndex(CLASSIFIER_GP))
         if self.checkNaiveBayes.isChecked():
-            self.__classifiers.append(NaiveBayes())
+            self.__classifiers.append(self.index2dict.GetInstantByIndex(CLASSIFIER_NB))
         if len(self.__classifiers) == 0:
             self.logger.error('Process classifier list length is zero.')
             return False
 
-        if self.radio5folder.isChecked():
-            cv = CrossValidation5Fold
-        elif self.radio10Folder.isChecked():
-            cv = CrossValidation10Fold
-        elif self.radioLOO.isChecked():
-            cv = CrossValidationLOO
+        if self.checkHyperParameters.isChecked():
+            hyper_param = GetClassifierHyperParams()
         else:
-            return False
+            hyper_param = {}
 
-        self.fae.balance = data_balance
-        self.fae.normalizer_list = self.__normalizers
-        self.fae.dimension_reduction_list = self.__dimension_reducers
-        self.fae.feature_selector_list = self.__feature_selectors
-        self.fae.feature_selector_num_list = self.__feature_number_list
-        self.fae.classifier_list = self.__classifiers
-        self.fae.cv = cv
-        self.fae.GenerateAucDict()
+        self.cv = ArbitratyCrossValidation(self.spinCvFold.value())
+
+        self.pipeline_manager.balance = data_balance
+        self.pipeline_manager.normalizer_list = self.__normalizers
+        self.pipeline_manager.dimension_reduction_list = self.__dimension_reducers
+        self.pipeline_manager.feature_selector_list = self.__feature_selectors
+        self.pipeline_manager.feature_selector_num_list = self.__feature_number_list
+        self.pipeline_manager.classifier_list = self.__classifiers
+        self.pipeline_manager.cv = self.cv
+        self.pipeline_manager.hyper_param = hyper_param
+        self.pipeline_manager.GenerateAucDict()
 
         return True
 
@@ -643,12 +635,7 @@ class ProcessConnection(QWidget, Ui_Process):
         self.listOnePipeline.addItem(classifier_text)
 
         cv_method = "Cross Validation:\n"
-        if self.radio5folder.isChecked():
-            cv_method += "5-Fold\n"
-        elif self.radio10Folder.isChecked():
-            cv_method += "10-fold\n"
-        elif self.radioLOO.isChecked():
-            cv_method += "LeaveOneOut\n"
+        cv_method += "{}-Fold\n".format(self.spinCvFold.value())
 
         self.listOnePipeline.addItem(cv_method)
 

@@ -1,8 +1,7 @@
-{"_commit": "A decision tree classifier.
-",
+{"_commit": "A decision tree classifier.",
 
 "setting":
 [
 {"criterion": ["gini", "entropy"], 
-"max_features": ["auto", "sqrt", "None"]}
+"max_features": ["auto", "sqrt"]}
 ]}
