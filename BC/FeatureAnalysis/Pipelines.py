@@ -15,7 +15,7 @@ from BC.FeatureAnalysis.IndexDict import Index2Dict
 from BC.FeatureAnalysis.Normalizer import NormalizerNone
 from BC.FeatureAnalysis.DimensionReduction import DimensionReductionByPCC
 from BC.Func.Metric import EstimatePrediction
-from BC.HyperParameterConfig.HyperParamManager import HyperParameterManager, GetClassifierHyperParams
+from BC.HyperParamManager.HyperParamManager import GetClassifierHyperParams
 
 from BC.Utility.PathManager import MakeFolder
 from BC.Utility.Constants import *

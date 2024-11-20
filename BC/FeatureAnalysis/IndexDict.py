@@ -6,7 +6,7 @@ from BC.FeatureAnalysis.Classifier import *
 from BC.FeatureAnalysis.CrossValidation import *
 
 from BC.Utility.Constants import *
-from BC.HyperParameterConfig.HyperParamManager import RandomSeed
+from BC.HyperParamManager.HyperParamManager import RandomSeed
 
 
 class Index2Dict:

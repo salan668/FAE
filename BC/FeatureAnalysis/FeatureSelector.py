@@ -12,7 +12,7 @@ from abc import ABCMeta, abstractmethod
 from sklearn.feature_selection import SelectKBest, f_classif, RFE
 from sklearn.utils import safe_mask
 
-from BC.HyperParameterConfig.HyperParamManager import HyperParameterManager
+from BC.HyperParamManager.HyperParamManager import HyperParameterManager
 
 
 def SaveSelectInfo(feature_name, store_path, is_merge=False):

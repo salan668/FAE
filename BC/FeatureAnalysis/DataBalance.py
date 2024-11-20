@@ -13,7 +13,6 @@ from imblearn.combine import SMOTETomek
 
 from BC.DataContainer.DataContainer import DataContainer
 from BC.Utility.Constants import BALANCE_UP_SAMPLING, BALANCE_DOWN_SAMPLING, BALANCE_SMOTE, BALANCE_SMOTE_TOMEK
-# from BC.HyperParameterConfig.HyperParamManager import RANDOM_SEED
 
 
 class DataBalance:

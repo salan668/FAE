@@ -19,7 +19,7 @@ from BC.FeatureAnalysis.Pipelines import PipelinesManager
 from BC.FeatureAnalysis.CrossValidation import ArbitratyCrossValidation
 
 from BC.FeatureAnalysis.IndexDict import Index2Dict
-from BC.HyperParameterConfig.HyperParamManager import GetClassifierHyperParams
+from BC.HyperParamManager.HyperParamManager import GetClassifierHyperParams
 
 
 class CVRun(QThread):
