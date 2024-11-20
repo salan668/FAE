@@ -74,9 +74,5 @@ class Index2Dict:
         elif name == LRLasso().GetName():
             return LRLasso(random_state=self.random_seed[CLASSIFIER_LRLasso])
 
-        elif name == CrossValidation5Fold.GetName():
-            return CrossValidation5Fold
-        elif name == CrossValidation10Fold.GetName():
-            return CrossValidation10Fold
-        elif name == CrossValidationLOO.GetName():
-            return CrossValidationLOO
+        elif 'fold' in name:
+            return ArbitratyCrossValidation(int(name.split('-')[0]))

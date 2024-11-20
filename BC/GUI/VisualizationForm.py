@@ -297,10 +297,10 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         cls_folder = self._fae.SplitFolder(pipeline_name, self._root_folder)[3]
 
         pred_list, label_list, name_list = [], [], []
-        if self.checkROCCVValidation.isChecked():
-            self.__AddOneCurveInRoc(pred_list, label_list, name_list, cls_folder, CV_VAL)
         if self.checkROCTrain.isChecked():
             self.__AddOneCurveInRoc(pred_list, label_list, name_list, cls_folder, TRAIN)
+        if self.checkROCCVValidation.isChecked():
+            self.__AddOneCurveInRoc(pred_list, label_list, name_list, cls_folder, CV_VAL)
         if self.checkROCTest.isChecked():
             self.__AddOneCurveInRoc(pred_list, label_list, name_list, cls_folder, TEST)
 

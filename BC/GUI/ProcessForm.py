@@ -7,7 +7,6 @@ import shutil
 import traceback
 
 from PyQt5.QtWidgets import *
-from sympy import hyper
 
 from BC.GUI.Process import Ui_Process
 from PyQt5.QtCore import *
@@ -17,7 +16,7 @@ from BC.FeatureAnalysis.DimensionReduction import *
 from BC.FeatureAnalysis.FeatureSelector import *
 from BC.FeatureAnalysis.Classifier import *
 from BC.FeatureAnalysis.Pipelines import PipelinesManager
-from BC.FeatureAnalysis.CrossValidation import *
+from BC.FeatureAnalysis.CrossValidation import ArbitratyCrossValidation
 
 from BC.FeatureAnalysis.IndexDict import Index2Dict
 from BC.HyperParameterConfig.HyperParamManager import GetClassifierHyperParams
@@ -59,28 +58,6 @@ class CVRun(QThread):
             text = "Model Building: {} / {}".format(num, total)
             self.signal.emit(text)
         self.signal.emit("Model Building: Done")
-
-        # for total, num, group in self.process_connection.pipeline_manager.RunWithCV(
-        #         train_dc,
-        #         self.store_folder):
-        #     text = "Cross Validation:\nGroup {}: {} / {}...".format(int(group) + 1, num, total)
-        #     self.signal.emit(text)
-        # self.signal.emit("Cross Validation: Done.\n\n")
-        #
-        # if not self.process_connection.testing_data_container.IsEmpty():
-        #     test_dc = FeatureSelector().SelectFeatureByName(
-        #         self.process_connection.testing_data_container, valid_features)
-        # else:
-        #     test_dc = DataContainer()
-        # for total, num in self.process_connection.pipeline_manager.RunWithoutCV(train_dc, test_dc,
-        #                                                                         self.store_folder,
-        #                                                                         self.is_train_cutoff):
-        #     self.signal.emit("Cross Validation: Done. \n\n Model Developing:\n{} / {}...".format(num, total))
-        # self.signal.emit("Cross Validation: Done.\n\nModel Developing: Done")
-
-        # for total, num in self.process_connection.pipeline_manager.MergeCvResult(self.store_folder):
-        #     text = "Model Building: Done\n\nMerging Results:\n{} / {}...".format(num, total)
-        #     self.signal.emit(text)
 
         self.process_connection.pipeline_manager.SaveAucDict(self.store_folder)
 
@@ -152,9 +129,7 @@ class ProcessConnection(QWidget, Ui_Process):
         self.checkGaussianProcess.clicked.connect(self.UpdatePipelineText)
         self.checkClassifierAll.clicked.connect(self.SelectAllClassifier)
 
-        self.radio5folder.clicked.connect(self.UpdatePipelineText)
-        self.radio10Folder.clicked.connect(self.UpdatePipelineText)
-        self.radioLOO.clicked.connect(self.UpdatePipelineText)
+        self.spinCvFold.valueChanged.connect(self.UpdatePipelineText)
 
         self.buttonRun.clicked.connect(self.Run)
 
@@ -205,6 +180,7 @@ class ProcessConnection(QWidget, Ui_Process):
                 self.UpdateDataDescription()
                 self.logger.info('Open CSV file ' + file_name + ' succeed.')
                 self.spinBoxMaxFeatureNumber.setValue(len(self.training_data_container.GetFeatureName()))
+                self.spinCvFold.setMaximum(len(self.training_data_container.GetFeatureName()))
                 self.SetDefaultParam()
             except OSError as reason:
                 error_message = 'Error opening CSV file. The reason is ' + str(reason)
@@ -324,7 +300,7 @@ class ProcessConnection(QWidget, Ui_Process):
         self.checkGaussianProcess.setChecked(False)
         self.checkNaiveBayes.setChecked(False)
 
-        self.radio5folder.setChecked(True)
+        self.spinCvFold.setValue(5)
 
         self.UpdatePipelineText()
 
@@ -379,9 +355,7 @@ class ProcessConnection(QWidget, Ui_Process):
         self.checkClassifierAll.setEnabled(state)
         self.checkHyperParameters.setEnabled(state)
 
-        self.radio5folder.setEnabled(state)
-        self.radio10Folder.setEnabled(state)
-        self.radioLOO.setEnabled(state)
+        self.spinCvFold.setEnabled(state)
 
     def Run(self):
         if self.training_data_container.IsEmpty():
@@ -518,17 +492,7 @@ class ProcessConnection(QWidget, Ui_Process):
         else:
             hyper_param = {}
 
-        if self.radio5folder.isChecked():
-            cv = CrossValidation5Fold
-            cv_part = 5
-        elif self.radio10Folder.isChecked():
-            cv = CrossValidation10Fold
-            cv_part = 10
-        elif self.radioLOO.isChecked():
-            cv = CrossValidationLOO
-            cv_part = 2
-        else:
-            return False
+        self.cv = ArbitratyCrossValidation(self.spinCvFold.value())
 
         self.pipeline_manager.balance = data_balance
         self.pipeline_manager.normalizer_list = self.__normalizers
@@ -536,8 +500,7 @@ class ProcessConnection(QWidget, Ui_Process):
         self.pipeline_manager.feature_selector_list = self.__feature_selectors
         self.pipeline_manager.feature_selector_num_list = self.__feature_number_list
         self.pipeline_manager.classifier_list = self.__classifiers
-        self.pipeline_manager.cv = cv
-        self.pipeline_manager.cv_part = cv_part
+        self.pipeline_manager.cv = self.cv
         self.pipeline_manager.hyper_param = hyper_param
         self.pipeline_manager.GenerateAucDict()
 
@@ -672,12 +635,7 @@ class ProcessConnection(QWidget, Ui_Process):
         self.listOnePipeline.addItem(classifier_text)
 
         cv_method = "Cross Validation:\n"
-        if self.radio5folder.isChecked():
-            cv_method += "5-Fold\n"
-        elif self.radio10Folder.isChecked():
-            cv_method += "10-fold\n"
-        elif self.radioLOO.isChecked():
-            cv_method += "LeaveOneOut\n"
+        cv_method += "{}-Fold\n".format(self.spinCvFold.value())
 
         self.listOnePipeline.addItem(cv_method)
 
