@@ -157,7 +157,7 @@ class DimensionReductionByPCC(DimensionReduction):
 
     def LoadInfo(self, store_folder):
         if os.path.isdir(store_folder):
-            pcc_path = os.path.join(store_folder, '_sort.csv'.format(self._name))
+            pcc_path = os.path.join(store_folder, '{}_sort.csv'.format(self._name))
         elif os.path.isfile(store_folder):
             pcc_path = store_folder
 

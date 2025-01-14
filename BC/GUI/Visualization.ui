@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1272</width>
-    <height>773</height>
+    <width>1323</width>
+    <height>781</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -95,21 +95,14 @@
            <item>
             <widget class="QCheckBox" name="checkMaxFeatureNumber">
              <property name="text">
-              <string>Estimate</string>
+              <string>Show Test</string>
              </property>
             </widget>
            </item>
            <item>
             <widget class="QLabel" name="label">
              <property name="text">
-              <string>model based</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="label_8">
-             <property name="text">
-              <string>on val by 1-SE</string>
+              <string>based on 1-SE</string>
              </property>
             </widget>
            </item>
@@ -159,9 +152,9 @@
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_3">
            <item>
-            <widget class="QCheckBox" name="checkROCCVTrain">
+            <widget class="QCheckBox" name="checkROCTrain">
              <property name="text">
-              <string>CV Training</string>
+              <string>Training</string>
              </property>
             </widget>
            </item>
@@ -169,13 +162,6 @@
             <widget class="QCheckBox" name="checkROCCVValidation">
              <property name="text">
               <string>Validation</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QCheckBox" name="checkROCTrain">
-             <property name="text">
-              <string>Training</string>
              </property>
             </widget>
            </item>
@@ -234,9 +220,9 @@
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_4">
            <item>
-            <widget class="QCheckBox" name="checkPlotCVTrain">
+            <widget class="QCheckBox" name="checkPlotTrain">
              <property name="text">
-              <string>CV Training</string>
+              <string>Training</string>
              </property>
             </widget>
            </item>
@@ -244,13 +230,6 @@
             <widget class="QCheckBox" name="checkPlotCVValidation">
              <property name="text">
               <string>Validation</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QCheckBox" name="checkPlotTrain">
-             <property name="text">
-              <string>Training</string>
              </property>
             </widget>
            </item>
@@ -271,16 +250,24 @@
           </layout>
          </item>
          <item>
-          <layout class="QGridLayout" name="gridLayout_2">
-           <item row="0" column="0">
-            <widget class="QLabel" name="label_5">
-             <property name="text">
-              <string>Y-Label</string>
-             </property>
-            </widget>
+          <layout class="QGridLayout" name="gridLayout_2" columnminimumwidth="0,0,0,0,0,0,0,0,0">
+           <item row="1" column="6" colspan="2">
+            <widget class="QComboBox" name="comboPlotClassifier"/>
+           </item>
+           <item row="1" column="8">
+            <widget class="QSpinBox" name="spinPlotFeatureNumber"/>
            </item>
            <item row="0" column="1" colspan="2">
             <widget class="QComboBox" name="comboPlotY"/>
+           </item>
+           <item row="1" column="2" colspan="2">
+            <widget class="QComboBox" name="comboPlotDimensionReduction"/>
+           </item>
+           <item row="1" column="4" colspan="2">
+            <widget class="QComboBox" name="comboPlotFeatureSelector"/>
+           </item>
+           <item row="1" column="0" colspan="2">
+            <widget class="QComboBox" name="comboPlotNormalizer"/>
            </item>
            <item row="0" column="3" colspan="2">
             <widget class="QLabel" name="label_6">
@@ -289,23 +276,15 @@
              </property>
             </widget>
            </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_5">
+             <property name="text">
+              <string>Y-Label</string>
+             </property>
+            </widget>
+           </item>
            <item row="0" column="5" colspan="2">
             <widget class="QComboBox" name="comboPlotX"/>
-           </item>
-           <item row="1" column="0" colspan="2">
-            <widget class="QComboBox" name="comboPlotNormalizer"/>
-           </item>
-           <item row="1" column="2" colspan="2">
-            <widget class="QComboBox" name="comboPlotDimensionReduction"/>
-           </item>
-           <item row="1" column="4" colspan="2">
-            <widget class="QComboBox" name="comboPlotFeatureSelector"/>
-           </item>
-           <item row="1" column="6" colspan="2">
-            <widget class="QComboBox" name="comboPlotClassifier"/>
-           </item>
-           <item row="1" column="8">
-            <widget class="QSpinBox" name="spinPlotFeatureNumber"/>
            </item>
           </layout>
          </item>

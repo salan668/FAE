@@ -122,7 +122,7 @@ class VisualizationForm(QWidget, Ui_Visualization):
                                         "loaded.")
             except Exception as ex:
                 QMessageBox.about(self, "Load Error", ex.__str__())
-                mylog.error('Load Error, The reason is ' + traceback.format_exception(ex))
+                mylog.error('Load Error, The reason is ' + traceback.format_exc())
                 self.ClearAll()
                 raise ex
 

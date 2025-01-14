@@ -8,12 +8,14 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 
 from HomeUI.HomePage import Ui_HomePage
-from Feature.GUI import FeatureMergeForm, FeatureExtractionForm
-from BC.GUI import PrepareConnection, ProcessConnection, VisualizationConnection
-from VersionConstant import VERSION
+from Feature.GUI import FeatureMergeForm, FeatureExtractionForm, IccEstimationForm
+from BC.GUI import PrepareConnection, ProcessConnection, VisualizationConnection, ModelPredictionForm
+from HomeUI.VersionConstant import VERSION
 
 from SA.GUI.ProcessForm import ProcessForm
 from SA.GUI.VisualizationForm import VisualizationForm
+
+from Utility.EcLog import mylog
 
 from Plugin.PluginManager import PluginManager
 
@@ -22,13 +24,17 @@ class HomePageForm(QDialog, Ui_HomePage):
         super(HomePageForm, self).__init__(parent)
         self.setupUi(self)
 
+        self.eclog = mylog
+
         self.labelTitle.setText("FeAture Explorer V. {}".format(VERSION))
 
         self.feature_extraction = FeatureExtractionForm()
         self.feature_merge = FeatureMergeForm()
+        self.feature_icc_estimation = IccEstimationForm(self.eclog)
         self.bc_preprocessing = PrepareConnection()
         self.bc_model_exploration = ProcessConnection()
         self.bc_visualization = VisualizationConnection()
+        self.bc_prediction = ModelPredictionForm()
         self.sa_model_exploration = ProcessForm()
         self.sa_visualization = VisualizationForm()
 
@@ -36,6 +42,8 @@ class HomePageForm(QDialog, Ui_HomePage):
         self.feature_extraction.close_signal.connect(self.CloseFeatureExtraction)
         self.buttonFeatureMerge.clicked.connect(self.OpenFeatureMerge)
         self.feature_merge.close_signal.connect(self.CloseFeatureMerge)
+        self.buttonIccEstimation.clicked.connect(self.OpenIccEstimation)
+        self.feature_icc_estimation.close_signal.connect(self.CloseIccEstimation)
 
         self.buttonBcFeaturePreprocessing.clicked.connect(self.OpenBcPreprocessing)
         self.bc_preprocessing.close_signal.connect(self.CloseBcPreprocessing)
@@ -43,6 +51,8 @@ class HomePageForm(QDialog, Ui_HomePage):
         self.bc_model_exploration.close_signal.connect(self.CloseBcModelExploration)
         self.buttonBcVisulization.clicked.connect(self.OpenBcVisualization)
         self.bc_visualization.close_signal.connect(self.CloseBcVisualization)
+        self.buttonBcPrediction.clicked.connect(self.RunBcPrediction)
+        self.bc_prediction.close_signal.connect(self.CloseBcPrediction)
 
         self.buttonSaModelExploration.clicked.connect(self.OpenSaModelExploration)
         self.sa_model_exploration.close_signal.connect(self.CloseSaModelExploration)
@@ -70,6 +80,13 @@ class HomePageForm(QDialog, Ui_HomePage):
         if is_close:
             self.show()
 
+    def OpenIccEstimation(self):
+        self.feature_icc_estimation.show()
+        self.hide()
+    def CloseIccEstimation(self, is_close):
+        if is_close:
+            self.show()
+
     def OpenBcPreprocessing(self):
         self.bc_preprocessing.show()
         self.hide()
@@ -88,6 +105,13 @@ class HomePageForm(QDialog, Ui_HomePage):
         self.bc_visualization.show()
         self.hide()
     def CloseBcVisualization(self, is_close):
+        if is_close:
+            self.show()
+
+    def RunBcPrediction(self):
+        self.bc_prediction.show()
+        self.hide()
+    def CloseBcPrediction(self, is_close):
         if is_close:
             self.show()
 

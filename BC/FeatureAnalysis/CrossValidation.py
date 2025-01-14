@@ -56,6 +56,20 @@ CrossValidationLOO = BaseCrossValidation(n_split='all',
                                                      "training data set. The hyper-parameters were set according to "
                                                      "the model performance on the validation data set. ")
 
+class ArbitratyCrossValidation():
+    def __init__(self, cv_part=5):
+        self.cv_part = cv_part
+        self.description = ("To determine the hyper-parameter (e.g. the number of features) "\
+                           "of model, we applied cross validation with {}-fold on the "\
+                           "training data set. The hyper-parameters were set according to "
+                            "the model performance on the validation data set. ".format(cv_part))
+
+    def GetDescription(self):
+        return self.description
+
+    def GetName(self):
+        return '{}-fold'.format(self.cv_part)
+
 if __name__ == '__main__':
     import numpy as np
 

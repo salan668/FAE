@@ -111,16 +111,17 @@ class DataContainer:
         self.__init__()
         try:
             self._df = pd.read_csv(file_path, header=0, index_col=0).sort_index().sort_index(axis=1)
+            self._df.index = [str(one) for one in self._df.index]
+            self._df = self._df.sort_index().sort_index(axis=1)
             if is_update:
-                self.UpdateDataByFrame()
-            return True
+                return self.UpdateDataByFrame()
         except Exception as e:
             print('Check the CSV file path: {}: \n{}'.format(file_path, e.__str__()))
 
         try:
             self._df = LoadCSVwithChineseInPandas(file_path, header=0, index_col=0)
-            self.UpdateDataByFrame()
-            return True
+            if is_update:
+                return self.UpdateDataByFrame()
         except Exception as e:
             print('Check the CSV file path: {}: \n{}'.format(file_path, e.__str__()))
 
@@ -138,6 +139,8 @@ class DataContainer:
         self.__init__()
         try:
             self._df = pd.read_csv(file_path, header=0, index_col=0).sort_index().sort_index(axis=1)
+            self._df.index = [str(one) for one in self._df.index]
+            self._df = self._df.sort_index().sort_index(axis=1)
             if is_update:
                 self.UpdateDataByFrame(emu_label=True)
             return True
@@ -169,7 +172,6 @@ class DataContainer:
     def UpdateDataByFrame(self, emu_label=False):
         self._case_name = [str(one) for one in self._df.index]
         self._feature_name = [str(one) for one in self._df.columns]
-        label_name = ''
         if 'label' in self._feature_name:
             label_name = 'label'
         elif 'Label' in self._feature_name:

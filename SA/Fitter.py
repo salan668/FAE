@@ -6,7 +6,6 @@ All rights reserved.
 import os
 import pickle
 import random
-from abc import abstractmethod
 from lifelines import CoxPHFitter, AalenAdditiveFitter
 
 from lifelines.utils.printer import Printer
@@ -14,6 +13,8 @@ from lifelines import utils
 
 from SA.Utility import mylog
 from SA.DataContainer import DataContainer
+
+random.seed(0)
 
 
 class BaseFitter(object):
@@ -48,9 +49,8 @@ class BaseFitter(object):
 
 
 class CoxPH(BaseFitter):
-    def __init__(self):
-        random.seed(0)
-        super(CoxPH, self).__init__(CoxPHFitter(), self.__class__.__name__)
+    def __init__(self, penalizer=0.1):
+        super(CoxPH, self).__init__(CoxPHFitter(penalizer=penalizer), self.__class__.__name__)
 
     def Fit(self, dc: DataContainer):
         self.fitter.fit(dc.df, duration_col=dc.duration_name, event_col=dc.event_name)

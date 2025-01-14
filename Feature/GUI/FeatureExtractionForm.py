@@ -102,7 +102,10 @@ class FeatureExtractThread(QThread):
                     image = sitk.ReadImage(str(self.image_paths.loc[case_name, image_name]))
 
                     if self.only_matrix:
-                        assert (image.GetSize() == roi_image.GetSize())
+                        if image.GetSize() != roi_image.GetSize():
+                            raise ValueError('{}: the image size is not consistent to the ROI size\n'.format(case_name))
+
+                        # assert (image.GetSize() == roi_image.GetSize())
                         roi_image.CopyInformation(image)
 
                     for key, value in self.extractor.execute(image, roi_image).items():

@@ -50,7 +50,7 @@
           </font>
          </property>
          <property name="text">
-          <string>Feature Extraction</string>
+          <string>Feature Process</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
@@ -109,6 +109,13 @@
            </property>
           </widget>
          </item>
+         <item>
+          <widget class="QPushButton" name="buttonIccEstimation">
+           <property name="text">
+            <string>ICC Estimation</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
        <item row="1" column="1">
@@ -131,6 +138,13 @@
           <widget class="QPushButton" name="buttonBcVisulization">
            <property name="text">
             <string>Visulization</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="buttonBcPrediction">
+           <property name="text">
+            <string>External Prediction</string>
            </property>
           </widget>
          </item>

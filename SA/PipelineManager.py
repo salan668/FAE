@@ -5,6 +5,7 @@ All rights reserved.
 """
 import os
 import csv
+
 import numpy as np
 import pandas as pd
 
@@ -13,11 +14,12 @@ from SA.CrossValidation import CrossValidation
 from SA.Utility import MakeFolder, Metric, MakeFile
 from SA.Utility.Constant import *
 from SA.Utility.Index2Dict import Index2Dict
-from VersionConstant import *
+from HomeUI.VersionConstant import *
+from Utility.EcLog import eclog
 
 
 class PipelineManager(object):
-    def __init__(self):
+    def __init__(self, eclog=eclog):
         self.normalizers = None
         self.reducers = None
         self.feature_selectors = None
@@ -25,6 +27,7 @@ class PipelineManager(object):
         self.fitters = None
         self.cv = None
         self.total_num = 0
+        self.mylog = eclog
 
         self.metric = Metric()
         self.result = {}
@@ -125,7 +128,7 @@ class PipelineManager(object):
                 elif row[0] == FITTER:
                     self.fitters = [index_2_dict.GetInstantByIndex(index) for index in row[1:]]
                 else:
-                    mylog.error('Unknow key name {} when loading pipeline info {}'.format(row[0], info_path))
+                    self.mylog.error('Unknow key name {} when loading pipeline info {}'.format(row[0], info_path))
                     raise KeyError
         return True
 
@@ -136,7 +139,7 @@ class PipelineManager(object):
 
     def LoadResult(self, store_folder: str):
         if not os.path.isdir(store_folder):
-            mylog.error('Wrong folder path when loading Result of PipelineManager')
+            self.mylog.error('Wrong folder path when loading Result of PipelineManager')
             raise OSError
 
         self.LoadOneDf(store_folder, CV_TRAIN)
@@ -154,7 +157,7 @@ class PipelineManager(object):
                          len(self.feature_numbers)
 
         if len(self.interp_times) == 0:
-            mylog.error('The interp time does not initialized by CV.')
+            self.mylog.error('The interp time does not initialized by CV.')
             raise ValueError
 
         if not os.path.isdir(store_folder):
@@ -181,10 +184,15 @@ class PipelineManager(object):
                         fs_store_folder = MakeFolder(reduce_store_folder, '{}_{}'.format(
                             feature_selector.name, feature_number))
 
-                        feature_selector.selected_number = feature_number
+                        if feature_number >= len(dr_train_dc.GetFeatureName()):
+                            feature_selector.selected_number = len(dr_train_dc.GetFeatureName())
+                        else:
+                            feature_selector.selected_number = feature_number
+
                         feature_selector.Fit(dr_train_dc)
                         fs_train_dc = feature_selector.Transform(dr_train_dc, store_folder=fs_store_folder,
                                                                  store_key=TRAIN)
+
                         if test_dc is not None and not test_dc.IsEmpty():
                             fs_test_dc = feature_selector.Transform(dr_test_dc, store_folder=fs_store_folder,
                                                                     store_key=TEST)
@@ -257,10 +265,14 @@ class PipelineManager(object):
                             fs_store_folder = MakeFolder(reduce_store_folder, '{}_{}'.format(
                                 feature_selector.name, feature_number))
 
-                            feature_selector.selected_number = feature_number
-                            feature_selector.Fit(dr_cv_train_dc)
-                            fs_cv_train_dc = feature_selector.Transform(dr_cv_train_dc)
-                            fs_cv_val_dc = feature_selector.Transform(dr_cv_val_dc)
+                            if feature_number >= len(dr_cv_train_dc.GetFeatureName()):
+                                fs_cv_train_dc = dr_cv_train_dc
+                                fs_cv_val_dc = dr_cv_val_dc
+                            else:
+                                feature_selector.selected_number = feature_number
+                                feature_selector.Fit(dr_cv_train_dc)
+                                fs_cv_train_dc = feature_selector.Transform(dr_cv_train_dc)
+                                fs_cv_val_dc = feature_selector.Transform(dr_cv_val_dc)
 
                             for fitter_index, fitter in enumerate(self.fitters):
                                 fitter_store_folder = MakeFolder(fs_store_folder, fitter.name)
@@ -317,7 +329,6 @@ class PipelineManager(object):
 if __name__ == '__main__':
     from SA.Normalizer import NormalizerMinMax, NormalizerZscore, NormalizerMean
     from SA.DimensionReducer import DimensionReducerPcc
-    from SA.DataContainer import DataContainer
     from SA.FeatureSelector import FeatureSelectorCluster, FeatureSelectorAll
     from SA.Fitter import CoxPH
 

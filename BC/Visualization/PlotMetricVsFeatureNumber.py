@@ -48,8 +48,9 @@ def DrawCurve(x, y_list, std_list=[], xlabel='', ylabel='', title='', name_list=
         best_auc_feature_number = None
 
         for index in range(len(y_list)):
-            name, y, cur_std = name_list[index], y_list[index], std_list[index]
+            name, y = name_list[index], y_list[index],
             if name == LegendRename([CV_VAL])[0]:
+                cur_std = std_list[index]
                 axes.errorbar(x, y, yerr=cur_std, fmt='-o',
                               color=color_list[index], elinewidth=1, capsize=4,
                               alpha=1, label=name, marker='.')
