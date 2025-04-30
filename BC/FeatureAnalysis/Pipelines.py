@@ -212,8 +212,10 @@ class PipelinesManager(object):
         fs_folder = os.path.join(dr_folder, '{}_{}'.format(fs, fn))
         cls_folder = os.path.join(fs_folder, cls)
 
-        assert(os.path.isdir(store_root) and os.path.isdir(normalizer_folder) and os.path.isdir(dr_folder) and
-               os.path.isdir(fs_folder) and os.path.isdir(cls_folder))
+        assert (os.path.isdir(store_root) and os.path.isdir(normalizer_folder) and os.path.isdir(dr_folder) and
+                os.path.isdir(fs_folder) and os.path.isdir(cls_folder)), \
+            f"One or more directories do not exist: store_root={store_root}, normalizer_folder={normalizer_folder}, dr_folder={dr_folder}, fs_folder={fs_folder}, cls_folder={cls_folder}"
+
         return normalizer_folder, dr_folder, fs_folder, cls_folder
 
     def Run(self, train_container, test_container=DataContainer(), store_folder='', is_train_cutoff=False):
