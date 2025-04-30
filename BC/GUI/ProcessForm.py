@@ -180,7 +180,7 @@ class ProcessConnection(QWidget, Ui_Process):
                 self.UpdateDataDescription()
                 self.logger.info('Open CSV file ' + file_name + ' succeed.')
                 self.spinBoxMaxFeatureNumber.setValue(len(self.training_data_container.GetFeatureName()))
-                self.spinCvFold.setMaximum(len(self.training_data_container.GetFeatureName()))
+                self.spinCvFold.setMaximum(len(self.training_data_container.GetCaseName()))
                 self.SetDefaultParam()
             except OSError as reason:
                 error_message = 'Error opening CSV file. The reason is ' + str(reason)
