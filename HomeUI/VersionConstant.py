@@ -7,7 +7,7 @@ All rights reserved.
 # Version Key
 MAJOR = 0
 MINOR = 6
-PATCH = 0
+PATCH = 1
 VERSION_NAME = 'Version'
 VERSION = '{}.{}.{}'.format(MAJOR, MINOR, PATCH)
-ACCEPT_VERSION = ['0.6.0']
+ACCEPT_VERSION = ['0.6.0', '0.6.1']
