@@ -147,3 +147,9 @@ Feature/GUI/IccEstimation.py
 BC/GUI/Visualization.py
 BC/GUI/Prepare.py
 BC/GUI/Process.py
+Feature/GUI/FeatureMerge.py
+Feature/GUI/FeatureExtraction.py
+HomeUI/HomePage.py
+SA/GUI/Prepare.py
+SA/GUI/Process.py
+SA/GUI/Visualization.py
