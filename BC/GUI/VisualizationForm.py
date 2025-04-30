@@ -1,4 +1,5 @@
 import re
+import traceback
 from traceback import format_exc
 
 from PyQt5.QtWidgets import *
@@ -202,20 +203,22 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                 self.canvasROC.getFigure().savefig(os.path.join(store_folder, 'ROC.eps'), dpi=1200)
                 self.canvasROC.getFigure().savefig(os.path.join(store_folder, 'ROC.jpg'), dpi=300)
             except Exception as e:
-                QMessageBox.about(self, 'Save Figure Failed', 'There is no ROC figure.\n' + e.__str__())
+                QMessageBox.about(self, 'Save Figure Failed', 'Saving ROC error: .\n' + traceback.format_exc())
+                traceback.format_exc()
 
             try:
                 self.canvasPlot.getFigure().savefig(os.path.join(store_folder, 'Compare.eps'), dpi=1200)
                 self.canvasPlot.getFigure().savefig(os.path.join(store_folder, 'Compare.jpg'), dpi=300)
             except Exception as e:
-                QMessageBox.about(self, 'Save Figure Failed', 'There is no AUC comparison figure.\n' + e.__str__())
+                QMessageBox.about(self, 'Save Figure Failed', 'Saving Plot error:  \n' + traceback.format_exc())
+                traceback.format_exc()
 
             try:
                 self.canvasFeature.getFigure().savefig(os.path.join(store_folder, 'FeatureWeights.eps'), dpi=1200)
                 self.canvasFeature.getFigure().savefig(os.path.join(store_folder, 'FeatureWeights.jpg'), dpi=300)
             except Exception as e:
-                QMessageBox.about(self, 'Save Figure Failed',
-                                  'There is no Feature Contribution figure.\n' + e.__str__())
+                QMessageBox.about(self, 'Save Figure Failed', 'Saving Contribution error:  \n' + traceback.format_exc())
+                traceback.format_exc()
 
     def InitialUi(self):
         # Update ROC canvers
