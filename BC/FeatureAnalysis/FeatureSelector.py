@@ -344,8 +344,7 @@ class FeatureSelectByRelief(FeatureSelectByAnalysis):
         # Start Iteration
         for iter_num in range(int(self.__iter_radio * n_samples)):
             # initialization
-            nearHit = list()
-            nearMiss = list()
+            nearHit, nearMiss = np.array([]), np.array([])
             distance_sort = list()
 
             # random extract a sample
@@ -368,13 +367,11 @@ class FeatureSelectByRelief(FeatureSelectByAnalysis):
                     distance_sort.append([distance[index], index, label[index]])
             distance_sort.sort(key=lambda x: x[0])
             for index in range(n_samples):
-                if nearHit == [] and distance_sort[index][2] == label[index_i]:
-                    # nearHit = distance_sort[index][1];
+                if nearHit.size == 0 and distance_sort[index][2] == label[index_i]:
                     nearHit = data[distance_sort[index][1]]
-                elif nearMiss == [] and distance_sort[index][2] != label[index_i]:
-                    # nearMiss = distance_sort[index][1]
+                elif nearMiss.size == 0 and distance_sort[index][2] != label[index_i]:
                     nearMiss = data[distance_sort[index][1]]
-                elif nearHit != [] and nearMiss != []:
+                elif nearHit.size > 0 and nearMiss.size > 0:
                     break
                 else:
                     continue
