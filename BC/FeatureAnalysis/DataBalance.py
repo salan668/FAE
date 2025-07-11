@@ -12,7 +12,7 @@ from imblearn.over_sampling import RandomOverSampler, SMOTE
 from imblearn.combine import SMOTETomek
 
 from BC.DataContainer.DataContainer import DataContainer
-from BC.Utility.Constants import BALANCE_UP_SAMPLING, BALANCE_DOWN_SAMPLING, BALANCE_SMOTE, BALANCE_SMOTE_TOMEK
+from BC.Utility.Constants import BALANCE_UP_SAMPLING, BALANCE_DOWN_SAMPLING, BALANCE_SMOTE, BALANCE_SMOTE_TOMEK, BALANCE_NONE
 
 
 class DataBalance:
@@ -42,7 +42,7 @@ class DataBalance:
 
 class NoneBalance(DataBalance):
     def __init__(self):
-        super(NoneBalance, self).__init__(None, 'NoneBalance')
+        super(NoneBalance, self).__init__(None, BALANCE_NONE)
 
     def Run(self, container, store_path=''):
         if store_path != '':
