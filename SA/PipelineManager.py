@@ -75,8 +75,8 @@ class PipelineManager(object):
         if duration_name is None:
             duration_name = df.index[-1]
 
-        event = df.loc[event_name, :]
-        duration = df.loc[duration_name, :]
+        event = df.loc[event_name, :].tolist()
+        duration = df.loc[duration_name, :].tolist()
         df.drop(index=[event_name, duration_name], inplace=True)
 
         df.index = list(map(float, df.index))
