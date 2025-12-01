@@ -12,8 +12,8 @@ from . import LegendRename
 color_list = sns.color_palette('deep') + sns.color_palette('bright')
 
 
-def DrawCurve(x, y_list, std_list=[], xlabel='', ylabel='', title='', name_list=[], store_path='',
-              one_se=False, is_show=True, fig=plt.figure()):
+def DrawCurve(x, y_list, std_list=None, xlabel='', ylabel='', title='', name_list=None, store_path='',
+              one_se=False, is_show=True, fig=None):
     '''
     Draw the curve like ROC
     :param x: the vector of the x
@@ -26,6 +26,15 @@ def DrawCurve(x, y_list, std_list=[], xlabel='', ylabel='', title='', name_list=
     :param is_show: Boolen, if it was set to True, the figure would show.
     :return:
     '''
+    if y_list is None:
+        y_list = []
+    if std_list is None:
+        std_list = []
+    if name_list is None:
+        name_list = []
+    if fig is None:
+        fig = plt.figure()
+
     if not isinstance(y_list, list):
         y_list = [y_list]
 
@@ -51,7 +60,7 @@ def DrawCurve(x, y_list, std_list=[], xlabel='', ylabel='', title='', name_list=
             name, y = name_list[index], y_list[index],
             if name == LegendRename([CV_VAL])[0]:
                 cur_std = std_list[index]
-                axes.errorbar(x, y, yerr=cur_std, fmt='-o',
+                axes.errorbar(x, y, yerr=cur_std, fmt='-',
                               color=color_list[index], elinewidth=1, capsize=4,
                               alpha=1, label=name, marker='.')
                 if one_se:
@@ -125,19 +134,23 @@ def DrawCurve(x, y_list, std_list=[], xlabel='', ylabel='', title='', name_list=
         axes.set_xticks(show_x_ticks)
 
     if store_path:
-        fig.set_tight_layout(True)
+        fig.tight_layout()
         if store_path[-3:] == 'jpg':
             fig.savefig(store_path, dpi=300, format='jpeg')
         elif store_path[-3:] == 'eps':
             fig.savefig(store_path, dpi=1200, format='eps')
     if is_show:
-        axes.show()
+        plt.show()
 
     return axes
 
-def DrawBar(x_ticks, y_list, ylabel='', title='', name_list=[], store_path='', is_show=True, fig=plt.figure()):
-    if not isinstance(y_list, list):
-        y_list = [y_list]
+def DrawBar(x_ticks, y_list, ylabel='', title='', name_list=None, store_path='', is_show=True, fig=None):
+    if y_list is None:
+        y_list = []
+    if name_list is None:
+        name_list = []
+    if fig is None:
+        fig = plt.figure()
 
     fig.clear()
     axes = fig.add_subplot(1, 1, 1)
@@ -156,13 +169,12 @@ def DrawBar(x_ticks, y_list, ylabel='', title='', name_list=[], store_path='', i
         axes.legend(name_list, loc=4)
 
     if store_path:
-        # plt.tight_layout()
-        fig.set_tight_layout(True)
+        fig.tight_layout()
         if store_path[-3:] == 'jpg':
             fig.savefig(store_path, dpi=300, format='jpeg')
         elif store_path[-3:] == 'eps':
             fig.savefig(store_path, dpi=1200, format='eps')
     if is_show:
-        axes.show()
+        plt.show()
 
     return axes

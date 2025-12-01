@@ -23,18 +23,18 @@ class Description:
         # Data Description
         data_description_text = "    "
         data_description_text += "We selected {:d} cases as the training data set ({:d}/{:d} = positive/negative)). ". \
-            format(int(df.loc['{}_{}'.format(TRAIN, NUMBER)][0]),
-                   int(df.loc['{}_{}'.format(TRAIN, POS_NUM)][0]),
-                   int(df.loc['{}_{}'.format(TRAIN, NEG_NUM)][0]))
+            format(int(df.loc['{}_{}'.format(TRAIN, NUMBER)].iloc[0]),
+                   int(df.loc['{}_{}'.format(TRAIN, POS_NUM)].iloc[0]),
+                   int(df.loc['{}_{}'.format(TRAIN, NEG_NUM)].iloc[0]))
 
         if '{}_{}'.format(TEST, NUMBER) not in df.index:
             data_description_text += "Since the number of the samples were limited, there was no independent testing data. "
         else:
             data_description_text += "We also selected another {:d} cases as the independent testing data " \
                                      "set ({:d}/{:d} = positive/negative). \n".format(
-                int(df.loc['{}_{}'.format(TEST, NUMBER)][0]),
-                int(df.loc['{}_{}'.format(TEST, POS_NUM)][0]),
-                int(df.loc['{}_{}'.format(TEST, NEG_NUM)][0]))
+                int(df.loc['{}_{}'.format(TEST, NUMBER)].iloc[0]),
+                int(df.loc['{}_{}'.format(TEST, POS_NUM)].iloc[0]),
+                int(df.loc['{}_{}'.format(TEST, NEG_NUM)].iloc[0]))
 
         return data_description_text
 
@@ -74,10 +74,10 @@ class Description:
                                  "and {:.3f} on testing data set. The clinical statistics in the diagonsis and " \
                                  "the selected features were shown in Table 1 and Table 2. The ROC curve was shown " \
                                  "in Figure 1.\n".format(int(fn),
-                                                         float(df.loc['{}_{}'.format(CV_VAL, AUC)][0]),
-                                                         float(df.loc['{}_{}'.format(CV_VAL, ACC)][0]),
-                                                         float(df.loc['{}_{}'.format(TEST, AUC)][0]),
-                                                         float(df.loc['{}_{}'.format(TEST, ACC)][0]))
+                                                         float(df.loc['{}_{}'.format(CV_VAL, AUC)].iloc[0]),
+                                                         float(df.loc['{}_{}'.format(CV_VAL, ACC)].iloc[0]),
+                                                         float(df.loc['{}_{}'.format(TEST, AUC)].iloc[0]),
+                                                         float(df.loc['{}_{}'.format(TEST, ACC)].iloc[0]))
 
         else:
             result_description = "We found that the model based on {:d} features can get the highest AUC on the " \
@@ -85,32 +85,31 @@ class Description:
                                  "The clinical statistics in the diagonsis and the selected features were shown in " \
                                  "Table 1 and Table 2. The ROC curve was shown in Figure 1. \n" \
                                  "".format(int(fn),
-                                           float(df.loc['{}_{}'.format(CV_VAL, AUC)][0]),
-                                           float(df.loc['{}_{}'.format(CV_VAL, ACC)][0]))
+                                           float(df.loc['{}_{}'.format(CV_VAL, AUC)].iloc[0]),
+                                           float(df.loc['{}_{}'.format(CV_VAL, ACC)].iloc[0]))
         return result_description
-
 
     def _StatisticTable(self, df):
         header = "Table 1. Clinical statistics in the diagnosis. "
 
         if '{}_{}'.format(TEST, NUMBER) in df.index:
             content = [['Statistics', 'Value'],
-                       ['Accuracy', str(df.loc['{}_{}'.format(TEST, ACC)][0])],
-                       ['AUC', str(df.loc['{}_{}'.format(TEST, AUC)][0])],
-                       ['AUC 95% CIs', str(df.loc['{}_{}'.format(TEST, AUC_CI)][0])],
-                       ['NPV', str(df.loc['{}_{}'.format(TEST, NPV)][0])],
-                       ['PPV', str(df.loc['{}_{}'.format(TEST, PPV)][0])],
-                       ['Sensitivity', str(df.loc['{}_{}'.format(TEST, SEN)][0])],
-                       ['Specificity', str(df.loc['{}_{}'.format(TEST, SPE)][0])]]
+                       ['Accuracy', str(df.loc['{}_{}'.format(TEST, ACC)].iloc[0])],
+                       ['AUC', str(df.loc['{}_{}'.format(TEST, AUC)].iloc[0])],
+                       ['AUC 95% CIs', str(df.loc['{}_{}'.format(TEST, AUC_CI)].iloc[0])],
+                       ['NPV', str(df.loc['{}_{}'.format(TEST, NPV)].iloc[0])],
+                       ['PPV', str(df.loc['{}_{}'.format(TEST, PPV)].iloc[0])],
+                       ['Sensitivity', str(df.loc['{}_{}'.format(TEST, SEN)].iloc[0])],
+                       ['Specificity', str(df.loc['{}_{}'.format(TEST, SPE)].iloc[0])]]
         else:
             content = [['Statistics', 'Value'],
-                       ['Accuracy', str(df.loc['{}_{}'.format(CV_VAL, ACC)][0])],
-                       ['AUC', str(df.loc['{}_{}'.format(CV_VAL, AUC)][0])],
-                       ['AUC 95% CIs', str(df.loc['{}_{}'.format(CV_VAL, AUC_CI)][0])],
-                       ['NPV', str(df.loc['{}_{}'.format(CV_VAL, NPV)][0])],
-                       ['PPV', str(df.loc['{}_{}'.format(CV_VAL, PPV)][0])],
-                       ['Sensitivity', str(df.loc['{}_{}'.format(CV_VAL, SEN)][0])],
-                       ['Specificity', str(df.loc['{}_{}'.format(CV_VAL, SPE)][0])]]
+                       ['Accuracy', str(df.loc['{}_{}'.format(CV_VAL, ACC)].iloc[0])],
+                       ['AUC', str(df.loc['{}_{}'.format(CV_VAL, AUC)].iloc[0])],
+                       ['AUC 95% CIs', str(df.loc['{}_{}'.format(CV_VAL, AUC_CI)].iloc[0])],
+                       ['NPV', str(df.loc['{}_{}'.format(CV_VAL, NPV)].iloc[0])],
+                       ['PPV', str(df.loc['{}_{}'.format(CV_VAL, PPV)].iloc[0])],
+                       ['Sensitivity', str(df.loc['{}_{}'.format(CV_VAL, SEN)].iloc[0])],
+                       ['Specificity', str(df.loc['{}_{}'.format(CV_VAL, SPE)].iloc[0])]]
         return header, content
 
     def _FeatureTable(self, fs_folder, cls_folder):
