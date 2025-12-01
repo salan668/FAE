@@ -115,6 +115,8 @@ class DataContainer:
             self._df = self._df.sort_index().sort_index(axis=1)
             if is_update:
                 return self.UpdateDataByFrame()
+            else:
+                return True
         except Exception as e:
             print('Check the CSV file path: {}: \n{}'.format(file_path, e.__str__()))
 
@@ -122,6 +124,8 @@ class DataContainer:
             self._df = LoadCSVwithChineseInPandas(file_path, header=0, index_col=0)
             if is_update:
                 return self.UpdateDataByFrame()
+            else:
+                return True
         except Exception as e:
             print('Check the CSV file path: {}: \n{}'.format(file_path, e.__str__()))
 
