@@ -2,6 +2,7 @@ import sys
 import os
 
 import multiprocessing
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import *
 from HomeUI.HomePageForm import HomePageForm
 
@@ -18,7 +19,9 @@ if __name__ == '__main__':
 
     if sys.platform.startswith("win"):
         sys._enablelegacywindowsfsencoding()
-        
+
+    QApplication.setAttribute(Qt.AA_DontUseNativeDialogs)
+
     multiprocessing.freeze_support()
     app = QApplication(sys.argv)
     main_frame = HomePageForm()
