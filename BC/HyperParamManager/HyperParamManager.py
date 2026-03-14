@@ -1,12 +1,14 @@
-import os
 import json
+import os
 import traceback
+from pathlib import Path
 from copy import deepcopy
 from sklearn.model_selection import ParameterGrid
 
 from BC.Utility.Constants import BALANCE_UP_SAMPLING, BALANCE_DOWN_SAMPLING, BALANCE_SMOTE, BALANCE_SMOTE_TOMEK
 from BC.Utility.Constants import CLASSIFIER_AB, CLASSIFIER_AE, CLASSIFIER_DT, CLASSIFIER_GP, CLASSIFIER_LR
 from BC.Utility.Constants import CLASSIFIER_LRLasso, CLASSIFIER_RF, CLASSIFIER_SVM
+from Utility.PathUtils import get_resource_path
 
 
 class HyperParameterManager:
@@ -26,7 +28,10 @@ class HyperParameterManager:
         del new_param_settting
 
     def LoadSpecificConfig(self, name, relative_path):
-        config_path = os.path.join(relative_path, name + '.json')
+        if os.path.isabs(relative_path):
+            config_path = os.path.join(relative_path, name + '.json')
+        else:
+            config_path = get_resource_path('BC', *Path(relative_path).parts, name + '.json')
         self.LoadConfig(config_path)
 
     def LoadConfig(self, config_path):
@@ -85,16 +90,22 @@ class RandomSeed:
 
 def GetClassifierHyperParams(root=None):
     if root is None:
-        root_folder = os.path.join('BC', 'HyperParameters', 'Classifier')
+        root_folder = Path(get_resource_path('BC', 'HyperParameters', 'Classifier'))
     else:
-        root_folder = os.path.join(root, 'BC', 'HyperParameters', 'Classifier')
+        root_folder = Path(root)
+        if root_folder.name == 'Classifier':
+            pass
+        elif root_folder.name == 'HyperParameters' and (root_folder / 'Classifier').is_dir():
+            root_folder = root_folder / 'Classifier'
+        else:
+            root_folder = root_folder / 'BC' / 'HyperParameters' / 'Classifier'
 
     param_dict = {}
-    for one_file in os.listdir(root_folder):
-        if one_file.endswith('.json'):
-            one_classifier = one_file.split('.')[0]
+    for one_file in root_folder.iterdir():
+        if one_file.suffix == '.json':
+            one_classifier = one_file.stem
             one_hyper_param = HyperParameterManager()
-            one_hyper_param.LoadConfig(os.path.join(root_folder, one_file))
+            one_hyper_param.LoadConfig(str(one_file))
             param_dict[one_classifier] = one_hyper_param.GetParameterSetting()
     return param_dict
 

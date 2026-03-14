@@ -33,17 +33,16 @@ The below modules must be installed first to make the FAE work.
 - pandas=2.0.1
 - pdfdocument=3.3
 - pillow=7.0.0
-- pycox=0.2.3
 - PyQt5=5.14.1
 - PyQtGraph=0.10.0
 - pyradiomics=3.0
 - reportlab=3.5.34
 - scikit-learn=1.2.2
 - scikit-image=0.18.3
+- scikit-survival=0.21.0
 - scipy=1.4.1
 - seaborn=0.12.2
 - statsmodels=0.11.1
-- pytorch=2.0.1
 - trimesh=3.9.29
 - yaml=6.0
 ```

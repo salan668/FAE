@@ -2,6 +2,7 @@
 All rights reserved.
 --Yang Song
 """
+import os
 import sys
 import shutil
 import traceback
@@ -20,6 +21,7 @@ from BC.FeatureAnalysis.CrossValidation import ArbitratyCrossValidation
 
 from BC.FeatureAnalysis.IndexDict import Index2Dict
 from BC.HyperParamManager.HyperParamManager import GetClassifierHyperParams
+from Utility.PathUtils import get_user_data_path
 
 
 class CVRun(QThread):
@@ -137,7 +139,7 @@ class ProcessConnection(QWidget, Ui_Process):
         self.SetStateButtonBeforeLoading(False)
 
     def getDefaultValue(self):
-        path = os.getcwd() + '/fae_Settings.ini'
+        path = get_user_data_path('fae_Settings.ini')
         settings = QSettings(path)
         pcc_coef = 0.99
         if settings.value('PCC_Coef'):
@@ -145,7 +147,7 @@ class ProcessConnection(QWidget, Ui_Process):
         return pcc_coef
 
     def saveDefaultValue(self):
-        path = os.getcwd() + '/fae_Settings.ini'
+        path = get_user_data_path('fae_Settings.ini')
         settings = QSettings(path)
         settings.setValue('PCC_Coef', self.pcccoefdoubleSpinBox.value())
         settings.sync()

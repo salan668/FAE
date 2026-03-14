@@ -3,6 +3,8 @@ import copy
 from logging.handlers import RotatingFileHandler
 import threading
 
+from Utility.PathUtils import get_user_data_path
+
 class Singleton(object):
     _instance_lock = threading.Lock()
 
@@ -23,7 +25,7 @@ class eclog(Singleton):
         self.eclogger = logging.getLogger(file)
         self.eclogger.setLevel(level=logging.DEBUG)
         if not self.eclogger.handlers:
-            self.rotate_handler = RotatingFileHandler("FECA.log", maxBytes=1024 * 1024, backupCount=5)
+            self.rotate_handler = RotatingFileHandler(get_user_data_path('FECA.log'), maxBytes=1024 * 1024, backupCount=5)
             self.rotate_handler.setLevel(level=logging.DEBUG)
             DATE_FORMAT = "%m/%d/%Y %H:%M:%S %p"
             formatter = logging.Formatter(fmt='%(asctime)s(File:%(name)s,Line:%(lineno)d, %(funcName)s) - %(levelname)s - %(message)s', datefmt=DATE_FORMAT)

@@ -17,6 +17,7 @@ from Feature.SeriesMatcher import SeriesStringMatcher
 from radiomics.featureextractor import RadiomicsFeatureExtractor
 
 from Feature.FileMatcher import UniqueFileMatcherManager
+from Utility.PathUtils import ensure_user_copy
 
 
 class FileCheckerThread(QThread):
@@ -149,7 +150,7 @@ class FeatureExtractionForm(QWidget):
         self.image_matcher_manager = UniqueFileMatcherManager()
         self.roi_matcher_manager = UniqueFileMatcherManager()
 
-        self.radiomics_params = RadiomicsParamsConfig(r'Feature\GUI\RadiomicsParams.yaml')
+        self.radiomics_params = RadiomicsParamsConfig(ensure_user_copy('Feature', 'GUI', 'RadiomicsParams.yaml'))
 
         self.ui.setupUi(self)
         self.ui.tableFilePattern.setColumnCount(4)
@@ -361,7 +362,7 @@ class FeatureExtractionForm(QWidget):
         self.UpdateFeatureConfigInterface()
 
         if not use_exist:
-            self.radiomics_params = RadiomicsParamsConfig(r'Feature\GUI\RadiomicsParams.yaml')
+            self.radiomics_params = RadiomicsParamsConfig(ensure_user_copy('Feature', 'GUI', 'RadiomicsParams.yaml'))
 
     def BrowseRadiomicsFeatureCofigFile(self):
         dlg = QFileDialog()

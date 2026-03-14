@@ -1,5 +1,6 @@
 import yaml
 import os
+from pathlib import Path
 #r'..\RadiomicsParams.yaml'
 
 feature_classes_inface2yaml ={'First Order': 'firstorder',
@@ -25,7 +26,7 @@ image_classes_inface2yaml = {'Exponential': 'Exponential',
 
 class RadiomicsParamsConfig(object):
     def __init__(self, file_path):
-        self.config_path = file_path
+        self.config_path = str(file_path)
         self.feature_classes_key = 'featureClass'
         self.feature_classes = {}
         self.image_classes_key = 'imageType'
@@ -34,7 +35,7 @@ class RadiomicsParamsConfig(object):
         self.settings = {}
 
     def LoadConfig(self, config_path):
-        self.config_path = config_path
+        self.config_path = str(config_path)
 
     def SaveConfig(self, config_dict):
         if config_dict is None:
@@ -47,6 +48,7 @@ class RadiomicsParamsConfig(object):
             else:
                 config_dict[self.image_classes_key][image_type] = {}
 
+        Path(self.config_path).parent.mkdir(parents=True, exist_ok=True)
         with open(self.config_path, 'w', encoding='utf-8') as file:
             yaml.dump(config_dict, file)
 

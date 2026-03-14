@@ -1,3 +1,5 @@
+import os
+
 from BC.FeatureAnalysis.DataBalance import *
 from BC.FeatureAnalysis.Normalizer import *
 from BC.FeatureAnalysis.DimensionReduction import *
@@ -7,14 +9,16 @@ from BC.FeatureAnalysis.CrossValidation import *
 
 from BC.Utility.Constants import *
 from BC.HyperParamManager.HyperParamManager import RandomSeed
+from Utility.PathUtils import get_resource_path
 
 
 class Index2Dict:
     def __init__(self, root=None):
         if root is None:
-            self.random_seed = RandomSeed(os.path.join('BC', 'HyperParameters', 'RandomSeed.json')).random_seed
+            config_path = get_resource_path('BC', 'HyperParameters', 'RandomSeed.json')
         else:
-            self.random_seed = RandomSeed(os.path.join(root, 'BC', 'HyperParameters', 'RandomSeed.json')).random_seed
+            config_path = os.path.join(root, 'BC', 'HyperParameters', 'RandomSeed.json')
+        self.random_seed = RandomSeed(config_path).random_seed
 
     def GetInstantByIndex(self, name):
         if name == NoneBalance().GetName():

@@ -1,6 +1,7 @@
 import os
 import numbers
 import csv
+from pathlib import Path
 
 # import pymrmr
 import numpy as np
@@ -13,6 +14,7 @@ from sklearn.feature_selection import SelectKBest, f_classif, RFE
 from sklearn.utils import safe_mask
 
 from BC.HyperParamManager.HyperParamManager import HyperParameterManager
+from Utility.PathUtils import get_resource_path
 
 
 def SaveSelectInfo(feature_name, store_path, is_merge=False):
@@ -508,7 +510,11 @@ class FeatureSelectByMrmr(FeatureSelectByAnalysis):
         return 'mRMR'
 
     def LoadFeatureSelectorParameterList(self, relative_path=os.path.join('HyperParameters', 'FeatureSelector')):
-        self._hyper_parameter_manager.LoadSpecificConfig(self.GetName(), relative_path=relative_path)
+        if os.path.isabs(relative_path):
+            config_root = relative_path
+        else:
+            config_root = get_resource_path('BC', *Path(relative_path).parts)
+        self._hyper_parameter_manager.LoadSpecificConfig(self.GetName(), relative_path=config_root)
         parameter_list = self._hyper_parameter_manager.GetParameterSetting()
         return parameter_list
 
