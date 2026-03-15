@@ -3,5 +3,5 @@
 "setting":
 [
 {"criterion": ["gini", "entropy"], 
-"max_features": ["auto", "sqrt"]}
+"max_features": [null, "sqrt", "log2"]}
 ]}

@@ -393,7 +393,7 @@ class LR(Classifier):
         if 'solver' in kwargs.keys():
             super(LR, self).SetModel(LogisticRegression(penalty=None, **kwargs))
         else:
-            super(LR, self).SetModel(LogisticRegression(penalty=None, solver='saga', tol=0.01, **kwargs))
+            super(LR, self).SetModel(LogisticRegression(penalty=None, solver='lbfgs', tol=0.001, max_iter=1000, **kwargs))
 
     def GetName(self):
         return CLASSIFIER_LR

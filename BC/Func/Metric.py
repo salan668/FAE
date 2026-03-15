@@ -90,7 +90,7 @@ def EstimatePrediction(prediction, label, key_word='', cutoff=None):
     metric[key_word + ACC] = '{:.4f}'.format(np.where(pred == label)[0].size / label.size)
     metric[key_word + MCC] = '{:.4f}'.format(matthews_corrcoef(label, pred))
 
-    report = classification_report(label, pred, digits=4, output_dict=True)
+    report = classification_report(label, pred, digits=4, output_dict=True, zero_division=0)
     metric[key_word + SEN] = '{:.4f}'.format(report['1']['recall'])
     metric[key_word + SPE] = '{:.4f}'.format(report['0']['recall'])
     metric[key_word + PPV] = '{:.4f}'.format(report['1']['precision'])

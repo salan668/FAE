@@ -87,6 +87,41 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.close_signal.emit(True)
         QCloseEvent.accept()
 
+    def _save_eps_without_transparency(self, fig, store_path, dpi=1200):
+        changed_alpha = []
+        changed_face_alpha = []
+
+        for artist in fig.findobj():
+            if hasattr(artist, 'get_alpha') and hasattr(artist, 'set_alpha'):
+                alpha = artist.get_alpha()
+                if alpha is not None and 0 < alpha < 1:
+                    changed_alpha.append((artist, alpha))
+                    artist.set_alpha(1)
+
+            if hasattr(artist, 'get_facecolor') and hasattr(artist, 'set_facecolor'):
+                try:
+                    facecolor = artist.get_facecolor()
+                except Exception:
+                    continue
+
+                if facecolor is None:
+                    continue
+
+                try:
+                    if len(facecolor) == 4 and 0 < facecolor[-1] < 1:
+                        changed_face_alpha.append((artist, facecolor))
+                        artist.set_facecolor((facecolor[0], facecolor[1], facecolor[2], 1))
+                except TypeError:
+                    continue
+
+        try:
+            fig.savefig(store_path, dpi=dpi, format='eps')
+        finally:
+            for artist, alpha in changed_alpha:
+                artist.set_alpha(alpha)
+            for artist, facecolor in changed_face_alpha:
+                artist.set_facecolor(facecolor)
+
     def LoadAll(self):
         dlg = QFileDialog()
         dlg.setFileMode(QFileDialog.DirectoryOnly)
@@ -200,21 +235,21 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         if dlg.exec_():
             store_folder = dlg.selectedFiles()[0]
             try:
-                self.canvasROC.getFigure().savefig(os.path.join(store_folder, 'ROC.eps'), dpi=1200)
+                self._save_eps_without_transparency(self.canvasROC.getFigure(), os.path.join(store_folder, 'ROC.eps'))
                 self.canvasROC.getFigure().savefig(os.path.join(store_folder, 'ROC.jpg'), dpi=300)
             except Exception as e:
                 QMessageBox.about(self, 'Save Figure Failed', 'Saving ROC error: .\n' + traceback.format_exc())
                 traceback.format_exc()
 
             try:
-                self.canvasPlot.getFigure().savefig(os.path.join(store_folder, 'Compare.eps'), dpi=1200)
+                self._save_eps_without_transparency(self.canvasPlot.getFigure(), os.path.join(store_folder, 'Compare.eps'))
                 self.canvasPlot.getFigure().savefig(os.path.join(store_folder, 'Compare.jpg'), dpi=300)
             except Exception as e:
                 QMessageBox.about(self, 'Save Figure Failed', 'Saving Plot error:  \n' + traceback.format_exc())
                 traceback.format_exc()
 
             try:
-                self.canvasFeature.getFigure().savefig(os.path.join(store_folder, 'FeatureWeights.eps'), dpi=1200)
+                self._save_eps_without_transparency(self.canvasFeature.getFigure(), os.path.join(store_folder, 'FeatureWeights.eps'))
                 self.canvasFeature.getFigure().savefig(os.path.join(store_folder, 'FeatureWeights.jpg'), dpi=300)
             except Exception as e:
                 QMessageBox.about(self, 'Save Figure Failed', 'Saving Contribution error:  \n' + traceback.format_exc())

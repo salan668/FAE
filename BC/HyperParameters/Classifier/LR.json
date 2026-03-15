@@ -9,7 +9,6 @@ The 'newton-cg', 'sag', and 'lbfgs' solvers support only L2 regularization with 
 
 "setting":
 [
-{"tol": [0.00003, 0.0003, 0.003],
-"C": [0.01, 0.1, 1.0, 5],
-"max_iter": [100, 200]}
+{"tol": [0.0001, 0.001, 0.003],
+"max_iter": [500, 1000]}
 ]}
