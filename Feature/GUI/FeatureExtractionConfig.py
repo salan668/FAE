@@ -19,6 +19,7 @@ from radiomics.featureextractor import RadiomicsFeatureExtractor
 
 from Feature.FileMatcher import UniqueFileMatcherManager
 from Utility.PathUtils import ensure_user_copy
+from Utility.RadiomicsUtils import silence_radiomics_logging
 
 
 class FileCheckerThread(QThread):
@@ -137,6 +138,7 @@ class FeatureExtractionForm(QWidget):
 
     def __init__(self):
         super(FeatureExtractionForm, self).__init__()
+        silence_radiomics_logging()
         self.ui = Ui_FeatureExtraction()
         self._root_folder = ''
         self._patterns = 0
