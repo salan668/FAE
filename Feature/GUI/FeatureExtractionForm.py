@@ -36,8 +36,13 @@ class FileCheckerThread(QThread):
         self.text_signal.emit(message)
         self.progress_signal.emit(0)
 
+        current_name = None
         count = 0
         for state, case_name, series_name in manager.MatchVerbose(self.root):
+            if current_name != case_name:
+                current_name = case_name
+                count += 1
+
             if not state:
                 message += '{}-{} {}\n'.format(case_name, series_name, manager.error_info.loc[case_name, series_name])
 
@@ -78,7 +83,7 @@ class FeatureExtractThread(QThread):
         super().__init__()
         self.image_paths = image_paths
         self.roi_paths = roi_paths
-        self.case_number = roi_paths.size
+        self.case_number = len(self.image_paths.index)
         self.store_path = store_path
         self.extractor = extractor
 
@@ -120,7 +125,7 @@ class FeatureExtractThread(QThread):
                 message += '{}: \n{}.\n'.format(case_name, traceback.format_exc())
                 self.text_signal.emit(message)
             count += 1
-            self.progress_signal.emit(100 * count / self.case_number)
+            self.progress_signal.emit(int(100 * count / self.case_number))
 
         try:
             all_features.to_csv(str(self.store_path))
