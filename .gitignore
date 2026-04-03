@@ -112,6 +112,8 @@ Example/
 
 */.idea/
 
+.worktrees/
+
 # vscode setting
 .vscode/settings.json
 

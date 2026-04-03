@@ -7,8 +7,8 @@ import sys
 import shutil
 
 import traceback
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
+from PySide6.QtWidgets import *
+from PySide6.QtCore import *
 
 from SA.GUI.Process import Ui_Process
 from SA.PipelineManager import PipelineManager
@@ -21,7 +21,7 @@ from SA.Utility import mylog
 
 
 class CVRun(QThread):
-    signal = pyqtSignal(str)
+    signal = Signal(str)
 
     def __init__(self):
         super().__init__()
@@ -73,7 +73,7 @@ class CVRun(QThread):
 
 
 class ProcessForm(QWidget, Ui_Process):
-    close_signal = pyqtSignal(bool)
+    close_signal = Signal(bool)
 
     def __init__(self, parent=None):
         self.train_dc = DataContainer()
@@ -414,7 +414,7 @@ class ProcessForm(QWidget, Ui_Process):
         dlg.setFileMode(QFileDialog.DirectoryOnly)
         dlg.setOption(QFileDialog.ShowDirsOnly)
 
-        if dlg.exec_():
+        if dlg.exec():
             store_folder = dlg.selectedFiles()[0]
             if len(os.listdir(store_folder)) > 0:
                 reply = QMessageBox.question(self, 'Continue?',
@@ -456,4 +456,4 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     main_frame = ProcessForm()
     main_frame.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

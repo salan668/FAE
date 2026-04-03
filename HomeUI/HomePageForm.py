@@ -3,9 +3,9 @@ import sys
 
 from pathlib import Path
 
-import PyQt5
-from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QPixmap
+from PySide6.QtWidgets import QApplication, QDialog
 
 from HomeUI.HomePage import Ui_HomePage
 from Feature.GUI import FeatureMergeForm, FeatureExtractionForm, IccEstimationForm
@@ -146,7 +146,7 @@ class HomePageForm(QDialog, Ui_HomePage):
             pixmap = QPixmap(str(current_plugin.figure))
 
             # wired for use 2 factor.
-            pixmap = pixmap.scaled(self.labelPluginFigure.size(), PyQt5.QtCore.Qt.KeepAspectRatio)
+            pixmap = pixmap.scaled(self.labelPluginFigure.size(), Qt.KeepAspectRatio)
             self.labelPluginFigure.setPixmap(pixmap)
         else:
             self.labelPluginFigure.setText('Non Logo')
@@ -171,4 +171,4 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     main_frame = HomePageForm()
     main_frame.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

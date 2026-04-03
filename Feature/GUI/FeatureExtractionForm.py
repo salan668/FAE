@@ -7,9 +7,8 @@ from pathlib import Path
 
 import pandas as pd
 import SimpleITK as sitk
-from PyQt5.QtWidgets import *
-from PyQt5 import QtCore
-from PyQt5.QtCore import QThread
+from PySide6.QtWidgets import *
+from PySide6.QtCore import QThread, Signal
 
 from Feature.GUI.FeatureExtraction import Ui_FeatureExtraction
 from Feature.RadiomicsParamsConfig import RadiomicsParamsConfig, feature_classes_inface2yaml, image_classes_inface2yaml
@@ -22,9 +21,9 @@ from Utility.RadiomicsUtils import silence_radiomics_logging
 
 
 class FileCheckerThread(QThread):
-    progress_signal = QtCore.pyqtSignal(int)
-    text_signal = QtCore.pyqtSignal(str)
-    finish_signal = QtCore.pyqtSignal(bool)
+    progress_signal = Signal(int)
+    text_signal = Signal(str)
+    finish_signal = Signal(bool)
 
     def __init__(self, image_match_manager, roi_match_manager, root_folder):
         super().__init__()
@@ -75,9 +74,9 @@ class FileCheckerThread(QThread):
 
 
 class FeatureExtractThread(QThread):
-    progress_signal = QtCore.pyqtSignal(int)
-    text_signal = QtCore.pyqtSignal(str)
-    finish_signal = QtCore.pyqtSignal(bool)
+    progress_signal = Signal(int)
+    text_signal = Signal(str)
+    finish_signal = Signal(bool)
 
     def __init__(self, image_paths, roi_paths, store_path, extractor: RadiomicsFeatureExtractor,
                  only_matrix: bool):
@@ -142,7 +141,7 @@ class FeatureExtractThread(QThread):
 
 
 class FeatureExtractionForm(QWidget):
-    close_signal = QtCore.pyqtSignal(bool)
+    close_signal = Signal(bool)
 
     def __init__(self):
         super(FeatureExtractionForm, self).__init__()
@@ -200,7 +199,7 @@ class FeatureExtractionForm(QWidget):
         dlg = QFileDialog()
         dlg.setFileMode(QFileDialog.DirectoryOnly)
         dlg.setOption(QFileDialog.ShowDirsOnly)
-        if dlg.exec_():
+        if dlg.exec():
             self._root_folder = dlg.selectedFiles()[0]
             self.ui.lineEditSourceFolder.setText(self._root_folder)
 
@@ -463,4 +462,4 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     main_frame = FeatureExtractionForm()
     main_frame.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

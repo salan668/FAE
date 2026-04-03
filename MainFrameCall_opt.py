@@ -3,6 +3,7 @@ import os
 
 import multiprocessing
 
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QApplication
 from HomeUI.HomePageForm import HomePageForm
 
@@ -20,7 +21,7 @@ if __name__ == '__main__':
     if sys.platform.startswith("win"):
         sys._enablelegacywindowsfsencoding()
 
-    # QApplication.setAttribute(Qt.AA_DontUseNativeDialogs)
+    QApplication.setAttribute(Qt.AA_DontUseNativeDialogs)
 
     multiprocessing.freeze_support()
     app = QApplication(sys.argv)

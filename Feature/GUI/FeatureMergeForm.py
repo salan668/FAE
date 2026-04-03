@@ -6,15 +6,15 @@ from copy import deepcopy
 
 import numpy as np
 import pandas as pd
-from PyQt5.QtWidgets import *
-from PyQt5 import QtCore
+from PySide6.QtWidgets import *
+from PySide6.QtCore import Signal
 
 from Feature.GUI.FeatureMerge import Ui_FeatureMerge
 from Utility.EcLog import eclog
 
 
 class FeatureMergeForm(QWidget):
-    close_signal = QtCore.pyqtSignal(bool)
+    close_signal = Signal(bool)
 
     def __init__(self, eclog=eclog):
         super().__init__()
@@ -199,4 +199,4 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     main_frame = FeatureMergeForm(eclog())
     main_frame.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

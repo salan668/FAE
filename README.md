@@ -26,25 +26,25 @@ The Windows64 version and the Ubuntut 20.04 release could be found [Google Drive
 The below modules must be installed first to make the FAE work. 
 
 ```
-- imbalanced-learn=0.6.2
-- lifelines=0.27.7
-- matplotlib=3.2.0
-- numpy=1.21.0
-- pandas=2.0.1
-- pdfdocument=3.3
-- pillow=7.0.0
-- PyQt5=5.14.1
-- PyQtGraph=0.10.0
-- pyradiomics=3.0
-- reportlab=3.5.34
-- scikit-learn=1.2.2
-- scikit-image=0.18.3
-- scikit-survival=0.21.0
-- scipy=1.4.1
-- seaborn=0.12.2
-- statsmodels=0.11.1
-- trimesh=3.9.29
-- yaml=6.0
+- imbalanced-learn
+- lifelines
+- matplotlib (version must support `matplotlib.backends.backend_qtagg`)
+- numpy
+- pandas
+- pdfdocument
+- pillow
+- PySide6
+- PyQtGraph
+- pyradiomics
+- reportlab
+- scikit-learn
+- scikit-image
+- scikit-survival
+- scipy
+- seaborn
+- statsmodels
+- trimesh
+- yaml
 ```
 
 ### Installing
@@ -53,7 +53,7 @@ Just clone it by typing in:
 ```
 git clone https://github.com/salan668/FAE.git
 ```
-The .ui file has to be transferred to the .py file by pyuic manually. For example, GUI/HomePage.ui should be transferred to GUI/HomePage.py file. 
+The checked-in UI Python modules are maintained for runtime convenience. If you need to regenerate them from `.ui` files, use a PySide6-compatible workflow and verify the generated imports remain `from PySide6 import QtCore, QtGui, QtWidgets` before committing further changes.
 
 ### Main Architecture of Project 
 - **HomePage**: The ui file and the Starting page for all modules.

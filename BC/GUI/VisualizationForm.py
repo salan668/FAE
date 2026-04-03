@@ -2,8 +2,8 @@ import re
 import traceback
 from traceback import format_exc
 
-from PyQt5.QtWidgets import *
-from PyQt5 import QtCore
+from PySide6.QtWidgets import *
+from PySide6.QtCore import Signal
 
 from BC.GUI.Visualization import Ui_Visualization
 from BC.FeatureAnalysis.Classifier import *
@@ -17,7 +17,7 @@ from BC.Utility.Constants import *
 
 
 class VisualizationConnection(QWidget, Ui_Visualization):
-    close_signal = QtCore.pyqtSignal(bool)
+    close_signal = Signal(bool)
 
     def __init__(self, parent=None):
         self._root_folder = ''
@@ -127,7 +127,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         dlg.setFileMode(QFileDialog.DirectoryOnly)
         dlg.setOption(QFileDialog.ShowDirsOnly)
 
-        if dlg.exec_():
+        if dlg.exec():
             self._root_folder = dlg.selectedFiles()[0]
 
             if not os.path.exists(self._root_folder):
@@ -232,7 +232,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         dlg.setFileMode(QFileDialog.DirectoryOnly)
         dlg.setOption(QFileDialog.ShowDirsOnly)
 
-        if dlg.exec_():
+        if dlg.exec():
             store_folder = dlg.selectedFiles()[0]
             try:
                 self._save_eps_without_transparency(self.canvasROC.getFigure(), os.path.join(store_folder, 'ROC.eps'))
@@ -729,7 +729,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         dlg.setFileMode(QFileDialog.DirectoryOnly)
         dlg.setOption(QFileDialog.ShowDirsOnly)
 
-        if dlg.exec_():
+        if dlg.exec():
             store_folder = dlg.selectedFiles()[0]
             roc_path = os.path.join(store_folder, 'ROC.jpg')
             self.canvasROC.getFigure().savefig(roc_path, dpi=300)

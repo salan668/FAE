@@ -7,10 +7,10 @@ import sys
 import shutil
 import traceback
 
-from PyQt5.QtWidgets import *
+from PySide6.QtWidgets import *
 
 from BC.GUI.Process import Ui_Process
-from PyQt5.QtCore import *
+from PySide6.QtCore import *
 from BC.FeatureAnalysis.DataBalance import *
 from BC.FeatureAnalysis.Normalizer import *
 from BC.FeatureAnalysis.DimensionReduction import *
@@ -25,7 +25,7 @@ from Utility.PathUtils import get_user_data_path
 
 
 class CVRun(QThread):
-    signal = pyqtSignal(str)
+    signal = Signal(str)
 
     def __init__(self):
         super().__init__()
@@ -69,7 +69,7 @@ class CVRun(QThread):
 
 
 class ProcessConnection(QWidget, Ui_Process):
-    close_signal = pyqtSignal(bool)
+    close_signal = Signal(bool)
 
     def __init__(self, parent=None):
         self.training_data_container = DataContainer()
@@ -369,7 +369,7 @@ class ProcessConnection(QWidget, Ui_Process):
         dlg.setFileMode(QFileDialog.DirectoryOnly)
         dlg.setOption(QFileDialog.ShowDirsOnly)
 
-        if dlg.exec_():
+        if dlg.exec():
             store_folder = dlg.selectedFiles()[0]
             if len(os.listdir(store_folder)) > 0:
                 reply = QMessageBox.question(self, 'Continue?',
@@ -715,4 +715,4 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     main_frame = ProcessConnection()
     main_frame.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

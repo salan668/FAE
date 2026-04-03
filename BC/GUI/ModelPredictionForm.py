@@ -6,8 +6,8 @@ import os, csv
 import shutil
 import pandas as pd
 from traceback import format_exc
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import pyqtSignal
+from PySide6.QtWidgets import *
+from PySide6.QtCore import Signal
 
 from BC.DataContainer.DataContainer import DataContainer
 from BC.FeatureAnalysis.IndexDict import Index2Dict
@@ -22,7 +22,7 @@ from BC.Visualization.DrawROCList import DrawROCList, DrawPRCurveList
 
 
 class ModelPredictionForm(QWidget):
-    close_signal = pyqtSignal(bool)
+    close_signal = Signal(bool)
 
     def __init__(self):
         super().__init__()
@@ -74,7 +74,7 @@ class ModelPredictionForm(QWidget):
         dlg.setOption(QFileDialog.ShowDirsOnly)
 
         message_box = QMessageBox()
-        if dlg.exec_():
+        if dlg.exec():
             self._model_root = dlg.selectedFiles()[0]
 
             pipeline_info_path = os.path.join(self._model_root, 'pipeline_info.csv')
@@ -222,7 +222,7 @@ class ModelPredictionForm(QWidget):
         dlg.setFileMode(QFileDialog.DirectoryOnly)
         dlg.setOption(QFileDialog.ShowDirsOnly)
 
-        if dlg.exec_():
+        if dlg.exec():
             store_folder = dlg.selectedFiles()[0]
             if len(os.listdir(store_folder)) > 0:
                 reply = QMessageBox.question(self, 'Continue?',
@@ -264,4 +264,4 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     frame = ModelPredictionForm()
     frame.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

@@ -5,8 +5,8 @@ import os
 from copy import deepcopy
 import pandas as pd
 
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import pyqtSignal
+from PySide6.QtWidgets import *
+from PySide6.QtCore import Signal
 from BC.GUI.Prepare import Ui_Prepare
 from Utility.EcLog import eclog
 from BC.DataContainer.DataContainer import DataContainer
@@ -16,7 +16,7 @@ from BC.Utility.Constants import REMOVE_CASE, REMOVE_FEATURE
 
 
 class PrepareConnection(QWidget, Ui_Prepare):
-    close_signal = pyqtSignal(bool)
+    close_signal = Signal(bool)
 
     def __init__(self, parent=None):
         super(PrepareConnection, self).__init__(parent)

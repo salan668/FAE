@@ -7,8 +7,8 @@ import os
 import traceback
 
 import pandas as pd
-from PyQt5.QtWidgets import *
-from PyQt5 import QtCore
+from PySide6.QtWidgets import *
+from PySide6.QtCore import Signal
 
 from SA.Utility import mylog
 from SA.Utility.Constant import *
@@ -24,7 +24,7 @@ def CheckTextInCombo(text, combo):
 
 
 class VisualizationForm(QWidget, Ui_Visualization):
-    close_signal = QtCore.pyqtSignal(bool)
+    close_signal = Signal(bool)
 
     def __init__(self, parent=None):
         self._root_folder = ''
@@ -84,7 +84,7 @@ class VisualizationForm(QWidget, Ui_Visualization):
         dlg.setFileMode(QFileDialog.DirectoryOnly)
         dlg.setOption(QFileDialog.ShowDirsOnly)
 
-        if dlg.exec_():
+        if dlg.exec():
             self._root_folder = dlg.selectedFiles()[0]
 
             if not os.path.exists(self._root_folder):
@@ -191,7 +191,7 @@ class VisualizationForm(QWidget, Ui_Visualization):
         dlg.setFileMode(QFileDialog.DirectoryOnly)
         dlg.setOption(QFileDialog.ShowDirsOnly)
 
-        if dlg.exec_():
+        if dlg.exec():
             store_folder = dlg.selectedFiles()[0]
             try:
                 self.canvasSurvival.getFigure().savefig(os.path.join(store_folder, 'SurvivalCurve.eps'), dpi=1200)
@@ -565,4 +565,4 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     main_frame = VisualizationForm()
     main_frame.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

@@ -8,17 +8,16 @@ from copy import deepcopy
 import numpy as np
 import pandas as pd
 from pingouin import intraclass_corr
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import QThread, pyqtSignal
-from PyQt5 import QtCore
+from PySide6.QtWidgets import *
+from PySide6.QtCore import QThread, Signal
 
 from Feature.GUI.IccEstimation import Ui_IccEstimation
 from Utility.EcLog import eclog
 
 
 class IccEstimationThread(QThread):
-    progress_signal = pyqtSignal(int)
-    finish_signal = pyqtSignal(bool)
+    progress_signal = Signal(int)
+    finish_signal = Signal(bool)
 
     def __init__(self, feature1: pd.DataFrame, feature2: pd.DataFrame, store_path: str,
                  icc_type: str):
@@ -59,7 +58,7 @@ class IccEstimationThread(QThread):
 
 
 class IccEstimationForm(QWidget):
-    close_signal = QtCore.pyqtSignal(bool)
+    close_signal = Signal(bool)
 
     def __init__(self, eclog=eclog):
         super().__init__()
@@ -179,4 +178,4 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     main_frame = IccEstimationForm(eclog('Eclog.txt').GetLogger())
     main_frame.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
