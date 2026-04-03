@@ -24,7 +24,7 @@ if __name__ == '__main__':
     QApplication.setAttribute(Qt.AA_DontUseNativeDialogs)
 
     multiprocessing.freeze_support()
-    app = QApplication(sys.argv)
+    app = QApplication.instance() or QApplication(sys.argv)
     main_frame = HomePageForm()
     main_frame.show()
     sys.exit(app.exec())
