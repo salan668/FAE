@@ -146,7 +146,7 @@ class HomePageForm(QDialog, Ui_HomePage):
             pixmap = QPixmap(str(current_plugin.figure))
 
             # wired for use 2 factor.
-            pixmap = pixmap.scaled(self.labelPluginFigure.size(), Qt.KeepAspectRatio)
+            pixmap = pixmap.scaled(self.labelPluginFigure.size(), Qt.AspectRatioMode.KeepAspectRatio)
             self.labelPluginFigure.setPixmap(pixmap)
         else:
             self.labelPluginFigure.setText('Non Logo')

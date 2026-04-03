@@ -100,7 +100,7 @@ class PrepareConnection(QWidget, Ui_Prepare):
 
     def LoadData(self):
         dlg = QFileDialog()
-        file_name, _ = dlg.getOpenFileName(self, 'Open SCV file', filter="csv files (*.csv)")
+        file_name, _ = dlg.getOpenFileName(self, 'Open SCV file', '', "csv files (*.csv)")
         if file_name:
             try:
                 if self.data_container.Load(file_name, is_update=False):
@@ -117,7 +117,7 @@ class PrepareConnection(QWidget, Ui_Prepare):
 
     def LoadTestingReferenceDataContainer(self):
         dlg = QFileDialog()
-        file_name, _ = dlg.getOpenFileName(self, 'Open SCV file', filter="csv files (*.csv)")
+        file_name, _ = dlg.getOpenFileName(self, 'Open SCV file', '', "csv files (*.csv)")
         if file_name:
             try:
                 self.testing_ref_data_container.Load(file_name)
@@ -143,7 +143,7 @@ class PrepareConnection(QWidget, Ui_Prepare):
 
     def LoadClinicalRef(self):
         dlg = QFileDialog()
-        file_name, _ = dlg.getOpenFileName(self, 'Open SCV file', filter="csv files (*.csv)")
+        file_name, _ = dlg.getOpenFileName(self, 'Open SCV file', '', "csv files (*.csv)")
         if file_name:
             try:
                 self.clinical_ref = pd.read_csv(file_name, index_col=0).sort_index()
@@ -180,7 +180,7 @@ class PrepareConnection(QWidget, Ui_Prepare):
             if self.checkExport.isChecked():
                 dlg = QFileDialog()
                 store_path, _ = dlg.getSaveFileName(self, 'Save CSV feature files', 'features.csv',
-                                                   filter="CSV files (*.csv)")
+                                                   "CSV files (*.csv)")
             else:
                 store_path = ''
 
@@ -228,24 +228,24 @@ class PrepareConnection(QWidget, Ui_Prepare):
             return string
 
         if self.data_container.IsEmpty():
-            QMessageBox.warning(self, "Warning", "There is no data", QMessageBox.Ok)
+            QMessageBox.warning(self, "Warning", "There is no data", QMessageBox.StandardButton.Ok)
             return None
 
         invalid_number_index = self.data_container.FindInvalidNumber()
         if invalid_number_index:
             old_edit_triggers = self.tableFeature.editTriggers()
-            self.tableFeature.setEditTriggers(QAbstractItemView.CurrentChanged)
+            self.tableFeature.setEditTriggers(QAbstractItemView.EditTrigger.CurrentChanged)
             self.tableFeature.setCurrentCell(invalid_number_index[0], invalid_number_index[1])
             self.tableFeature.setEditTriggers(old_edit_triggers)
             QMessageBox.warning(self, "Warning", "There are nan item in Row {}, Col {} ({})".format(
-                invalid_number_index[0] + 2, invalid_number_index[1] + 2, _colnum_string(invalid_number_index[1] + 2)), QMessageBox.Ok)
+                invalid_number_index[0] + 2, invalid_number_index[1] + 2, _colnum_string(invalid_number_index[1] + 2)), QMessageBox.StandardButton.Ok)
             
             return None
 
         self.data_container.UpdateDataByFrame()
 
         if not self.data_container.IsBinaryLabel():
-            QMessageBox.warning(self, "Warning", "There are not 2 Labels", QMessageBox.Ok)
+            QMessageBox.warning(self, "Warning", "There are not 2 Labels", QMessageBox.StandardButton.Ok)
             return None
 
         remove_features_with_same_value = RemoveSameFeatures()
@@ -287,6 +287,6 @@ class PrepareConnection(QWidget, Ui_Prepare):
                     print(traceback.format_exc())
 
         else:
-            file_name, _ = QFileDialog.getSaveFileName(self, "Save data", filter="csv files (*.csv)")
+            file_name, _ = QFileDialog.getSaveFileName(self, "Save data", '', "csv files (*.csv)")
             if file_name:
                 self.data_container.Save(file_name)

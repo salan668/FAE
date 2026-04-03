@@ -3,7 +3,7 @@ import traceback
 from traceback import format_exc
 
 from PySide6.QtWidgets import *
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Qt, Signal
 
 from BC.GUI.Visualization import Ui_Visualization
 from BC.FeatureAnalysis.Classifier import *
@@ -43,8 +43,8 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.comboShowType.currentIndexChanged.connect(self.UpdateROC)
 
         # Update Sheet
-        self.tableClinicalStatistic.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        self.tableClinicalStatistic.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.tableClinicalStatistic.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.tableClinicalStatistic.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.comboSheet.currentIndexChanged.connect(self.UpdateSheet)
         self.checkMaxFeatureNumber.stateChanged.connect(self.UpdateSheet)
         self.tableClinicalStatistic.itemSelectionChanged.connect(self.ShowOneResult)
@@ -124,8 +124,8 @@ class VisualizationConnection(QWidget, Ui_Visualization):
 
     def LoadAll(self):
         dlg = QFileDialog()
-        dlg.setFileMode(QFileDialog.DirectoryOnly)
-        dlg.setOption(QFileDialog.ShowDirsOnly)
+        dlg.setFileMode(QFileDialog.FileMode.Directory)
+        dlg.setOption(QFileDialog.Option.ShowDirsOnly)
 
         if dlg.exec():
             self._root_folder = dlg.selectedFiles()[0]
@@ -229,8 +229,8 @@ class VisualizationConnection(QWidget, Ui_Visualization):
 
     def Save(self):
         dlg = QFileDialog()
-        dlg.setFileMode(QFileDialog.DirectoryOnly)
-        dlg.setOption(QFileDialog.ShowDirsOnly)
+        dlg.setFileMode(QFileDialog.FileMode.Directory)
+        dlg.setOption(QFileDialog.Option.ShowDirsOnly)
 
         if dlg.exec():
             store_folder = dlg.selectedFiles()[0]
@@ -689,8 +689,8 @@ class VisualizationConnection(QWidget, Ui_Visualization):
             self.spinBoxFeatureNumber.setValue(int(current_fn))
             if not (self.checkROCTrain.isChecked()or
                     self.checkROCCVValidation.isChecked() or self.checkROCTrain.isChecked()):
-                self.checkROCTrain.setCheckState(True)
-                self.checkROCCVValidation.setCheckState(True)
+                self.checkROCTrain.setCheckState(Qt.CheckState.Checked)
+                self.checkROCCVValidation.setCheckState(Qt.CheckState.Checked)
             self.UpdateROC()
 
             # Update the AUC versus feature number
@@ -702,7 +702,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
             if not (self.checkPlotTrain.isChecked() or
                     self.checkPlotTrain.isChecked() or
                     self.checkPlotCVValidation.isChecked()):
-                self.checkPlotCVValidation.setCheckState(True)
+                self.checkPlotCVValidation.setCheckState(Qt.CheckState.Checked)
             self.UpdatePlot()
 
             # Update the Contribution
@@ -726,8 +726,8 @@ class VisualizationConnection(QWidget, Ui_Visualization):
             return
 
         dlg = QFileDialog()
-        dlg.setFileMode(QFileDialog.DirectoryOnly)
-        dlg.setOption(QFileDialog.ShowDirsOnly)
+        dlg.setFileMode(QFileDialog.FileMode.Directory)
+        dlg.setOption(QFileDialog.Option.ShowDirsOnly)
 
         if dlg.exec():
             store_folder = dlg.selectedFiles()[0]

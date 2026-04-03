@@ -59,7 +59,7 @@ class FeatureMergeForm(QWidget):
 
     def _LoadButton(self, line_edit, table_view, feature_num):
         dlg = QFileDialog()
-        file_name, _ = dlg.getOpenFileName(self, 'Open CSV file', filter="csv files (*.csv)")
+        file_name, _ = dlg.getOpenFileName(self, 'Open CSV file', '', "csv files (*.csv)")
         if file_name:
             try:
                 feature = pd.read_csv(file_name, index_col=0)
@@ -179,7 +179,7 @@ class FeatureMergeForm(QWidget):
         
         dlg = QFileDialog()
         file_name, _ = dlg.getSaveFileName(self, 'Save CSV feature files', 'merge_features.csv',
-                                            filter="CSV files (*.csv)")
+                                            "CSV files (*.csv)")
         if not file_name:
             return None
         

@@ -44,8 +44,8 @@ class VisualizationForm(QWidget, Ui_Visualization):
         self.buttonSaveFigure.clicked.connect(self.SaveFigure)
 
         # Update Sheet
-        self.tableClinicalStatistic.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        self.tableClinicalStatistic.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.tableClinicalStatistic.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.tableClinicalStatistic.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.comboSheet.currentIndexChanged.connect(self.UpdateSheet)
         self.tableClinicalStatistic.itemSelectionChanged.connect(self.ShowOneResult)
 
@@ -81,8 +81,8 @@ class VisualizationForm(QWidget, Ui_Visualization):
 
     def LoadResult(self):
         dlg = QFileDialog()
-        dlg.setFileMode(QFileDialog.DirectoryOnly)
-        dlg.setOption(QFileDialog.ShowDirsOnly)
+        dlg.setFileMode(QFileDialog.FileMode.Directory)
+        dlg.setOption(QFileDialog.Option.ShowDirsOnly)
 
         if dlg.exec():
             self._root_folder = dlg.selectedFiles()[0]
@@ -188,8 +188,8 @@ class VisualizationForm(QWidget, Ui_Visualization):
 
     def SaveFigure(self):
         dlg = QFileDialog()
-        dlg.setFileMode(QFileDialog.DirectoryOnly)
-        dlg.setOption(QFileDialog.ShowDirsOnly)
+        dlg.setFileMode(QFileDialog.FileMode.Directory)
+        dlg.setOption(QFileDialog.Option.ShowDirsOnly)
 
         if dlg.exec():
             store_folder = dlg.selectedFiles()[0]
@@ -290,8 +290,8 @@ class VisualizationForm(QWidget, Ui_Visualization):
 #############################################################
     def LoadRefData(self):
         dlg = QFileDialog()
-        file_name, _ = dlg.getOpenFileName(self, 'Open CSV file', directory=r'C:\MyCode\FAE\Example',
-                                           filter="csv files (*.csv)")
+        file_name, _ = dlg.getOpenFileName(self, 'Open CSV file', r'C:\MyCode\FAE\Example',
+                                           "csv files (*.csv)")
 
         if file_name:
             self.ref_df = pd.read_csv(file_name, index_col=0)

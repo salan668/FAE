@@ -134,8 +134,7 @@ class ProcessForm(QWidget, Ui_Process):
     # Data Related
     def LoadTrainingData(self):
         dlg = QFileDialog()
-        file_name, _ = dlg.getOpenFileName(self, 'Open CSV file', directory=r'C:\MyCode\FAE\Example',
-                                           filter="csv files (*.csv)")
+        file_name, _ = dlg.getOpenFileName(self, 'Open CSV file', '', "csv files (*.csv)")
         if file_name:
             self.lineEditTrainingData.setText(file_name)
 
@@ -148,8 +147,7 @@ class ProcessForm(QWidget, Ui_Process):
 
     def LoadTestingData(self):
         dlg = QFileDialog()
-        file_name, _ = dlg.getOpenFileName(self, 'Open CSV file', directory=r'C:\MyCode\FAE\Example',
-                                           filter="csv files (*.csv)")
+        file_name, _ = dlg.getOpenFileName(self, 'Open CSV file', '', "csv files (*.csv)")
         if file_name:
             self.lineEditTestingData.setText(file_name)
 
@@ -411,8 +409,8 @@ class ProcessForm(QWidget, Ui_Process):
             return
 
         dlg = QFileDialog()
-        dlg.setFileMode(QFileDialog.DirectoryOnly)
-        dlg.setOption(QFileDialog.ShowDirsOnly)
+        dlg.setFileMode(QFileDialog.FileMode.Directory)
+        dlg.setOption(QFileDialog.Option.ShowDirsOnly)
 
         if dlg.exec():
             store_folder = dlg.selectedFiles()[0]
@@ -420,8 +418,8 @@ class ProcessForm(QWidget, Ui_Process):
                 reply = QMessageBox.question(self, 'Continue?',
                                              'The folder is not empty, if you click Yes, '
                                              'the data would be clear in this folder',
-                                             QMessageBox.Yes, QMessageBox.No)
-                if reply == QMessageBox.Yes:
+                                             QMessageBox.StandardButton.Yes, QMessageBox.StandardButton.No)
+                if reply == QMessageBox.StandardButton.Yes:
                     try:
                         for file in os.listdir(store_folder):
                             if os.path.isdir(os.path.join(store_folder, file)):

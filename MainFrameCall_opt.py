@@ -21,7 +21,7 @@ if __name__ == '__main__':
     if sys.platform.startswith("win"):
         sys._enablelegacywindowsfsencoding()
 
-    QApplication.setAttribute(Qt.AA_DontUseNativeDialogs)
+    QApplication.setAttribute(Qt.ApplicationAttribute.AA_DontUseNativeDialogs)
 
     multiprocessing.freeze_support()
     app = QApplication.instance() or QApplication(sys.argv)

@@ -161,8 +161,8 @@ class FeatureExtractionForm(QWidget):
         self.ui.setupUi(self)
         self.ui.tableFilePattern.setColumnCount(4)
         self.ui.tableFilePattern.setHorizontalHeaderLabels(["Type", "Name", "Include", "Exclude"])
-        self.ui.tableFilePattern.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        self.ui.tableFilePattern.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.ui.tableFilePattern.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.ui.tableFilePattern.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
 
         self.ui.radioImagePattern.clicked.connect(self.UpdatePatternInterface)
         self.ui.radioRoiPattern.clicked.connect(self.UpdatePatternInterface)
@@ -197,8 +197,8 @@ class FeatureExtractionForm(QWidget):
 
     def LoadDataRoot(self):
         dlg = QFileDialog()
-        dlg.setFileMode(QFileDialog.DirectoryOnly)
-        dlg.setOption(QFileDialog.ShowDirsOnly)
+        dlg.setFileMode(QFileDialog.FileMode.Directory)
+        dlg.setOption(QFileDialog.Option.ShowDirsOnly)
         if dlg.exec():
             self._root_folder = dlg.selectedFiles()[0]
             self.ui.lineEditSourceFolder.setText(self._root_folder)
@@ -372,8 +372,8 @@ class FeatureExtractionForm(QWidget):
 
     def BrowseRadiomicsFeatureCofigFile(self):
         dlg = QFileDialog()
-        file_name, _ = dlg.getOpenFileName(self, 'Open Radiomics Config file', directory='',
-                                           filter="Config (*.yaml)")
+        file_name, _ = dlg.getOpenFileName(self, 'Open Radiomics Config file', '',
+                                           "Config (*.yaml)")
         if file_name:
             self.ui.configLineEdit.setText(file_name)
             self.radiomics_params = RadiomicsParamsConfig(file_name)
