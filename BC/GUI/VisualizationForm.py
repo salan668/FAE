@@ -11,7 +11,7 @@ from BC.FeatureAnalysis.Pipelines import PipelinesManager
 from BC.Description.Description import Description
 from BC.Visualization.DrawROCList import DrawROCList, DrawPRCurveList
 from BC.Visualization.PlotMetricVsFeatureNumber import DrawCurve, DrawBar
-from BC.Visualization.FeatureSort import GeneralFeatureSort
+from BC.Visualization.FeatureSort import GeneralFeatureSort, SHAPBarPlot, SHAPBeeswarmPlot
 from Utility.EcLog import eclog
 from BC.Utility.Constants import *
 
@@ -82,6 +82,25 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.comboContributionFeatureSelector.currentIndexChanged.connect(self.UpdateContribution)
         self.comboContributionClassifier.currentIndexChanged.connect(self.UpdateContribution)
         self.spinContributeFeatureNumber.valueChanged.connect(self.UpdateContribution)
+
+        # --- SHAP plot type selector (below canvasFeature, like Feature Sort radios) ---
+        self._shap_plot_widget = QWidget()
+        _shap_layout = QHBoxLayout(self._shap_plot_widget)
+        _shap_layout.setContentsMargins(0, 0, 0, 0)
+        self._radioSHAPBar = QRadioButton("Bar")
+        self._radioSHAPBeeswarm = QRadioButton("Beeswarm")
+        self._radioSHAPBar.setChecked(True)
+        self._radioSHAPBar.setToolTip("Mean |SHAP| bar chart")
+        self._radioSHAPBeeswarm.setToolTip("Per-sample SHAP scatter plot")
+        _shap_layout.addWidget(self._radioSHAPBar)
+        _shap_layout.addWidget(self._radioSHAPBeeswarm)
+        _shap_layout.addStretch()
+        # Insert immediately after canvasFeature (below plot, above combo boxes)
+        _parent_layout = self.verticalLayout_5
+        _idx = _parent_layout.indexOf(self.canvasFeature)
+        _parent_layout.insertWidget(_idx + 1, self._shap_plot_widget)
+        self._shap_plot_widget.setVisible(False)  # hidden until SHAP data available
+        self._radioSHAPBar.toggled.connect(self.UpdateContribution)
 
     def closeEvent(self, QCloseEvent):
         self.close_signal.emit(True)
@@ -460,75 +479,89 @@ class VisualizationConnection(QWidget, Ui_Visualization):
             return
 
         try:
-            pipeline_name = self._fae.GetStoreName(self.comboContributionNormalizor.currentText(),
-                                                   self.comboContributionDimension.currentText(),
-                                                   self.comboContributionFeatureSelector.currentText(),
-                                                   str(self.spinContributeFeatureNumber.value()),
-                                                   self.comboContributionClassifier.currentText())
-            norm_folder, dr_folder, fs_folder, cls_folder = self._fae.SplitFolder(pipeline_name, self._root_folder)
+            pipeline_name = self._fae.GetStoreName(
+                self.comboContributionNormalizor.currentText(),
+                self.comboContributionDimension.currentText(),
+                self.comboContributionFeatureSelector.currentText(),
+                str(self.spinContributeFeatureNumber.value()),
+                self.comboContributionClassifier.currentText())
+            norm_folder, dr_folder, fs_folder, cls_folder = self._fae.SplitFolder(
+                pipeline_name, self._root_folder)
 
-            # model weight file exist?
-            coef_name = self.comboContributionClassifier.currentText() + '_coef.csv'
-            coef_file_path = os.path.join(cls_folder, coef_name)
+            max_num = self.spinContributeFeatureNumber.value()
 
-            sort_name = self.comboContributionFeatureSelector.currentText() + '_sort.csv'
-            sort_file_path = os.path.join(fs_folder, sort_name)
+            # ── SHAP path (preferred) ──────────────────────────────────────
+            shap_name = self.comboContributionClassifier.currentText() + '_shap.csv'
+            shap_file_path = os.path.join(cls_folder, shap_name)
 
-            if os.path.exists(coef_file_path):
-                self.radioContributionClassifier.setEnabled(True)
-                self.radioContributionFeatureSelector.setEnabled(False)
-                self.radioContributionClassifier.setChecked(True)
-                df = pd.read_csv(coef_file_path, index_col=0)
-                value = list(np.abs(df.iloc[:, 0]))
+            if os.path.exists(shap_file_path):
+                # SHAP mode: hide selector/classifier radios, update title
+                self.radioContributionClassifier.setVisible(False)
+                self.radioContributionFeatureSelector.setVisible(False)
+                self._shap_plot_widget.setVisible(True)
+                self.label_4.setText('Feature Contribution - SHAP')
 
-                # add positive and negatiove info for coef
-                processed_feature_name = list(df.index)
-                original_value = list(df.iloc[:, 0])
-                for index in range(len(original_value)):
-                    if original_value[index] > 0:
-                        processed_feature_name[index] = processed_feature_name[index] + ' P'
-                    else:
-                        processed_feature_name[index] = processed_feature_name[index] + ' N'
+                shap_df = pd.read_csv(shap_file_path, index_col=0)
 
-                GeneralFeatureSort(processed_feature_name, value,
-                                    is_show=False, fig=self.canvasFeature.getFigure())
-            
-            else:
-                self.radioContributionClassifier.setEnabled(False)
-                self.radioContributionFeatureSelector.setEnabled(True)
-                self.radioContributionFeatureSelector.setChecked(True)
+                feature_df = None  # beeswarm uses gray dots (GetTrainDataContainer not available)
 
-                df = pd.read_csv(sort_file_path, index_col=0)
-                value = list(df.iloc[:, 0])
-
-                sort_by = df.columns.values[0]
-                if sort_by == 'rank':
-                    reverse = False
-                elif sort_by == 'F' or sort_by == 'weight':
-                    reverse = True
+                if self._radioSHAPBeeswarm.isChecked():
+                    SHAPBeeswarmPlot(shap_df, feature_df=feature_df,
+                                     max_num=max_num, is_show=False,
+                                     fig=self.canvasFeature.getFigure())
                 else:
-                    reverse = False
-                    print('Invalid feature selector sort name.')
+                    SHAPBarPlot(shap_df, max_num=max_num, is_show=False,
+                                fig=self.canvasFeature.getFigure())
 
-                # add positive and negatiove info for coef
-                processed_feature_name = list(df.index)
-                original_value = list(df.iloc[:, 0])
-                for index in range(len(original_value)):
-                    feature_select_value = original_value[index]
-                    if isinstance(feature_select_value, int):
-                        feature_select_value_name = str(feature_select_value)
-                        
-                    else:
-                        feature_select_value_name = '%.2f' % feature_select_value
+            # ── Coef/selector fallback ─────────────────────────────────────
+            else:
+                self._shap_plot_widget.setVisible(False)
+                self.radioContributionClassifier.setVisible(True)
+                self.radioContributionFeatureSelector.setVisible(True)
+                self.label_4.setText('Feature Contribution - Selector Rank')
+                coef_name = self.comboContributionClassifier.currentText() + '_coef.csv'
+                coef_file_path = os.path.join(cls_folder, coef_name)
+                sort_name = (self.comboContributionFeatureSelector.currentText()
+                             + '_sort.csv')
+                sort_file_path = os.path.join(fs_folder, sort_name)
 
-                    processed_feature_name[index] = processed_feature_name[index] + ' ' + str(feature_select_value_name)
-                GeneralFeatureSort(processed_feature_name, value, max_num=self.spinContributeFeatureNumber.value(),
-                                is_show=False, fig=self.canvasFeature.getFigure(), reverse=reverse)
-
+                if os.path.exists(coef_file_path):
+                    self.radioContributionClassifier.setEnabled(True)
+                    self.radioContributionFeatureSelector.setEnabled(False)
+                    self.radioContributionClassifier.setChecked(True)
+                    df = pd.read_csv(coef_file_path, index_col=0)
+                    value = list(np.abs(df.iloc[:, 0]))
+                    processed_feature_name = list(df.index)
+                    original_value = list(df.iloc[:, 0])
+                    for index in range(len(original_value)):
+                        suffix = ' P' if original_value[index] > 0 else ' N'
+                        processed_feature_name[index] += suffix
+                    GeneralFeatureSort(processed_feature_name, value,
+                                       is_show=False,
+                                       fig=self.canvasFeature.getFigure())
+                else:
+                    self.radioContributionClassifier.setEnabled(False)
+                    self.radioContributionFeatureSelector.setEnabled(True)
+                    self.radioContributionFeatureSelector.setChecked(True)
+                    df = pd.read_csv(sort_file_path, index_col=0)
+                    value = list(df.iloc[:, 0])
+                    sort_by = df.columns.values[0]
+                    reverse = sort_by in ('F', 'weight')
+                    processed_feature_name = list(df.index)
+                    original_value = list(df.iloc[:, 0])
+                    for index in range(len(original_value)):
+                        fv = original_value[index]
+                        processed_feature_name[index] += (
+                            ' ' + str(fv) if isinstance(fv, int)
+                            else ' %.2f' % fv)
+                    GeneralFeatureSort(processed_feature_name, value,
+                                       max_num=max_num, is_show=False,
+                                       fig=self.canvasFeature.getFigure(),
+                                       reverse=reverse)
 
             self.canvasFeature.draw()
         except Exception as e:
-            content = 'In Visualization, UpdateContribution failed'
+            content = 'UpdateContribution failed'
             QMessageBox.about(self, content, e.__str__())
 
     def SetResultDescription(self):

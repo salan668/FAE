@@ -41,6 +41,7 @@ The below modules must be installed first to make the FAE work.
 - scikit-image
 - scikit-survival
 - scipy
+- shap
 - seaborn
 - statsmodels
 - trimesh

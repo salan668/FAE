@@ -27,6 +27,12 @@ from BC.DataContainer.DataContainer import DataContainer
 from Utility.EcLog import eclog
 from BC.Utility.Constants import *
 
+try:
+    import shap as _shap_lib
+    _SHAP_AVAILABLE = True
+except ImportError:
+    _SHAP_AVAILABLE = False
+
 
 def LoadModel(store_path):
     with open(store_path, 'rb') as f:
@@ -142,6 +148,41 @@ class Classifier:
             with open(param_path, 'w') as f:
                 json.dump(self.model.get_params(), f)
 
+    def _SaveShap(self, store_folder, explainer_type='linear'):
+        """Compute and save SHAP values for training data.
+
+        Saves {ClassName}_shap.csv (samples x features, signed SHAP values).
+        explainer_type: 'linear' | 'tree'
+        Falls back silently on any error (e.g. non-linear SVM kernel).
+        """
+        if not _SHAP_AVAILABLE:
+            return
+        try:
+            X = self._x
+            feature_names = self._data_container.GetFeatureName()
+            case_names = self._data_container.GetCaseName()
+
+            if explainer_type == 'linear':
+                explainer = _shap_lib.LinearExplainer(self.model, X)
+                shap_values = explainer.shap_values(X)
+            elif explainer_type == 'tree':
+                explainer = _shap_lib.TreeExplainer(self.model)
+                shap_values = explainer.shap_values(X)
+                # sklearn tree models return list [class0, class1] for binary
+                if isinstance(shap_values, list) and len(shap_values) == 2:
+                    shap_values = shap_values[1]
+                # Or 3D array (n_samples, n_features, n_classes) - take class 1
+                elif hasattr(shap_values, 'shape') and len(shap_values.shape) == 3:
+                    shap_values = shap_values[:, :, 1]
+            else:
+                return
+
+            shap_path = os.path.join(store_folder, self.GetName() + '_shap.csv')
+            df = pd.DataFrame(shap_values, index=case_names, columns=feature_names)
+            df.to_csv(shap_path)
+        except Exception as e:
+            self.logger.warning('SHAP computation skipped for {}: {}'.format(
+                self.GetName(), str(e)))
 
     def Load(self, store_path):
         if os.path.isdir(store_path):
@@ -214,6 +255,7 @@ class SVM(Classifier):
             self.logger.error('{}{}'.format(content, str(e)))
             print('{} \n{}'.format(content, e.__str__()))
 
+        self._SaveShap(store_folder, explainer_type='linear')
         super(SVM, self).Save(store_folder)
 
 
@@ -252,6 +294,7 @@ class LDA(Classifier):
             self.logger.error('{}{}'.format(content, str(e)))
             print('{} \n{}'.format(content, e.__str__()))
 
+        self._SaveShap(store_path, explainer_type='linear')
         super(LDA, self).Save(store_path)
 
 
@@ -279,6 +322,10 @@ class RandomForest(Classifier):
             return super(RandomForest, self).GetModel().predict_proba(x)[:, 1]
         else:
             return super(RandomForest, self).Predict(x)
+
+    def Save(self, store_folder):
+        self._SaveShap(store_folder, explainer_type='tree')
+        super(RandomForest, self).Save(store_folder)
 
 
 class AE(Classifier):
@@ -326,6 +373,10 @@ class AdaBoost(Classifier):
         else:
             return super(AdaBoost, self).Predict(x)
 
+    def Save(self, store_folder):
+        self._SaveShap(store_folder, explainer_type='tree')
+        super(AdaBoost, self).Save(store_folder)
+
 
 class DecisionTree(Classifier):
     def __init__(self, **kwargs):
@@ -345,6 +396,10 @@ class DecisionTree(Classifier):
             return super(DecisionTree, self).GetModel().predict_proba(x)[:, 1]
         else:
             return super(DecisionTree, self).Predict(x)
+
+    def Save(self, store_folder):
+        self._SaveShap(store_folder, explainer_type='tree')
+        super(DecisionTree, self).Save(store_folder)
 
 
 class GaussianProcess(Classifier):
@@ -435,6 +490,7 @@ class LR(Classifier):
             self.logger.error('{}{}'.format(content, str(e)))
             print('{} \n{}'.format(content, e.__str__()))
 
+        self._SaveShap(store_path, explainer_type='linear')
         super(LR, self).Save(store_path)
 
 
@@ -487,6 +543,7 @@ class LRLasso(Classifier):
             self.logger.error('{}{}'.format(content, str(e)))
             print('{} \n{}'.format(content, e.__str__()))
 
+        self._SaveShap(store_path, explainer_type='linear')
         super(LRLasso, self).Save(store_path)
 
 
