@@ -81,10 +81,10 @@ FAE（FeAture Explorer）是一个基于 **Python + PySide6** 的桌面端放射
 当前版本信息：
 
 - `MAJOR = 0`
-- `MINOR = 7`
+- `MINOR = 8`
 - `PATCH = 0`
-- `VERSION = 0.7.0`
-- `ACCEPT_VERSION = ['0.7.0']`
+- `VERSION = 0.8.0`
+- `ACCEPT_VERSION = ['0.8.0', '0.7.0']`
 
 ### `Feature\`
 
@@ -273,7 +273,7 @@ FAE（FeAture Explorer）是一个基于 **Python + PySide6** 的桌面端放射
 
 ### 6.1 当前可明确看到的核心依赖
 
-- GUI：`PySide6`
+- GUI：`PySide6`（已完成 PyQt5 → PySide6 迁移，commit `2222cad`）
 - 数值与表格：`numpy`、`pandas`
 - 机器学习：`scikit-learn`
 - 类别不平衡：`imbalanced-learn`
@@ -284,6 +284,7 @@ FAE（FeAture Explorer）是一个基于 **Python + PySide6** 的桌面端放射
 - 报告输出：`reportlab`、`pdfdocument`
 - 打包：`PyInstaller`
 - 统计：`scipy`、`statsmodels`、`pingouin`
+- SHAP 可解释性：`shap`（0.49.1+，在 0.8.0 版本中新增）
 
 ### 6.2 依赖信息有历史漂移
 
@@ -335,13 +336,19 @@ FAE（FeAture Explorer）是一个基于 **Python + PySide6** 的桌面端放射
 - `IPython`
 - `tkinter`
 
-### 7.2.1 Qt 迁移备注
+### 7.2.1 Qt 迁移备注（已完成）
 
-项目已从 `PyQt5` 迁移到 `PySide6`。后续如果继续维护界面层，需要注意：
+项目已从 `PyQt5` **完整迁移**到 `PySide6`（commit `2222cad`）。迁移要点：
 
-- 手写窗体逻辑统一使用 `PySide6`
-- 仓库内已生成的 UI Python 文件也必须保持 `from PySide6 import QtCore, QtGui, QtWidgets`
-- matplotlib Qt 适配层当前依赖 `matplotlib.backends.backend_qtagg`
+- 全部枚举改为命名空间形式：`Qt.AlignCenter` → `Qt.AlignmentFlag.AlignCenter`，`QSizePolicy.Expanding` → `QSizePolicy.Policy.Expanding` 等
+- `QFont.setWeight()` 需要 `QFont.Weight` 枚举，不再接受 int（75=Bold, 50=Normal）
+- `QFileDialog` 静态方法不支持关键字参数（`directory=`、`filter=`），需改为位置参数（第3参数为目录，第4为过滤器）
+- `QCheckBox.setCheckState()` 需要 `Qt.CheckState` 枚举，不再接受 bool
+- `exec_()` → `exec()`
+- `pyqtSignal` → `Signal`（from PySide6.QtCore）
+- matplotlib Qt 适配层：`backend_qt5agg` → `backend_qtagg`
+- `QApplication.instance() or QApplication(sys.argv)` 防止在 IDE 环境下触发单例错误
+- `QFileDialog.DirectoryOnly` → `QFileDialog.FileMode.Directory`；`QFileDialog.ShowDirsOnly` → `QFileDialog.Option.ShowDirsOnly`
 
 ### 7.3 旧发布脚本已过时
 
@@ -447,8 +454,8 @@ FAE（FeAture Explorer）是一个基于 **Python + PySide6** 的桌面端放射
 
 当前至少有这些不一致：
 
-- 版本常量已经是 `0.7.0`
-- `Release.bat` 仍然写 `0.6.6`
+- 版本常量已经是 `0.8.0`
+- `Release.bat` 仍然写 `0.6.6`（已过时，勿用）
 - README 的依赖版本与 `install.bat` 不完全一致
 
 ### 10.2 UI 编译链依赖手工维护
@@ -535,5 +542,52 @@ FAE（FeAture Explorer）是一个基于 **Python + PySide6** 的桌面端放射
 
 ## 13. 一句话总记忆
 
-**FAE 是一个由 `MainFrameCall.py` / `MainFrameCall_opt.py` 启动、由 `HomeUI\HomePageForm.py` 统一导航的 PyQt 桌面放射组学工具；其核心由 `Feature`、`BC`、`SA` 三大模块组成，使用 PyInstaller 打包，并带有一个基于 `config.json` + `os.system(...)` 的轻量插件机制。**
+**FAE 是一个由 `MainFrameCall.py` / `MainFrameCall_opt.py` 启动、由 `HomeUI\HomePageForm.py` 统一导航的 PySide6 桌面放射组学工具；其核心由 `Feature`、`BC`、`SA` 三大模块组成，使用 PyInstaller 打包，并带有一个基于 `config.json` + `os.system(...)` 的轻量插件机制。BC 模块在 0.8.0 版本中引入了 SHAP 可解释性可视化。**
+
+---
+
+## 14. v0.8.0 重要变更记录（2025 年迁移与功能扩展）
+
+### 14.1 PyQt5 → PySide6 完整迁移（commit `2222cad` ~ `5b1e0fa`）
+
+涉及文件约 25 个，核心改动模式：
+
+- 所有枚举加命名空间前缀（见 §7.2.1）
+- `QFileDialog` 静态方法参数改为位置参数
+- `QFont.setWeight` 改为 `QFont.Weight.Bold/Normal`
+- `QCheckBox.setCheckState` 改为 `Qt.CheckState.Checked/Unchecked`
+- matplotlib backend 改为 `backend_qtagg`
+- `exec_()` → `exec()`，`pyqtSignal` → `Signal`
+
+### 14.2 BC 模块 SHAP 可解释性可视化（commit `fa0018f`）
+
+#### 架构
+
+- **训练阶段**：`BC\FeatureAnalysis\Classifier.py` — 每个分类器 `Save()` 末尾调用 `_SaveShap()`，将样本×特征的 signed SHAP 值保存为 `{Name}_shap.csv`
+  - LinearExplainer：SVM（linear kernel）、LR、LRLasso、LDA
+  - TreeExplainer：RF、DT
+  - AdaBoost：shap 0.49.1 不支持，静默降级
+- **可视化**：`BC\Visualization\FeatureSort.py`
+  - `SHAPBarPlot(shap_df, max_num, fig)`：按 `|mean SHAP|` 降序排列（最重要在底部），RdBu_r 颜色区分正负，含 colorbar
+  - `SHAPBeeswarmPlot(shap_df, feature_df, max_num, fig)`：每个样本一个散点，灰色（feature_df 暂不可用）
+
+#### UI 逻辑（`BC\GUI\VisualizationForm.py` → `UpdateContribution()`）
+
+- SHAP 文件存在 → 隐藏 Selector/Classifier 单选、标题改为 "Feature Contribution - SHAP"、显示 Bar/Beeswarm 单选（位于 plot 下方）
+- SHAP 文件不存在 → 显示原 Selector/Classifier 单选、标题改为 "Feature Contribution - Selector Rank"
+
+#### 关键约束
+
+- `verticalLayout_5`（QVBoxLayout）是 Feature Contribution 面板的正确父布局；直接用 `self.verticalLayout_5`，不要用 `canvasFeature.parent().layout()`（会得到 `gridLayout_4`）
+- SHAP Bar/Beeswarm 单选插入位置：`canvasFeature` 下方（`_idx + 1`），与 Feature Sort 布局对齐
+- Beeswarm 的特征值着色需要 `GetTrainDataContainer()`，该方法在 `PipelinesManager` 上不存在，当前使用灰色散点降级
+
+### 14.3 近期 commit 速查
+
+| Commit | 内容 |
+|--------|------|
+| `2222cad` | PyQt5 → PySide6 完整迁移 |
+| `8bb8fb9` | QApplication 单例错误修复 |
+| `5b1e0fa` | PySide6 运行时兼容修复 + 版本升至 0.8.0 |
+| `fa0018f` | BC 模块 SHAP 特征贡献可视化（Bar + Beeswarm） |
 
