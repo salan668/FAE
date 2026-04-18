@@ -1,0 +1,45 @@
+# FAE - FeAture Explorer
+# Requirements for Python 3.11
+# Generated from actual codebase imports + current fae conda environment
+#
+# Setup:
+#   conda create -n fae python=3.11
+#   conda activate fae
+#   pip install -r requirements.txt
+
+# GUI
+PySide6==6.11.0
+
+# Numerical & data
+numpy==2.0.2
+pandas==2.2.3
+scipy==1.15.3
+
+# Machine learning
+scikit-learn==1.7.2
+imbalanced-learn==0.14.1
+shap==0.49.1
+
+# Survival analysis
+lifelines==0.30.0
+scikit-survival==0.25.0
+
+# Radiomics / medical imaging
+pyradiomics==3.0.1
+SimpleITK==2.4.0
+
+# Visualization
+matplotlib==3.10.0
+seaborn==0.13.2
+
+# Statistics
+statsmodels==0.14.4
+pingouin==0.5.5
+
+# Report generation
+reportlab==4.2.5
+pdfdocument==4.0.0
+
+# Configuration
+PyYAML==6.0.2
+
