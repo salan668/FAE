@@ -14,7 +14,7 @@ If FAE could help in your project, We appreciate that you could cite this work:
 
 Welcome any issues and PR. 
 
-![Python](https://img.shields.io/badge/python-v3.7-blue.svg)
+![Python](https://img.shields.io/badge/python-3.11-blue.svg)
 ![Contributions welcome](https://img.shields.io/badge/contributions-welcome-orange.svg)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
@@ -22,55 +22,75 @@ Welcome any issues and PR.
 
 The Windows64 version and the Ubuntut 20.04 release could be found [Google Drive](https://drive.google.com/open?id=1htts7YsfaxKtN1NeDcNU4iksXfjr_XyK) or [SourceForce](https://sourceforge.net/projects/feature-explorer/). A short [tutorial video](https://www.bilibili.com/video/BV1yt4y1S79S/) with Chinese version may help.
 
-## Pre-install
-The below modules must be installed first to make the FAE work. 
+## Installation
 
-```
-- imbalanced-learn
-- lifelines
-- matplotlib (version must support `matplotlib.backends.backend_qtagg`)
-- numpy
-- pandas
-- pdfdocument
-- pillow
-- PySide6
-- PyQtGraph
-- pyradiomics
-- reportlab
-- scikit-learn
-- scikit-image
-- scikit-survival
-- scipy
-- shap
-- seaborn
-- statsmodels
-- trimesh
-- yaml
-```
-
-### Installing
-Just clone it by typing in:
-
-```
+```bash
 git clone https://github.com/salan668/FAE.git
+cd FAE
+conda create -n fae python=3.11
+conda activate fae
+pip install -r requirements.txt
 ```
-The checked-in UI Python modules are maintained for runtime convenience. If you need to regenerate them from `.ui` files, use a PySide6-compatible workflow and verify the generated imports remain `from PySide6 import QtCore, QtGui, QtWidgets` before committing further changes.
 
-### Main Architecture of Project 
-- **HomePage**: The ui file and the Starting page for all modules.
-- **Feature**
-  - **SeriesMatcher**. The File matcher to help determine the image files and the ROI files for each folder.
-  - **GUI**. The ui file and the corresponding logical files including feature extraction and feature merge.
-- **BC**: Binary Classification Pipeline
-  - **DataContainer**. The data structure including feature array, label, cases ID, and feature names. 
-  - **Description**. The PDF generator to describe the developed BC model.
-  - **FeatureAnalysis**. The module of the feature pipeline, including Data Balance, Normalization, Dimension Reduction, Feature Selector, Classifier, Cross Validation and the Pipeline Structure.
-  - **Visualization**. The common visualized plots, like ROC curve and the plot of AUC against different parameters.
-  - **GUI**. The ui files and the corresponding logical files including pre-process, model development, and visualization.
-- **SA**: Survival Analysis Pipeline
-  - **Pipeline**. Similar structure to BC and different modules.
-  - **GUI**. The ui files and the corresponding logical files including model development, and visualization.
-- **Plugin**: Plugin manager
+## Running
+
+```bash
+python MainFrameCall.py
+```
+
+## Generating UI Files
+
+The `.py` modules corresponding to each `.ui` file are checked into the repository for convenience, but must be regenerated whenever a `.ui` file is modified. Use the `pyside6-uic` tool that ships with PySide6:
+
+```bash
+pyside6-uic HomeUI/HomePage.ui                    -o HomeUI/HomePage.py
+pyside6-uic Feature/GUI/FeatureExtraction.ui      -o Feature/GUI/FeatureExtraction.py
+pyside6-uic Feature/GUI/FeatureMerge.ui           -o Feature/GUI/FeatureMerge.py
+pyside6-uic Feature/GUI/IccEstimation.ui          -o Feature/GUI/IccEstimation.py
+pyside6-uic BC/GUI/Prepare.ui                     -o BC/GUI/Prepare.py
+pyside6-uic BC/GUI/Process.ui                     -o BC/GUI/Process.py
+pyside6-uic BC/GUI/Visualization.ui               -o BC/GUI/Visualization.py
+pyside6-uic BC/GUI/ModelPrediction.ui             -o BC/GUI/ModelPrediction.py
+pyside6-uic SA/GUI/Prepare.ui                     -o SA/GUI/Prepare.py
+pyside6-uic SA/GUI/Process.ui                     -o SA/GUI/Process.py
+pyside6-uic SA/GUI/Visualization.ui               -o SA/GUI/Visualization.py
+```
+
+> After regenerating, verify that the generated files import from `PySide6` (e.g. `from PySide6 import QtCore, QtGui, QtWidgets`) before committing.
+
+## Project Structure
+
+```
+FAE/
+├── MainFrameCall.py          # Application entry point
+├── MainFrameCall_opt.py      # Entry point (compatibility mode, disables native dialogs)
+├── HomeUI/                   # Main window and navigation hub
+│   ├── HomePageForm.py       # Central controller; owns all submodule instances
+│   ├── HomePage.ui / .py     # Qt Designer layout and generated code
+│   └── VersionConstant.py    # Version number (MAJOR.MINOR.PATCH)
+├── Feature/                  # Radiomics feature engineering
+│   ├── FileMatcher.py        # Case / image / ROI file matching
+│   ├── SeriesMatcher.py      # Series string matching
+│   ├── RadiomicsParamsConfig.py
+│   └── GUI/                  # Feature extraction, merge, and ICC estimation forms
+├── BC/                       # Binary Classification pipeline
+│   ├── DataContainer/        # Feature matrix, labels, and case IDs
+│   ├── FeatureAnalysis/      # Balance → Normalize → Reduce → Select → Classify → CV
+│   ├── Visualization/        # ROC curves, AUC plots, SHAP bar/beeswarm
+│   ├── Description/          # PDF report generation
+│   ├── HyperParameters/      # Classifier and selector hyperparameter configs (JSON)
+│   └── GUI/                  # Preprocessing, model exploration, and visualization forms
+├── SA/                       # Survival Analysis pipeline (mirrors BC structure)
+│   ├── PipelineManager.py    # SA pipeline orchestrator
+│   ├── DataContainer.py
+│   └── GUI/                  # Model exploration and visualization forms
+├── Plugin/                   # Plugin launcher
+│   └── PluginManager.py      # Discovers plugins via config.json, runs via os.system()
+├── Utility/                  # Shared utilities (logging, path helpers, radiomics utils)
+├── src/                      # Image assets (PNG icons for the UI)
+├── Example/                  # Sample data
+└── requirements.txt
+```
 
 ## License 
 This project is licensed under the Apache 2.0 License
