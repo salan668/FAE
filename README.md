@@ -16,7 +16,7 @@ Welcome any issues and PR.
 
 ![Python](https://img.shields.io/badge/python-v3.7-blue.svg)
 ![Contributions welcome](https://img.shields.io/badge/contributions-welcome-orange.svg)
-[![License](https://img.shields.io/badge/license-GPL3.0-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.en.html)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
 ## Release
 
@@ -73,7 +73,7 @@ The checked-in UI Python modules are maintained for runtime convenience. If you 
 - **Plugin**: Plugin manager
 
 ## License 
-This project is licensed under the GPL 3.0 License
+This project is licensed under the Apache 2.0 License
 
 ## Contributor and Acknowledge List
 - Developer:

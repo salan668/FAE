@@ -1,5 +1,5 @@
 """
-All rights reserved.
+Licensed under the Apache License, Version 2.0.
 --Yang Song, Apr 7th, 2020
 """
 from sklearn.model_selection import StratifiedKFold, LeaveOneOut
