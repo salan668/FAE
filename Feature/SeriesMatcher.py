@@ -1,7 +1,7 @@
 """
 SeriesStringMatch could find a specific series from a series list.
 
-All rights reserved.
+Licensed under the Apache License, Version 2.0.
 --Created by Yang Song. On Mar-10-2020
 """
 
