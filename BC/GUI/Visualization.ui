@@ -129,8 +129,14 @@
       </layout>
      </item>
      <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_6">
-       <item>
+      <widget class="QTabWidget" name="tabVisualization">
+       <property name="currentIndex">
+        <number>0</number>
+       </property>
+       <widget class="QWidget" name="tabROC">
+        <attribute name="title">
+         <string>ROC Curve / Result</string>
+        </attribute>
         <layout class="QVBoxLayout" name="verticalLayout_3">
          <item>
           <widget class="QLabel" name="label_2">
@@ -197,8 +203,11 @@
           </layout>
          </item>
         </layout>
-       </item>
-       <item>
+       </widget>
+       <widget class="QWidget" name="tabPlot">
+        <attribute name="title">
+         <string>Hyper Parameters</string>
+        </attribute>
         <layout class="QVBoxLayout" name="verticalLayout_4">
          <item>
           <widget class="QLabel" name="label_3">
@@ -289,8 +298,11 @@
           </layout>
          </item>
         </layout>
-       </item>
-       <item>
+       </widget>
+       <widget class="QWidget" name="tabFeature">
+        <attribute name="title">
+         <string>Feature Contribution</string>
+        </attribute>
         <layout class="QVBoxLayout" name="verticalLayout_5">
          <item>
           <widget class="QLabel" name="label_4">
@@ -354,8 +366,8 @@
           </layout>
          </item>
         </layout>
-       </item>
-      </layout>
+       </widget>
+      </widget>
      </item>
     </layout>
    </item>
