@@ -85,6 +85,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
 
         # --- SHAP plot type selector (below canvasFeature, like Feature Sort radios) ---
         self._shap_plot_widget = QWidget()
+        self._shap_plot_widget.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
         _shap_layout = QHBoxLayout(self._shap_plot_widget)
         _shap_layout.setContentsMargins(0, 0, 0, 0)
         self._radioSHAPBar = QRadioButton("Bar")
