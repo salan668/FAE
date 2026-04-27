@@ -155,3 +155,5 @@ HomeUI/HomePage.py
 SA/GUI/Prepare.py
 SA/GUI/Process.py
 SA/GUI/Visualization.py
+
+.worktrees/
