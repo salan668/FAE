@@ -102,6 +102,19 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self._shap_plot_widget.setVisible(False)  # hidden until SHAP data available
         self._radioSHAPBar.toggled.connect(self.UpdateContribution)
 
+        # Redraw the active canvas when the user switches tabs (matplotlib needs this)
+        self.tabVisualization.currentChanged.connect(self._on_tab_changed)
+
+    def _on_tab_changed(self, index: int):
+        if not self.__is_ui_ready:
+            return
+        if index == 0:
+            self.canvasROC.draw()
+        elif index == 1:
+            self.canvasPlot.draw()
+        elif index == 2:
+            self.canvasFeature.draw()
+
     def closeEvent(self, QCloseEvent):
         self.close_signal.emit(True)
         QCloseEvent.accept()
@@ -500,6 +513,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                 self.radioContributionFeatureSelector.setVisible(False)
                 self._shap_plot_widget.setVisible(True)
                 self.label_4.setText('Feature Contribution - SHAP')
+                self.tabVisualization.setTabText(2, 'Feature Contribution - SHAP')
 
                 shap_df = pd.read_csv(shap_file_path, index_col=0)
 
@@ -519,6 +533,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                 self.radioContributionClassifier.setVisible(True)
                 self.radioContributionFeatureSelector.setVisible(True)
                 self.label_4.setText('Feature Contribution - Selector Rank')
+                self.tabVisualization.setTabText(2, 'Feature Contribution - Selector Rank')
                 coef_name = self.comboContributionClassifier.currentText() + '_coef.csv'
                 coef_file_path = os.path.join(cls_folder, coef_name)
                 sort_name = (self.comboContributionFeatureSelector.currentText()
@@ -720,8 +735,8 @@ class VisualizationConnection(QWidget, Ui_Visualization):
             self.comboFeatureSelector.setCurrentText(current_fs)
             self.comboClassifier.setCurrentText(current_cls)
             self.spinBoxFeatureNumber.setValue(int(current_fn))
-            if not (self.checkROCTrain.isChecked()or
-                    self.checkROCCVValidation.isChecked() or self.checkROCTrain.isChecked()):
+            if not (self.checkROCTrain.isChecked() or
+                    self.checkROCCVValidation.isChecked() or self.checkROCTest.isChecked()):
                 self.checkROCTrain.setCheckState(Qt.CheckState.Checked)
                 self.checkROCCVValidation.setCheckState(Qt.CheckState.Checked)
             self.UpdateROC()
@@ -733,7 +748,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
             self.comboPlotClassifier.setCurrentText(current_cls)
             self.comboPlotX.setCurrentText('Feature Number')
             if not (self.checkPlotTrain.isChecked() or
-                    self.checkPlotTrain.isChecked() or
+                    self.checkPlotTest.isChecked() or
                     self.checkPlotCVValidation.isChecked()):
                 self.checkPlotCVValidation.setCheckState(Qt.CheckState.Checked)
             self.UpdatePlot()
