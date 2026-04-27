@@ -115,6 +115,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         elif index == 2:
             self.canvasFeature.draw()
 
+    def closeEvent(self, QCloseEvent):
         self.close_signal.emit(True)
         QCloseEvent.accept()
 
@@ -734,8 +735,8 @@ class VisualizationConnection(QWidget, Ui_Visualization):
             self.comboFeatureSelector.setCurrentText(current_fs)
             self.comboClassifier.setCurrentText(current_cls)
             self.spinBoxFeatureNumber.setValue(int(current_fn))
-            if not (self.checkROCTrain.isChecked()or
-                    self.checkROCCVValidation.isChecked() or self.checkROCTrain.isChecked()):
+            if not (self.checkROCTrain.isChecked() or
+                    self.checkROCCVValidation.isChecked() or self.checkROCTest.isChecked()):
                 self.checkROCTrain.setCheckState(Qt.CheckState.Checked)
                 self.checkROCCVValidation.setCheckState(Qt.CheckState.Checked)
             self.UpdateROC()
@@ -747,7 +748,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
             self.comboPlotClassifier.setCurrentText(current_cls)
             self.comboPlotX.setCurrentText('Feature Number')
             if not (self.checkPlotTrain.isChecked() or
-                    self.checkPlotTrain.isChecked() or
+                    self.checkPlotTest.isChecked() or
                     self.checkPlotCVValidation.isChecked()):
                 self.checkPlotCVValidation.setCheckState(Qt.CheckState.Checked)
             self.UpdatePlot()
