@@ -11,7 +11,7 @@ from BC.FeatureAnalysis.Pipelines import PipelinesManager
 from BC.Description.Description import Description
 from BC.Visualization.DrawROCList import DrawROCList, DrawPRCurveList
 from BC.Visualization.PlotMetricVsFeatureNumber import DrawCurve, DrawBar
-from BC.Visualization.FeatureSort import GeneralFeatureSort, SHAPBarPlot, SHAPBeeswarmPlot
+from BC.Visualization.FeatureSort import GeneralFeatureSort, SHAPBeeswarmPlot
 from Utility.EcLog import eclog
 from BC.Utility.Constants import *
 
@@ -82,26 +82,6 @@ class VisualizationConnection(QWidget, Ui_Visualization):
         self.comboContributionFeatureSelector.currentIndexChanged.connect(self.UpdateContribution)
         self.comboContributionClassifier.currentIndexChanged.connect(self.UpdateContribution)
         self.spinContributeFeatureNumber.valueChanged.connect(self.UpdateContribution)
-
-        # --- SHAP plot type selector (below canvasFeature, like Feature Sort radios) ---
-        self._shap_plot_widget = QWidget()
-        self._shap_plot_widget.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
-        _shap_layout = QHBoxLayout(self._shap_plot_widget)
-        _shap_layout.setContentsMargins(0, 0, 0, 0)
-        self._radioSHAPBar = QRadioButton("Bar")
-        self._radioSHAPBeeswarm = QRadioButton("Beeswarm")
-        self._radioSHAPBar.setChecked(True)
-        self._radioSHAPBar.setToolTip("Mean |SHAP| bar chart")
-        self._radioSHAPBeeswarm.setToolTip("Per-sample SHAP scatter plot")
-        _shap_layout.addWidget(self._radioSHAPBar)
-        _shap_layout.addWidget(self._radioSHAPBeeswarm)
-        _shap_layout.addStretch()
-        # Insert immediately after canvasFeature (below plot, above combo boxes)
-        _parent_layout = self.verticalLayout_5
-        _idx = _parent_layout.indexOf(self.canvasFeature)
-        _parent_layout.insertWidget(_idx + 1, self._shap_plot_widget)
-        self._shap_plot_widget.setVisible(False)  # hidden until SHAP data available
-        self._radioSHAPBar.toggled.connect(self.UpdateContribution)
 
         # Redraw the active canvas when the user switches tabs (matplotlib needs this)
         self.tabVisualization.currentChanged.connect(self._on_tab_changed)
@@ -512,25 +492,15 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                 # SHAP mode: hide selector/classifier radios, update title
                 self.radioContributionClassifier.setVisible(False)
                 self.radioContributionFeatureSelector.setVisible(False)
-                self._shap_plot_widget.setVisible(True)
                 self.label_4.setText('Feature Contribution - SHAP')
                 self.tabVisualization.setTabText(2, 'Feature Contribution - SHAP')
 
                 shap_df = pd.read_csv(shap_file_path, index_col=0)
-
-                feature_df = None  # beeswarm uses gray dots (GetTrainDataContainer not available)
-
-                if self._radioSHAPBeeswarm.isChecked():
-                    SHAPBeeswarmPlot(shap_df, feature_df=feature_df,
-                                     max_num=max_num, is_show=False,
-                                     fig=self.canvasFeature.getFigure())
-                else:
-                    SHAPBarPlot(shap_df, max_num=max_num, is_show=False,
-                                fig=self.canvasFeature.getFigure())
+                SHAPBeeswarmPlot(shap_df, max_num=max_num, is_show=False,
+                                 fig=self.canvasFeature.getFigure())
 
             # ── Coef/selector fallback ─────────────────────────────────────
             else:
-                self._shap_plot_widget.setVisible(False)
                 self.radioContributionClassifier.setVisible(True)
                 self.radioContributionFeatureSelector.setVisible(True)
                 self.label_4.setText('Feature Contribution - Selector Rank')
