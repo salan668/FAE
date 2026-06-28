@@ -117,7 +117,7 @@ class Classifier:
         return pred, dc.GetLabel()
 
     def HyperFit(self, param_grid, cv_parts=5):
-        if isinstance(param_grid, dict):
+        if isinstance(param_grid, (dict, list)):
             grid_search = GridSearchCV(estimator=self.model, param_grid=param_grid, cv=cv_parts, scoring="accuracy", n_jobs=-1)
             grid_search.fit(self._x, self._y)
 
@@ -146,7 +146,13 @@ class Classifier:
             store_folder = os.path.split(store_path)[0]
             param_path = os.path.join(store_folder, 'model_param.json')
             with open(param_path, 'w') as f:
-                json.dump(self.model.get_params(), f)
+                json.dump(self.model.get_params(), f, default=str)
+
+            # Always persist the actual parameters used by the trained model,
+            # regardless of whether Hyper-Parameters search was enabled.
+            used_hyper_param_path = os.path.join(store_folder, 'used_hyper_param.json')
+            with open(used_hyper_param_path, 'w') as f:
+                json.dump(self.model.get_params(), f, default=str)
 
     def _SaveShap(self, store_folder, explainer_type='linear'):
         """Compute and save SHAP values for training data.

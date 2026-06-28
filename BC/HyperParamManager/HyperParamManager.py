@@ -16,6 +16,24 @@ class HyperParameterManager:
         self.param_setting = [{}]
         pass
 
+    def _NormalizeSetting(self, settings):
+        if isinstance(settings, dict):
+            settings = [settings]
+        if not isinstance(settings, list):
+            return [{}]
+
+        normalized_settings = []
+        for one in settings:
+            if not isinstance(one, dict):
+                continue
+            new_one = {}
+            for key, item in one.items():
+                if item != 'None':
+                    new_one[key] = item
+            normalized_settings.append(new_one)
+
+        return normalized_settings if normalized_settings else [{}]
+
     def CleanJsonList(self):
         new_param_settting = []
         for one_param in self.param_setting:
@@ -38,12 +56,10 @@ class HyperParameterManager:
         try:
             with open(config_path, 'r') as file:
                 json_all = json.load(file, strict=False)
-                self.param_setting = json_all['setting'][0]
-                # self.param_setting = dict(ParameterGrid(json_all['setting']))
-                # self.CleanJsonList()
+                self.param_setting = self._NormalizeSetting(json_all.get('setting', [{}]))
         except Exception:
             print('traceback.format_exc():\n', traceback.format_exc())
-            self.param_setting = {}
+            self.param_setting = [{}]
             pass
 
     def GetParameterSetting(self):
