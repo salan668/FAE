@@ -17,7 +17,11 @@ from BC.FeatureAnalysis.DimensionReduction import *
 from BC.FeatureAnalysis.FeatureSelector import *
 from BC.FeatureAnalysis.Classifier import *
 from BC.FeatureAnalysis.Pipelines import PipelinesManager
-from BC.FeatureAnalysis.CrossValidation import ArbitratyCrossValidation
+from BC.FeatureAnalysis.CrossValidation import (
+    ArbitratyCrossValidation,
+    GetMaximumCvParts,
+    ValidateCvParts,
+)
 
 from BC.FeatureAnalysis.IndexDict import Index2Dict
 from BC.HyperParamManager.HyperParamManager import GetClassifierHyperParams
@@ -181,7 +185,7 @@ class ProcessConnection(QWidget, Ui_Process):
                 self.UpdateDataDescription()
                 self.logger.info('Open CSV file ' + file_name + ' succeed.')
                 self.spinBoxMaxFeatureNumber.setValue(len(self.training_data_container.GetFeatureName()))
-                self.spinCvFold.setMaximum(len(self.training_data_container.GetCaseName()))
+                self.spinCvFold.setMaximum(GetMaximumCvParts(self.training_data_container.GetLabel()))
                 self.SetDefaultParam()
             except OSError as reason:
                 error_message = 'Error opening CSV file. The reason is ' + str(reason)
@@ -362,6 +366,14 @@ class ProcessConnection(QWidget, Ui_Process):
         if self.training_data_container.IsEmpty():
             QMessageBox.about(self, '', 'Training data is empty.')
             self.logger.info('Training data is empty.')
+            return
+
+        try:
+            ValidateCvParts(self.training_data_container.GetLabel(), self.spinCvFold.value())
+        except ValueError as error:
+            message = str(error)
+            self.logger.error(message)
+            QMessageBox.warning(self, 'Cross Validation Error', message)
             return
 
         dlg = QFileDialog()

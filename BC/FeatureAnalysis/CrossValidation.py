@@ -2,9 +2,28 @@
 Licensed under the Apache License, Version 2.0.
 --Yang Song, Apr 7th, 2020
 """
+import numpy as np
+
 from sklearn.model_selection import StratifiedKFold, LeaveOneOut
 
 from BC.DataContainer.DataContainer import DataContainer
+
+
+def GetMaximumCvParts(labels):
+    _, counts = np.unique(labels, return_counts=True)
+    if len(counts) < 2 or counts.min() < 2:
+        raise ValueError('Cross-validation requires at least 2 cases in each class.')
+    return int(counts.min())
+
+
+def ValidateCvParts(labels, cv_parts):
+    maximum = GetMaximumCvParts(labels)
+    if cv_parts > maximum:
+        raise ValueError(
+            'Cross-validation cannot use {} folds because the smallest class has {} cases.'
+            .format(cv_parts, maximum)
+        )
+    return cv_parts
 
 
 class BaseCrossValidation(object):
