@@ -260,8 +260,13 @@ class SVM(Classifier):
         else:
             for filename in ('SVM_coef.csv', 'SVM_shap.csv'):
                 output_path = os.path.join(store_folder, filename)
-                if os.path.exists(output_path):
-                    os.remove(output_path)
+                if os.path.isfile(output_path):
+                    try:
+                        os.remove(output_path)
+                    except OSError as e:
+                        self.logger.warning(
+                            'Failed to remove stale SVM artifact {}: {}'.format(
+                                output_path, str(e)))
 
         # Save the intercept_
         try:

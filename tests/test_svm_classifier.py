@@ -56,6 +56,25 @@ class SvmClassifierTest(unittest.TestCase):
             self.assertFalse(os.path.exists(os.path.join(store_folder, 'SVM_coef.csv')))
             self.assertFalse(os.path.exists(os.path.join(store_folder, 'SVM_shap.csv')))
 
+    def test_non_linear_svm_save_continues_when_stale_output_cleanup_fails(self):
+        classifier = SVM(kernel='rbf')
+        classifier.SetDataContainer(self.data)
+        classifier.Fit()
+
+        with tempfile.TemporaryDirectory() as store_folder:
+            stale_path = os.path.join(store_folder, 'SVM_coef.csv')
+            with open(stale_path, 'w') as output:
+                output.write('stale')
+
+            with patch('BC.FeatureAnalysis.Classifier.os.remove',
+                       side_effect=OSError('cleanup denied')):
+                with self.assertLogs(classifier.logger, logging.WARNING) as logs:
+                    classifier.Save(store_folder)
+
+            self.assertTrue(os.path.exists(os.path.join(store_folder, 'model.pickle')))
+            self.assertIn(stale_path, '\n'.join(logs.output))
+            self.assertIn('cleanup denied', '\n'.join(logs.output))
+
     def test_linear_svm_is_saved_when_coefficient_export_fails(self):
         classifier = SVM(kernel='linear')
         classifier.SetData(self.data.GetArray(), self.data.GetLabel())
