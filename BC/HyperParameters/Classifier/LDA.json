@@ -2,7 +2,7 @@
 
 "setting":
 [
-{"solver": ["svd"]},
+{"solver": ["svd"], "shrinkage": [null]},
 {"solver": ["lsqr"], "shrinkage": ["auto"]},
 {"solver": ["eigen"], "shrinkage": ["auto"]}
 ]}

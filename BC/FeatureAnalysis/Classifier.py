@@ -40,6 +40,14 @@ def LoadModel(store_path):
         return model
 
 
+def HasEffectiveParameterGrid(param_grid):
+    if isinstance(param_grid, dict):
+        return bool(param_grid)
+    if isinstance(param_grid, list):
+        return any(isinstance(grid, dict) and bool(grid) for grid in param_grid)
+    return False
+
+
 class Classifier:
     """
     This is the base class of the classifer. All the specific classifier need to be artributed from this base class.
@@ -102,7 +110,7 @@ class Classifier:
         self.model.set_params(**param)
 
     def Fit(self, hyper_param={}, cv_part=5):
-        if len(hyper_param) > 0:
+        if HasEffectiveParameterGrid(hyper_param):
             grid_search = GridSearchCV(estimator=self.model,
                                        param_grid=hyper_param,
                                        cv=cv_part, scoring="accuracy",
@@ -117,8 +125,8 @@ class Classifier:
         return pred, dc.GetLabel()
 
     def HyperFit(self, param_grid, cv_parts=5):
-        if isinstance(param_grid, (dict, list)):
-            grid_search = GridSearchCV(estimator=self.model, param_grid=param_grid, cv=cv_parts, scoring="accuracy", n_jobs=-1)
+        if HasEffectiveParameterGrid(param_grid):
+            grid_search = GridSearchCV(estimator=self.model, param_grid=param_grid, cv=cv_parts, scoring="accuracy", n_jobs=1)
             grid_search.fit(self._x, self._y)
 
             self.model = grid_search.best_estimator_
@@ -239,16 +247,21 @@ class SVM(Classifier):
             print('The store function of SVM must be a folder path')
             return
 
-        # Save the coefficients
-        try:
-            coef_path = os.path.join(store_folder, 'SVM_coef.csv')
-            df = pd.DataFrame(data=np.transpose(self.GetModel().coef_),
-                              index=self._data_container.GetFeatureName(), columns=['Coef'])
-            df.to_csv(coef_path)
-        except Exception as e:
-            content = 'SVM with specific kernel does not give coef: '
-            self.logger.error('{}{}'.format(content, str(e)))
-            print('{} \n{}'.format(content, e.__str__()))
+        if self.GetModel().kernel == 'linear':
+            try:
+                coef_path = os.path.join(store_folder, 'SVM_coef.csv')
+                df = pd.DataFrame(data=np.transpose(self.GetModel().coef_),
+                                  index=self._data_container.GetFeatureName(), columns=['Coef'])
+                df.to_csv(coef_path)
+            except Exception as e:
+                content = 'SVM coefficient export failed: '
+                self.logger.error('{}{}'.format(content, str(e)))
+                print('{} \n{}'.format(content, e.__str__()))
+        else:
+            for filename in ('SVM_coef.csv', 'SVM_shap.csv'):
+                output_path = os.path.join(store_folder, filename)
+                if os.path.exists(output_path):
+                    os.remove(output_path)
 
         # Save the intercept_
         try:
@@ -261,7 +274,8 @@ class SVM(Classifier):
             self.logger.error('{}{}'.format(content, str(e)))
             print('{} \n{}'.format(content, e.__str__()))
 
-        self._SaveShap(store_folder, explainer_type='linear')
+        if self.GetModel().kernel == 'linear':
+            self._SaveShap(store_folder, explainer_type='linear')
         super(SVM, self).Save(store_folder)
 
 
@@ -380,7 +394,7 @@ class AdaBoost(Classifier):
             return super(AdaBoost, self).Predict(x)
 
     def Save(self, store_folder):
-        self._SaveShap(store_folder, explainer_type='tree')
+        # SHAP 0.49.1 TreeExplainer does not support AdaBoostClassifier.
         super(AdaBoost, self).Save(store_folder)
 
 
