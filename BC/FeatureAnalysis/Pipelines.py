@@ -7,11 +7,13 @@ import os
 import pickle
 import pandas as pd
 import csv
+import inspect
 import numpy as np
 from copy import deepcopy
 
 from BC.DataContainer.DataContainer import DataContainer
 from BC.FeatureAnalysis.IndexDict import Index2Dict
+from BC.FeatureAnalysis.NestedValidation import NestedPipelineEvaluator
 from BC.FeatureAnalysis.Normalizer import NormalizerNone
 from BC.FeatureAnalysis.DimensionReduction import DimensionReductionByPCC
 from BC.Func.Metric import EstimatePrediction
@@ -21,6 +23,17 @@ from BC.Utility.PathManager import MakeFolder
 from BC.Utility.Constants import *
 
 from HomeUI.VersionConstant import *
+
+
+def _DeepcopyClassifier(classifier):
+    copy_method = getattr(classifier, '__deepcopy__', None)
+    if copy_method is not None:
+        try:
+            if not inspect.signature(copy_method).parameters:
+                return copy_method()
+        except (TypeError, ValueError):
+            pass
+    return deepcopy(classifier)
 
 
 class PipelinesManager(object):
@@ -219,6 +232,10 @@ class PipelinesManager(object):
         return normalizer_folder, dr_folder, fs_folder, cls_folder
 
     def Run(self, train_container, test_container=DataContainer(), store_folder='', is_train_cutoff=False):
+        classifier_templates = [
+            _DeepcopyClassifier(classifier)
+            for classifier in self.classifier_list
+        ]
         self.SavePipelineInfo(store_folder)
         num = 0
 
@@ -263,6 +280,7 @@ class PipelinesManager(object):
                                 fs_test_container = dr_test_container
 
                         for cls_index, cls in enumerate(self.classifier_list):
+                            classifier_template = classifier_templates[cls_index]
                             cls_store_folder = MakeFolder(fs_store_folder, cls.GetName())
                             model_name = self.GetStoreName(normalizer.GetName(),
                                                            dr.GetName(),
@@ -271,43 +289,67 @@ class PipelinesManager(object):
                                                            cls.GetName())
                             matrics_index = (norm_index, dr_index, fs_index, fn_index, cls_index)
 
-                            cls.SetDataContainer(fs_balance_train_container)
-                            cls.SetSeed(self.random_seed)
-                            if cls.GetName() in self.hyper_param.keys():
-                                cls.Fit(self.hyper_param[cls.GetName()], self.cv.cv_part)
-                            else:
-                                cls.Fit(cv_part=self.cv.cv_part)
+                            evaluator = NestedPipelineEvaluator(
+                                self.balance,
+                                normalizer,
+                                dr,
+                                fs,
+                                fn,
+                                classifier_template,
+                                self.hyper_param.get(
+                                    classifier_template.GetName(), {}
+                                ),
+                                self.cv.cv_part,
+                            )
+                            nested_result = evaluator.evaluate(train_container)
+                            selected_params = evaluator.select_parameters(
+                                train_container
+                            )
 
-                            val_pred, val_label = cls.CvPredict(fs_train_container, self.cv.cv_part)
+                            final_classifier = _DeepcopyClassifier(
+                                classifier_template
+                            )
+                            if selected_params:
+                                final_classifier.SetModelParameter(
+                                    selected_params
+                                )
+                            final_classifier.SetDataContainer(
+                                fs_balance_train_container
+                            )
+                            final_classifier.SetSeed(self.random_seed)
+                            final_classifier.Fit()
+                            final_classifier.Save(cls_store_folder)
 
-                            # 根据best_param用所有数据重新训练
-                            cls.Fit()
-                            cls.Save(cls_store_folder)
-
-                            balanced_metric = self.SaveOneResult(cls.Predict(fs_balance_train_container.GetArray()),
-                                                                 fs_balance_train_container.GetLabel(),
-                                                                 BALANCE_TRAIN,
-                                                                 fs_balance_train_container.GetCaseName(),
-                                                                 matrics_index, model_name, store_folder,
-                                                                 cls_store_folder)
+                            balanced_metric = self.SaveOneResult(
+                                final_classifier.Predict(
+                                    fs_balance_train_container.GetArray()
+                                ),
+                                fs_balance_train_container.GetLabel(),
+                                BALANCE_TRAIN,
+                                fs_balance_train_container.GetCaseName(),
+                                matrics_index, model_name, store_folder,
+                                cls_store_folder
+                            )
 
                             if is_train_cutoff:
                                 cutoff = float(balanced_metric[BALANCE_TRAIN + '_' + CUTOFF])
                             else:
                                 cutoff = None
 
-                            self.SaveOneResult(cls.Predict(fs_train_container.GetArray()),
+                            self.SaveOneResult(final_classifier.Predict(fs_train_container.GetArray()),
                                                fs_train_container.GetLabel(),
                                                TRAIN, fs_train_container.GetCaseName(),
                                                matrics_index, model_name, store_folder, cls_store_folder,
                                                cutoff=cutoff)
-                            self.SaveOneResult(val_pred, val_label,
-                                               CV_VAL, fs_train_container.GetCaseName(),
+                            self.SaveOneResult(nested_result.prediction,
+                                               nested_result.label,
+                                               CV_VAL,
+                                               nested_result.case_names,
                                                matrics_index, model_name, store_folder, cls_store_folder,
                                                cutoff=cutoff)
 
                             if not test_container.IsEmpty():
-                                self.SaveOneResult(cls.Predict(fs_test_container.GetArray()),
+                                self.SaveOneResult(final_classifier.Predict(fs_test_container.GetArray()),
                                                    fs_test_container.GetLabel(),
                                                    TEST, fs_test_container.GetCaseName(),
                                                    matrics_index, model_name, store_folder, cls_store_folder,
