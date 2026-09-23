@@ -1,5 +1,5 @@
 {
-  "_commit": "Gaussian Naive Bayes variance smoothing grid.",
+  "_commit": "Gaussian Naive Bayes variance smoothing.",
   "setting": [
     {
       "var_smoothing": [1e-11, 1e-10, 1e-9, 1e-8, 1e-7]
