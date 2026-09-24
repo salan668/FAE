@@ -41,13 +41,10 @@ def make_data(case_prefix, case_count=12):
     )
 
 
-class FalsyNoOpProcessor:
+class NoOpProcessor:
     def __init__(self, name):
         self.name = name
         self.selected_feature_number = None
-
-    def __bool__(self):
-        return False
 
     def GetName(self):
         return self.name
@@ -95,6 +92,15 @@ class RecordingNaiveBayes(NaiveBayes):
 class RecordingNaiveBayesNoGrid(RecordingNaiveBayes):
     def GetName(self):
         return 'NB_NO_GRID'
+
+
+class ConfiguredNameNaiveBayes(RecordingNaiveBayes):
+    def __init__(self, configured_name='UNCONFIGURED_NB'):
+        self.configured_name = configured_name
+        super().__init__()
+
+    def GetName(self):
+        return self.configured_name
 
 
 class RecordingEvaluator:
@@ -160,8 +166,15 @@ class PipelineNestedValidationTest(unittest.TestCase):
             Normalizer('NormA', '', NoneNormalizeFunc),
             Normalizer('NormB', '', NoneNormalizeFunc),
         ]
-        reducer = FalsyNoOpProcessor('NoReduction')
-        selector = FalsyNoOpProcessor('NoSelection')
+        reducers = [
+            NoOpProcessor('ReduceA'),
+            NoOpProcessor('ReduceB'),
+        ]
+        selectors = [
+            NoOpProcessor('SelectA'),
+            NoOpProcessor('SelectB'),
+        ]
+        feature_numbers = [1, 2]
         classifiers = [
             RecordingNaiveBayes(),
             RecordingNaiveBayesNoGrid(),
@@ -172,9 +185,9 @@ class PipelineNestedValidationTest(unittest.TestCase):
         manager = PipelinesManager(
             balancer=balance,
             normalizer_list=normalizers,
-            dimension_reduction_list=[reducer],
-            feature_selector_list=[selector],
-            feature_selector_num_list=[2],
+            dimension_reduction_list=reducers,
+            feature_selector_list=selectors,
+            feature_selector_num_list=feature_numbers,
             classifier_list=classifiers,
             cv=ArbitratyCrossValidation(2),
             hyper_param=hyper_param,
@@ -191,20 +204,28 @@ class PipelineNestedValidationTest(unittest.TestCase):
 
             self.assertEqual(
                 progress,
-                [(manager.total_num, index) for index in range(1, 5)],
+                [(manager.total_num, index) for index in range(1, 33)],
             )
-            self.assertEqual(len(RecordingEvaluator.constructions), 4)
-            self.assertEqual(len(RecordingEvaluator.evaluations), 4)
-            self.assertEqual(len(RecordingEvaluator.selections), 4)
+            self.assertEqual(len(RecordingEvaluator.constructions), 32)
+            self.assertEqual(len(RecordingEvaluator.evaluations), 32)
+            self.assertEqual(len(RecordingEvaluator.selections), 32)
 
             template_by_name = {}
+            actual_combinations = []
             for evaluator in RecordingEvaluator.constructions:
                 self.assertIs(evaluator.balance, balance)
                 self.assertIn(evaluator.normalizer, normalizers)
-                self.assertIs(evaluator.dimension_reducer, reducer)
-                self.assertIs(evaluator.feature_selector, selector)
-                self.assertEqual(evaluator.feature_number, 2)
+                self.assertIn(evaluator.dimension_reducer, reducers)
+                self.assertIn(evaluator.feature_selector, selectors)
+                self.assertIn(evaluator.feature_number, feature_numbers)
                 self.assertEqual(evaluator.cv_parts, 2)
+                actual_combinations.append((
+                    evaluator.normalizer.GetName(),
+                    evaluator.dimension_reducer.GetName(),
+                    evaluator.feature_selector.GetName(),
+                    evaluator.feature_number,
+                    evaluator.classifier.GetName(),
+                ))
                 expected_grid = hyper_param.get(
                     evaluator.classifier.GetName(), {}
                 )
@@ -217,6 +238,24 @@ class PipelineNestedValidationTest(unittest.TestCase):
                     evaluator.classifier.GetName(), evaluator.classifier
                 )
                 self.assertIs(evaluator.classifier, previous)
+            expected_combinations = [
+                (
+                    normalizer.GetName(),
+                    reducer.GetName(),
+                    selector.GetName(),
+                    feature_number,
+                    classifier.GetName(),
+                )
+                for normalizer in normalizers
+                for reducer in reducers
+                for selector in selectors
+                for feature_number in feature_numbers
+                for classifier in classifiers
+            ]
+            self.assertCountEqual(
+                actual_combinations,
+                expected_combinations,
+            )
 
             for _, supplied_train in RecordingEvaluator.evaluations:
                 self.assertIs(supplied_train, train)
@@ -229,49 +268,60 @@ class PipelineNestedValidationTest(unittest.TestCase):
             )
             expected_labels = np.array(list(reversed(train.GetLabel())))
             for normalizer in normalizers:
-                for classifier in classifiers:
-                    output = (
-                        Path(tempdir)
-                        / normalizer.GetName()
-                        / reducer.GetName()
-                        / classifier.GetName()
-                    )
-                    prediction = pd.read_csv(
-                        output / 'CV_VAL_prediction.csv',
-                        index_col=0,
-                    )
-                    self.assertEqual(
-                        prediction.index.tolist(), expected_case_names
-                    )
-                    np.testing.assert_allclose(
-                        prediction['Pred'].to_numpy(), expected_predictions
-                    )
-                    np.testing.assert_array_equal(
-                        prediction['Label'].to_numpy(), expected_labels
-                    )
+                for reducer in reducers:
+                    for selector in selectors:
+                        for feature_number in feature_numbers:
+                            for classifier in classifiers:
+                                output = (
+                                    Path(tempdir)
+                                    / normalizer.GetName()
+                                    / reducer.GetName()
+                                    / '{}_{}'.format(
+                                        selector.GetName(), feature_number
+                                    )
+                                    / classifier.GetName()
+                                )
+                                prediction = pd.read_csv(
+                                    output / 'CV_VAL_prediction.csv',
+                                    index_col=0,
+                                )
+                                self.assertEqual(
+                                    prediction.index.tolist(),
+                                    expected_case_names,
+                                )
+                                np.testing.assert_allclose(
+                                    prediction['Pred'].to_numpy(),
+                                    expected_predictions,
+                                )
+                                np.testing.assert_array_equal(
+                                    prediction['Label'].to_numpy(),
+                                    expected_labels,
+                                )
 
-                    with open(
-                        output / 'used_hyper_param.json',
-                        encoding='utf-8',
-                    ) as stream:
-                        used_parameters = json.load(stream)
-                    if classifier.GetName() == 'NB':
-                        expected_value = (
-                            0.125
-                            if normalizer.GetName() == 'NormA'
-                            else 0.25
-                        )
-                        self.assertEqual(
-                            used_parameters['var_smoothing'], expected_value
-                        )
-                    else:
-                        self.assertEqual(
-                            used_parameters['var_smoothing'], 1e-9
-                        )
+                                with open(
+                                    output / 'used_hyper_param.json',
+                                    encoding='utf-8',
+                                ) as stream:
+                                    used_parameters = json.load(stream)
+                                if classifier.GetName() == 'NB':
+                                    expected_value = (
+                                        0.125
+                                        if normalizer.GetName() == 'NormA'
+                                        else 0.25
+                                    )
+                                    self.assertEqual(
+                                        used_parameters['var_smoothing'],
+                                        expected_value,
+                                    )
+                                else:
+                                    self.assertEqual(
+                                        used_parameters['var_smoothing'],
+                                        1e-9,
+                                    )
 
         final_models = RecordingNaiveBayes.fit_instances
-        self.assertEqual(len(final_models), 4)
-        self.assertEqual(len({id(model) for model in final_models}), 4)
+        self.assertEqual(len(final_models), 32)
+        self.assertEqual(len({id(model) for model in final_models}), 32)
         self.assertTrue(
             all(
                 args == () and kwargs == {}
@@ -296,32 +346,85 @@ class PipelineNestedValidationTest(unittest.TestCase):
             {id(model) for model, _ in RecordingNaiveBayes.saved_instances},
             {id(model) for model in final_models},
         )
-        self.assertEqual(len(RecordingNaiveBayes.prediction_instances), 12)
-        for model in final_models:
-            self.assertEqual(
-                sum(
-                    prediction_model is model
-                    for prediction_model
-                    in RecordingNaiveBayes.prediction_instances
-                ),
-                3,
-            )
+        saved_by_folder = {
+            folder: model
+            for model, folder in RecordingNaiveBayes.saved_instances
+        }
+        self.assertEqual(len(saved_by_folder), 32)
+        for normalizer in normalizers:
+            for reducer in reducers:
+                for selector in selectors:
+                    for feature_number in feature_numbers:
+                        for classifier in classifiers:
+                            folder = (
+                                Path(tempdir)
+                                / normalizer.GetName()
+                                / reducer.GetName()
+                                / '{}_{}'.format(
+                                    selector.GetName(), feature_number
+                                )
+                                / classifier.GetName()
+                            )
+                            model = saved_by_folder[folder]
+                            self.assertEqual(
+                                sum(
+                                    prediction_model is model
+                                    for prediction_model
+                                    in RecordingNaiveBayes.prediction_instances
+                                ),
+                                3,
+                            )
+        self.assertEqual(len(RecordingNaiveBayes.prediction_instances), 96)
 
         selected_by_model = RecordingNaiveBayes.selected_parameters
         selected_values = sorted(
             parameters['var_smoothing']
             for parameters in selected_by_model.values()
         )
-        self.assertEqual(selected_values, [0.125, 0.25])
+        self.assertEqual(
+            selected_values,
+            [0.125] * 8 + [0.25] * 8,
+        )
         for template in template_by_name.values():
             self.assertNotIn(id(template), selected_by_model)
             self.assertFalse(hasattr(template.GetModel(), 'classes_'))
 
+    def test_grid_lookup_uses_configured_classifier_name(self):
+        train = make_data('configured_name')
+        reducer = NoOpProcessor('NoReduction')
+        selector = NoOpProcessor('NoSelection')
+        configured_name = 'CONFIGURED_NB'
+        configured_grid = {'var_smoothing': [0.125, 0.25]}
+        manager = PipelinesManager(
+            balancer=NoneBalance(),
+            normalizer_list=[deepcopy(NormalizerNone)],
+            dimension_reduction_list=[reducer],
+            feature_selector_list=[selector],
+            feature_selector_num_list=[2],
+            classifier_list=[ConfiguredNameNaiveBayes(configured_name)],
+            cv=ArbitratyCrossValidation(2),
+            hyper_param={configured_name: configured_grid},
+            random_seed={'seed': 19},
+        )
+
+        with self.make_tempdir() as tempdir:
+            with patch(
+                'BC.FeatureAnalysis.Pipelines.NestedPipelineEvaluator',
+                RecordingEvaluator,
+            ):
+                list(manager.Run(train, store_folder=tempdir))
+
+        self.assertEqual(len(RecordingEvaluator.constructions), 1)
+        self.assertEqual(
+            RecordingEvaluator.constructions[0].param_grid,
+            configured_grid,
+        )
+
     def test_real_naive_bayes_pipeline_runs_nested_validation(self):
         train = make_data('real_train')
         test = make_data('real_test', case_count=6)
-        reducer = FalsyNoOpProcessor('NoReduction')
-        selector = FalsyNoOpProcessor('NoSelection')
+        reducer = NoOpProcessor('NoReduction')
+        selector = NoOpProcessor('NoSelection')
         manager = PipelinesManager(
             balancer=NoneBalance(),
             normalizer_list=[deepcopy(NormalizerNone)],
@@ -342,6 +445,7 @@ class PipelineNestedValidationTest(unittest.TestCase):
                 Path(tempdir)
                 / NormalizerNone.GetName()
                 / reducer.GetName()
+                / '{}_2'.format(selector.GetName())
                 / 'NB'
             )
             cv_prediction = pd.read_csv(

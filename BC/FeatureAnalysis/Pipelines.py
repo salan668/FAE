@@ -297,7 +297,7 @@ class PipelinesManager(object):
                                 fn,
                                 classifier_template,
                                 self.hyper_param.get(
-                                    classifier_template.GetName(), {}
+                                    cls.GetName(), {}
                                 ),
                                 self.cv.cv_part,
                             )
