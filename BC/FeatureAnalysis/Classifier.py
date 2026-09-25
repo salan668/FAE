@@ -24,6 +24,10 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import GridSearchCV, cross_val_predict
 
 from BC.DataContainer.DataContainer import DataContainer
+from BC.FeatureAnalysis.ExplanationArtifacts import (
+    write_available_explanation,
+    write_unavailable_explanation,
+)
 from Utility.EcLog import eclog
 from BC.Utility.Constants import *
 
@@ -133,7 +137,10 @@ class Classifier:
     def Predict(self, x):
         return self.model.predict(x)
 
-    def Save(self, store_path):
+    def GetExplanationSpec(self):
+        return None, 'No supported SHAP explainer is available for this classifier.'
+
+    def Save(self, store_path, explanation_container=None):
         if os.path.isdir(store_path):
             store_path = os.path.join(store_path, 'model.pickle')
 
@@ -154,19 +161,25 @@ class Classifier:
             with open(used_hyper_param_path, 'w') as f:
                 json.dump(self.model.get_params(), f, default=str)
 
-    def _SaveShap(self, store_folder, explainer_type='linear'):
-        """Compute and save SHAP values for training data.
+            self._SaveShap(store_folder, explanation_container)
 
-        Saves {ClassName}_shap.csv (samples x features, signed SHAP values).
-        explainer_type: 'linear' | 'tree'
-        Falls back silently on any error (e.g. non-linear SVM kernel).
-        """
-        if not _SHAP_AVAILABLE:
+    def _SaveShap(self, store_folder, explanation_container=None):
+        """Persist a verified explanation for the explicitly supplied cases."""
+        explainer_type, reason = self.GetExplanationSpec()
+        model_params = self.model.get_params()
+        if explainer_type is None:
+            write_unavailable_explanation(store_folder, self.GetName(), model_params,
+                                          'unsupported', reason)
             return
+        if not _SHAP_AVAILABLE:
+            write_unavailable_explanation(store_folder, self.GetName(), model_params,
+                                          'failed', 'The SHAP runtime is unavailable.')
+            return
+        container = explanation_container or self._data_container
         try:
-            X = self._x
-            feature_names = self._data_container.GetFeatureName()
-            case_names = self._data_container.GetCaseName()
+            X = container.GetArray()
+            feature_names = container.GetFeatureName()
+            case_names = container.GetCaseName()
 
             if explainer_type == 'linear':
                 explainer = _shap_lib.LinearExplainer(self.model, X)
@@ -180,15 +193,16 @@ class Classifier:
                 # Or 3D array (n_samples, n_features, n_classes) - take class 1
                 elif hasattr(shap_values, 'shape') and len(shap_values.shape) == 3:
                     shap_values = shap_values[:, :, 1]
-            else:
-                return
-
-            shap_path = os.path.join(store_folder, self.GetName() + '_shap.csv')
-            df = pd.DataFrame(shap_values, index=case_names, columns=feature_names)
-            df.to_csv(shap_path)
+            shap_df = pd.DataFrame(shap_values, index=case_names, columns=feature_names)
+            feature_df = pd.DataFrame(X, index=case_names, columns=feature_names)
+            write_available_explanation(store_folder, self.GetName(), model_params,
+                                        shap_df, feature_df,
+                                        'real_train' if explanation_container is not None else 'model_training_data')
         except Exception as e:
             self.logger.warning('SHAP computation skipped for {}: {}'.format(
                 self.GetName(), str(e)))
+            write_unavailable_explanation(store_folder, self.GetName(), model_params,
+                                          'failed', str(e))
 
     def Load(self, store_path):
         if os.path.isdir(store_path):
@@ -221,6 +235,11 @@ class SVM(Classifier):
     def GetName(self):
         return CLASSIFIER_SVM
 
+    def GetExplanationSpec(self):
+        if self.GetModel().kernel == 'linear':
+            return 'linear', ''
+        return None, 'SHAP is supported only for linear SVM models.'
+
     def Predict(self, x, is_probability=True):
         if is_probability:
             return super(SVM, self).GetModel().predict_proba(x)[:, 1]
@@ -234,21 +253,16 @@ class SVM(Classifier):
                "kernel function because it was easier to explain the coefficients of the features for the final model. "
         return text
 
-    def Save(self, store_folder):
+    def Save(self, store_folder, explanation_container=None):
         if not os.path.isdir(store_folder):
             print('The store function of SVM must be a folder path')
             return
 
-        # Save the coefficients
-        try:
+        if self.GetModel().kernel == 'linear':
             coef_path = os.path.join(store_folder, 'SVM_coef.csv')
             df = pd.DataFrame(data=np.transpose(self.GetModel().coef_),
                               index=self._data_container.GetFeatureName(), columns=['Coef'])
             df.to_csv(coef_path)
-        except Exception as e:
-            content = 'SVM with specific kernel does not give coef: '
-            self.logger.error('{}{}'.format(content, str(e)))
-            print('{} \n{}'.format(content, e.__str__()))
 
         # Save the intercept_
         try:
@@ -261,8 +275,7 @@ class SVM(Classifier):
             self.logger.error('{}{}'.format(content, str(e)))
             print('{} \n{}'.format(content, e.__str__()))
 
-        self._SaveShap(store_folder, explainer_type='linear')
-        super(SVM, self).Save(store_folder)
+        super(SVM, self).Save(store_folder, explanation_container)
 
 
 class LDA(Classifier):
@@ -272,6 +285,9 @@ class LDA(Classifier):
 
     def GetName(self):
         return 'LDA'
+
+    def GetExplanationSpec(self):
+        return 'linear', ''
 
     def Predict(self, x, is_probability=True):
         if is_probability:
@@ -284,7 +300,7 @@ class LDA(Classifier):
                "fitting class conditional densities to the data and using Bayes’rule. "
         return text
 
-    def Save(self, store_path):
+    def Save(self, store_path, explanation_container=None):
         if not os.path.isdir(store_path):
             print('The store function of LDA must be a folder path')
             return
@@ -300,8 +316,7 @@ class LDA(Classifier):
             self.logger.error('{}{}'.format(content, str(e)))
             print('{} \n{}'.format(content, e.__str__()))
 
-        self._SaveShap(store_path, explainer_type='linear')
-        super(LDA, self).Save(store_path)
+        super(LDA, self).Save(store_path, explanation_container)
 
 
 class RandomForest(Classifier):
@@ -317,6 +332,9 @@ class RandomForest(Classifier):
     def GetName(self):
         return CLASSIFIER_RF
 
+    def GetExplanationSpec(self):
+        return 'tree', ''
+
     def GetDescription(self):
         text = "We used random forest as the classifier. Random forest is an ensemble learning method which " \
                "combining multiple decision trees at different subset of the training data set. Random forest " \
@@ -329,9 +347,8 @@ class RandomForest(Classifier):
         else:
             return super(RandomForest, self).Predict(x)
 
-    def Save(self, store_folder):
-        self._SaveShap(store_folder, explainer_type='tree')
-        super(RandomForest, self).Save(store_folder)
+    def Save(self, store_folder, explanation_container=None):
+        super(RandomForest, self).Save(store_folder, explanation_container)
 
 
 class AE(Classifier):
@@ -379,9 +396,8 @@ class AdaBoost(Classifier):
         else:
             return super(AdaBoost, self).Predict(x)
 
-    def Save(self, store_folder):
-        self._SaveShap(store_folder, explainer_type='tree')
-        super(AdaBoost, self).Save(store_folder)
+    def Save(self, store_folder, explanation_container=None):
+        super(AdaBoost, self).Save(store_folder, explanation_container)
 
 
 class DecisionTree(Classifier):
@@ -391,6 +407,9 @@ class DecisionTree(Classifier):
 
     def GetName(self):
         return CLASSIFIER_DT
+
+    def GetExplanationSpec(self):
+        return 'tree', ''
 
     def GetDescription(self):
         text = "We used decision tree as the classifier. Decision tree is a non-parametric supervised learning " \
@@ -403,9 +422,8 @@ class DecisionTree(Classifier):
         else:
             return super(DecisionTree, self).Predict(x)
 
-    def Save(self, store_folder):
-        self._SaveShap(store_folder, explainer_type='tree')
-        super(DecisionTree, self).Save(store_folder)
+    def Save(self, store_folder, explanation_container=None):
+        super(DecisionTree, self).Save(store_folder, explanation_container)
 
 
 class GaussianProcess(Classifier):
@@ -459,6 +477,9 @@ class LR(Classifier):
     def GetName(self):
         return CLASSIFIER_LR
 
+    def GetExplanationSpec(self):
+        return 'linear', ''
+
     def GetDescription(self):
         text = "We used logistic regression as the classifier. Logistic regression is a linear classifier that " \
                "combines all the features. "
@@ -470,7 +491,7 @@ class LR(Classifier):
         else:
             return super(LR, self).Predict(x)
 
-    def Save(self, store_path):
+    def Save(self, store_path, explanation_container=None):
         if not os.path.isdir(store_path):
             print('The store function of SVM must be a folder path')
             return
@@ -496,8 +517,7 @@ class LR(Classifier):
             self.logger.error('{}{}'.format(content, str(e)))
             print('{} \n{}'.format(content, e.__str__()))
 
-        self._SaveShap(store_path, explainer_type='linear')
-        super(LR, self).Save(store_path)
+        super(LR, self).Save(store_path, explanation_container)
 
 
 class LRLasso(Classifier):
@@ -511,6 +531,9 @@ class LRLasso(Classifier):
     def GetName(self):
         return CLASSIFIER_LRLasso
 
+    def GetExplanationSpec(self):
+        return 'linear', ''
+
     def GetDescription(self):
         text = "We used logistic regression with LASSO constrain as the classifier. Logistic regression with LASSO " \
                "constrain is a linear classifier based on logistic regression. L1 norm is added in the final lost " \
@@ -523,7 +546,7 @@ class LRLasso(Classifier):
         else:
             return super(LRLasso, self).Predict(x)
 
-    def Save(self, store_path):
+    def Save(self, store_path, explanation_container=None):
         if not os.path.isdir(store_path):
             print('The store function of SVM must be a folder path')
             return
@@ -549,8 +572,7 @@ class LRLasso(Classifier):
             self.logger.error('{}{}'.format(content, str(e)))
             print('{} \n{}'.format(content, e.__str__()))
 
-        self._SaveShap(store_path, explainer_type='linear')
-        super(LRLasso, self).Save(store_path)
+        super(LRLasso, self).Save(store_path, explanation_container)
 
 
 if __name__ == '__main__':

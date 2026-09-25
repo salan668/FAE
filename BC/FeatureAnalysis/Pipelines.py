@@ -282,7 +282,8 @@ class PipelinesManager(object):
 
                             # 根据best_param用所有数据重新训练
                             cls.Fit()
-                            cls.Save(cls_store_folder)
+                            cls.Save(cls_store_folder,
+                                     explanation_container=fs_train_container)
 
                             balanced_metric = self.SaveOneResult(cls.Predict(fs_balance_train_container.GetArray()),
                                                                  fs_balance_train_container.GetLabel(),
