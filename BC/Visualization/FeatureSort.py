@@ -206,18 +206,8 @@ if __name__ == '__main__':
     # GeneralFeatureSort(new_feature_name, value, max_num=4, is_show=True, store_path=r'D:\MyDocs\Document\研究生\毕业\毕业论文\图\组学\ANOVA_sort.jpg')
     # SortRadiomicsFeature(new_feature_name, value, is_show=True)
 
-def SHAPBeeswarmPlot(shap_df, max_num=20, is_show=False, fig=None):
-    """Beeswarm plot: each dot = one training sample, colored by SHAP value.
-
-    Args:
-        shap_df: pd.DataFrame (n_samples, n_features), signed SHAP values.
-        max_num: Number of top features to show (by mean |SHAP|).
-        is_show: Whether to call fig.show().
-        fig: matplotlib Figure object.
-
-    Returns:
-        matplotlib Axes object.
-    """
+def SHAPBeeswarmPlot(shap_df, feature_df, max_num=20, is_show=False, fig=None):
+    """Beeswarm plot with SHAP position and low-to-high feature-value color."""
     import matplotlib.pyplot as plt
     import matplotlib.cm as cm
     import matplotlib.colors as mcolors
@@ -236,17 +226,18 @@ def SHAPBeeswarmPlot(shap_df, max_num=20, is_show=False, fig=None):
     fig.clear()
     ax = fig.add_axes([0.42, 0.08, 0.48, 0.84])
 
-    cmap = cm.get_cmap('seismic')
-    all_abs_max = np.abs(shap_df.values).max() if shap_df.size > 0 else 1.0
-    if all_abs_max == 0:
-        all_abs_max = 1.0
-    norm = mcolors.TwoSlopeNorm(vmin=-all_abs_max, vcenter=0, vmax=all_abs_max)
+    if not shap_df.index.equals(feature_df.index) or not shap_df.columns.equals(feature_df.columns):
+        raise ValueError('SHAP and feature data must have matching indexes and columns.')
+    cmap = plt.get_cmap('viridis')
     rng = np.random.default_rng(42)
 
     for y_pos, feat in enumerate(sorted_idx):
         shap_vals = shap_df[feat].values
         n = len(shap_vals)
-        dot_colors = cmap(norm(shap_vals))
+        feature_vals = feature_df[feat].astype(float).values
+        low, high = feature_vals.min(), feature_vals.max()
+        color_values = np.full(n, 0.5) if low == high else (feature_vals - low) / (high - low)
+        dot_colors = cmap(color_values)
 
         jitter = rng.uniform(-0.25, 0.25, size=n)
         ax.scatter(shap_vals, y_pos + jitter, c=dot_colors,
@@ -261,12 +252,14 @@ def SHAPBeeswarmPlot(shap_df, max_num=20, is_show=False, fig=None):
     ax.spines['right'].set_visible(False)
     ax.tick_params(axis='x', labelsize=8)
 
-    # Colorbar for SHAP value
+    # Colorbar expresses the normalized feature value for each feature row.
     cax = fig.add_axes([0.91, 0.08, 0.02, 0.84])
-    sm = cm.ScalarMappable(cmap=cmap, norm=norm)
+    sm = cm.ScalarMappable(cmap=cmap, norm=mcolors.Normalize(vmin=0, vmax=1))
     sm.set_array([])
     cb = fig.colorbar(sm, cax=cax)
-    cb.set_label('SHAP value', fontsize=8)
+    cb.set_label('Feature value', fontsize=8)
+    cb.set_ticks([0, 1])
+    cb.set_ticklabels(['Low', 'High'])
     cb.ax.tick_params(labelsize=7)
 
     if is_show:
