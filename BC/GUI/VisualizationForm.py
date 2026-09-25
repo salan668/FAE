@@ -8,6 +8,7 @@ from PySide6.QtCore import Qt, Signal
 from BC.GUI.Visualization import Ui_Visualization
 from BC.FeatureAnalysis.Classifier import *
 from BC.FeatureAnalysis.Pipelines import PipelinesManager
+from BC.FeatureAnalysis.ExplanationArtifacts import load_verified_explanation
 from BC.Description.Description import Description
 from BC.Visualization.DrawROCList import DrawROCList, DrawPRCurveList
 from BC.Visualization.PlotMetricVsFeatureNumber import DrawCurve, DrawBar
@@ -484,27 +485,26 @@ class VisualizationConnection(QWidget, Ui_Visualization):
 
             max_num = self.spinContributeFeatureNumber.value()
 
-            # ── SHAP path (preferred) ──────────────────────────────────────
-            shap_name = self.comboContributionClassifier.currentText() + '_shap.csv'
-            shap_file_path = os.path.join(cls_folder, shap_name)
+            classifier_name = self.comboContributionClassifier.currentText()
+            explanation = load_verified_explanation(cls_folder, classifier_name)
 
-            if os.path.exists(shap_file_path):
+            if explanation is not None:
                 # SHAP mode: hide selector/classifier radios, update title
                 self.radioContributionClassifier.setVisible(False)
                 self.radioContributionFeatureSelector.setVisible(False)
                 self.label_4.setText('Feature Contribution - SHAP')
                 self.tabVisualization.setTabText(2, 'Feature Contribution - SHAP')
 
-                shap_df = pd.read_csv(shap_file_path, index_col=0)
-                SHAPBeeswarmPlot(shap_df, max_num=max_num, is_show=False,
-                                 fig=self.canvasFeature.getFigure())
+                shap_df, feature_df, _ = explanation
+                SHAPBeeswarmPlot(shap_df, feature_df, max_num=max_num, is_show=False,
+                                  fig=self.canvasFeature.getFigure())
 
             # ── Coef/selector fallback ─────────────────────────────────────
             else:
                 self.radioContributionClassifier.setVisible(True)
                 self.radioContributionFeatureSelector.setVisible(True)
-                self.label_4.setText('Feature Contribution - Selector Rank')
-                self.tabVisualization.setTabText(2, 'Feature Contribution - Selector Rank')
+                self.label_4.setText('Feature Contribution - verified SHAP unavailable')
+                self.tabVisualization.setTabText(2, 'Feature Contribution - Fallback')
                 coef_name = self.comboContributionClassifier.currentText() + '_coef.csv'
                 coef_file_path = os.path.join(cls_folder, coef_name)
                 sort_name = (self.comboContributionFeatureSelector.currentText()
