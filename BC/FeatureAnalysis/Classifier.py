@@ -44,6 +44,14 @@ def LoadModel(store_path):
         return model
 
 
+def HasEffectiveParameterGrid(param_grid):
+    if isinstance(param_grid, dict):
+        return bool(param_grid)
+    if isinstance(param_grid, list):
+        return any(isinstance(grid, dict) and bool(grid) for grid in param_grid)
+    return False
+
+
 class Classifier:
     """
     This is the base class of the classifer. All the specific classifier need to be artributed from this base class.
@@ -106,7 +114,7 @@ class Classifier:
         self.model.set_params(**param)
 
     def Fit(self, hyper_param={}, cv_part=5):
-        if len(hyper_param) > 0:
+        if HasEffectiveParameterGrid(hyper_param):
             grid_search = GridSearchCV(estimator=self.model,
                                        param_grid=hyper_param,
                                        cv=cv_part, scoring="accuracy",
@@ -121,8 +129,8 @@ class Classifier:
         return pred, dc.GetLabel()
 
     def HyperFit(self, param_grid, cv_parts=5):
-        if isinstance(param_grid, (dict, list)):
-            grid_search = GridSearchCV(estimator=self.model, param_grid=param_grid, cv=cv_parts, scoring="accuracy", n_jobs=-1)
+        if HasEffectiveParameterGrid(param_grid):
+            grid_search = GridSearchCV(estimator=self.model, param_grid=param_grid, cv=cv_parts, scoring="accuracy", n_jobs=1)
             grid_search.fit(self._x, self._y)
 
             self.model = grid_search.best_estimator_
@@ -259,10 +267,25 @@ class SVM(Classifier):
             return
 
         if self.GetModel().kernel == 'linear':
-            coef_path = os.path.join(store_folder, 'SVM_coef.csv')
-            df = pd.DataFrame(data=np.transpose(self.GetModel().coef_),
-                              index=self._data_container.GetFeatureName(), columns=['Coef'])
-            df.to_csv(coef_path)
+            try:
+                coef_path = os.path.join(store_folder, 'SVM_coef.csv')
+                df = pd.DataFrame(data=np.transpose(self.GetModel().coef_),
+                                  index=self._data_container.GetFeatureName(), columns=['Coef'])
+                df.to_csv(coef_path)
+            except Exception as e:
+                content = 'SVM coefficient export failed: '
+                self.logger.error('{}{}'.format(content, str(e)))
+                print('{} \n{}'.format(content, e.__str__()))
+        else:
+            for filename in ('SVM_coef.csv', 'SVM_shap.csv'):
+                output_path = os.path.join(store_folder, filename)
+                if os.path.isfile(output_path):
+                    try:
+                        os.remove(output_path)
+                    except OSError as e:
+                        self.logger.warning(
+                            'Failed to remove stale SVM artifact {}: {}'.format(
+                                output_path, str(e)))
 
         # Save the intercept_
         try:
