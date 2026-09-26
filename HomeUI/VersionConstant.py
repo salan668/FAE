@@ -7,7 +7,7 @@ Licensed under the Apache License, Version 2.0.
 # Version Key
 MAJOR = 0
 MINOR = 8
-PATCH = 1
+PATCH = 2
 VERSION_NAME = 'Version'
 VERSION = '{}.{}.{}'.format(MAJOR, MINOR, PATCH)
-ACCEPT_VERSION = ['0.8.1', '0.8.0', '0.7.0']
+ACCEPT_VERSION = ['0.8.2', '0.8.1', '0.8.0', '0.7.0']
