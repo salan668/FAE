@@ -147,9 +147,6 @@ class DimensionReductionByPCC(DimensionReduction):
 
         self.__new_feature = []
 
-    def __PCCSimilarity(self, data1, data2):
-        return np.abs(pearsonr(data1, data2)[0])
-
     def SaveInfo(self, store_folder):
         pca_sort_path = os.path.join(store_folder, '{}_sort.csv'.format(self._name))
         df = pd.DataFrame(data=self.__new_feature)
@@ -167,17 +164,55 @@ class DimensionReductionByPCC(DimensionReduction):
     def GetSelectedFeatureIndex(self, data_container):
         data = data_container.GetArray()
         label = data_container.GetLabel()
-        data /= np.linalg.norm(data, ord=2, axis=0)
         self.__selected_index = []
+        if data.shape[1] == 0:
+            return
+
+        data /= np.linalg.norm(data, ord=2, axis=0)
+        feature_correlation = np.abs(np.atleast_2d(
+            np.corrcoef(data, rowvar=False)
+        ))
+
+        # Keep the legacy pearsonr result for label correlations.  Tiny
+        # floating-point differences can decide which of two correlated
+        # features survives the strict tie-break below.
+        label_correlation = np.array([
+            np.abs(pearsonr(data[:, feature_index], label)[0])
+            for feature_index in range(data.shape[1])
+        ])
+
+        # np.corrcoef is much faster for the common case, but it is less
+        # reliable for near-constant data with a large offset.  Detect the
+        # same numerically sensitive region as scipy.stats.pearsonr and use
+        # pearsonr only for those pairs.
+        feature_mean = np.mean(data, axis=0)
+        centered_norm = np.linalg.norm(data - feature_mean, axis=0)
+        near_constant_threshold = np.finfo(data.dtype).eps ** 0.75
+        near_constant = (
+            (centered_norm > 0)
+            & (centered_norm < near_constant_threshold * np.abs(feature_mean))
+        )
 
         for feature_index in range(data.shape[1]):
             is_similar = False
             assert(feature_index not in self.__selected_index)
-            for save_index in self.__selected_index:
-                if self.__PCCSimilarity(data[:, save_index], data[:, feature_index]) > self.__threshold:
-                    if self.__PCCSimilarity(data[:, save_index], label) < self.__PCCSimilarity(data[:, feature_index],
-                                                                                               label):
-                        self.__selected_index[self.__selected_index.index(save_index)] = feature_index
+            for selected_position, save_index in enumerate(self.__selected_index):
+                pair_correlation = feature_correlation[save_index, feature_index]
+                if (
+                    near_constant[save_index]
+                    or near_constant[feature_index]
+                    or np.isclose(
+                        pair_correlation, self.__threshold,
+                        rtol=1e-12, atol=1e-12,
+                    )
+                ):
+                    pair_correlation = np.abs(
+                        pearsonr(data[:, save_index], data[:, feature_index])[0]
+                    )
+
+                if pair_correlation > self.__threshold:
+                    if label_correlation[save_index] < label_correlation[feature_index]:
+                        self.__selected_index[selected_position] = feature_index
                     is_similar = True
                     break
             if not is_similar:
