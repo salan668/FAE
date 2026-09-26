@@ -4,30 +4,27 @@
 
 FAE (FeAture Explorer) is a **PySide6 desktop GUI application** for radiomics and medical imaging analysis. It is not a library or web app. There are no automated tests.
 
-## Running the application
+## Build, test, and lint commands
 
 ```bash
 python MainFrameCall.py          # standard entry
 python MainFrameCall_opt.py      # compatibility mode (disables native dialogs)
+pyinstaller --clean --noconfirm MainFrameCall.spec
 ```
+
+There is currently **no automated test suite** and **no configured lint command** in this repository, so there is no "single test" command to run.
+
+`MainFrameCall.spec` builds two executables: `fae` (from `MainFrameCall.py`) and `fae_opt` (from `MainFrameCall_opt.py`). Do not use `Release.bat` — it is outdated (targets v0.6.6).
 
 ## Environment setup
 
 ```bash
 conda create -n fae python=3.11
 conda activate fae
-pip install numpy scipy matplotlib pandas pillow pyside6 pyqtgraph pyradiomics \
-    seaborn reportlab imbalanced-learn pdfdocument statsmodels lifelines \
-    pyinstaller scikit-learn shap scikit-survival trimesh pingouin
+pip install -r requirements.txt
 ```
 
-## Building (PyInstaller)
-
-```bash
-pyinstaller --clean --noconfirm MainFrameCall.spec
-```
-
-`MainFrameCall.spec` builds two executables: `fae` (from `MainFrameCall.py`) and `fae_opt` (from `MainFrameCall_opt.py`). Do not use `Release.bat` — it is outdated (targets v0.6.6).
+If dependency mismatches appear, cross-check `requirements.txt`, `install.bat`, and `MainFrameCall.spec`.
 
 ## Architecture
 
@@ -61,6 +58,10 @@ MainFrameCall*.py
 ### Plugin system
 
 Plugins live under `Plugin\`. Each plugin subdirectory needs a `config.json` with `name` and `path`. Plugins are launched via `os.system(...)` — there is no in-process plugin API.
+
+### Pipeline persistence and compatibility
+
+Both BC and SA pipelines serialize run configuration to `pipeline_info.csv` and check `HomeUI\VersionConstant.py::ACCEPT_VERSION` when loading saved results. When changing serialized pipeline metadata, keep BC (`BC\FeatureAnalysis\Pipelines.py`) and SA (`SA\PipelineManager.py`) load/save behavior aligned.
 
 ## Key conventions
 
@@ -102,9 +103,9 @@ The Feature Contribution panel's parent layout is `verticalLayout_5` (a `QVBoxLa
 Version is defined in `HomeUI\VersionConstant.py`:
 
 ```python
-MAJOR = 0; MINOR = 8; PATCH = 0
-VERSION = '0.8.0'
-ACCEPT_VERSION = ['0.8.0', '0.7.0']
+MAJOR = 0; MINOR = 8; PATCH = 1
+VERSION = '0.8.1'
+ACCEPT_VERSION = ['0.8.1', '0.8.0', '0.7.0']
 ```
 
 Accepted versions control whether saved pipeline files from older FAE releases can be loaded.
