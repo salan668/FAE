@@ -1,6 +1,7 @@
 """Persistence and verification helpers for classifier explanation artifacts."""
 
 import hashlib
+import io
 import json
 import os
 import tempfile
@@ -32,6 +33,14 @@ def _signature(value):
 
 def _frame_signature(frame):
     return hashlib.sha256(frame.to_csv().encode('utf-8')).hexdigest()
+
+
+def _read_verified_frame(path, expected_signature):
+    """Read, verify, and parse one immutable CSV byte sequence."""
+    content = Path(path).read_bytes()
+    if hashlib.sha256(content).hexdigest() != expected_signature:
+        return None
+    return pd.read_csv(io.BytesIO(content), index_col=0)
 
 
 def _validate_aligned_frames(shap_df, feature_df):
@@ -160,15 +169,14 @@ def load_verified_explanation(folder, classifier_name):
     if metadata.get('model_params_signature') != _signature(model_params):
         return None
 
+    value_path = folder / value_filename
+    feature_path = folder / feature_filename
     try:
-        shap_df = pd.read_csv(folder / value_filename, index_col=0)
-        feature_df = pd.read_csv(folder / feature_filename, index_col=0)
+        shap_df = _read_verified_frame(value_path, metadata.get('shap_signature'))
+        feature_df = _read_verified_frame(feature_path, metadata.get('feature_signature'))
+        if shap_df is None or feature_df is None:
+            return None
         _validate_aligned_frames(shap_df, feature_df)
     except (OSError, ValueError, TypeError, pd.errors.ParserError):
-        return None
-
-    if metadata.get('shap_signature') != _frame_signature(shap_df):
-        return None
-    if metadata.get('feature_signature') != _frame_signature(feature_df):
         return None
     return shap_df, feature_df, metadata

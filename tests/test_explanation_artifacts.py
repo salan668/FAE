@@ -2,6 +2,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 import pandas as pd
 
@@ -53,6 +54,79 @@ class ExplanationArtifactTest(unittest.TestCase):
         self.assertEqual(loaded_metadata['explained_data_kind'], 'real_train')
 
         self._write_model_params({'C': 3.0, 'kernel': 'linear'})
+        self.assertIsNone(load_verified_explanation(self.folder, 'SVM'))
+
+    def test_available_artifact_loads_after_csv_float_round_trip(self):
+        """CSV serialization must not invalidate a valid linear-model explanation."""
+        shap_df = pd.DataFrame(
+            [[0.12345678901234567, -0.9876543210987654]],
+            index=['case_1'], columns=['feature_a', 'feature_b'],
+        )
+        feature_df = pd.DataFrame(
+            [[0.12345678901234567, -0.9876543210987654]],
+            index=['case_1'], columns=['feature_a', 'feature_b'],
+        )
+
+        write_available_explanation(
+            self.folder, 'SVM', self.params, shap_df, feature_df,
+            'real_train',
+        )
+        self._write_model_params()
+
+        self.assertIsNotNone(load_verified_explanation(self.folder, 'SVM'))
+
+    def test_load_parses_the_same_shap_bytes_that_it_verifies(self):
+        """A replacement after verification must not change the displayed SHAP values."""
+        write_available_explanation(
+            self.folder, 'SVM', self.params, self.shap_df, self.feature_df,
+            'real_train',
+        )
+        self._write_model_params()
+        value_path = self.folder / 'SVM_shap.csv'
+        replacement_shap = pd.DataFrame(
+            [[99.0, -99.0], [88.0, -88.0]],
+            index=['case_1', 'case_2'],
+            columns=['feature_a', 'feature_b'],
+        )
+        original_read_csv = pd.read_csv
+
+        def replace_value_file_before_parse(path, *args, **kwargs):
+            if path == value_path:
+                replacement_shap.to_csv(value_path)
+            return original_read_csv(path, *args, **kwargs)
+
+        with patch(
+                'BC.FeatureAnalysis.ExplanationArtifacts.pd.read_csv',
+                side_effect=replace_value_file_before_parse):
+            result = load_verified_explanation(self.folder, 'SVM')
+
+        self.assertIsNotNone(result)
+        pd.testing.assert_frame_equal(result[0], self.shap_df)
+
+    def test_load_rejects_tampered_shap_csv(self):
+        """Changing a SHAP value after writing must invalidate the artifact."""
+        write_available_explanation(
+            self.folder, 'SVM', self.params, self.shap_df, self.feature_df,
+            'real_train',
+        )
+        self._write_model_params()
+        tampered_shap = self.shap_df.copy()
+        tampered_shap.iloc[0, 0] = 9.9
+        tampered_shap.to_csv(self.folder / 'SVM_shap.csv')
+
+        self.assertIsNone(load_verified_explanation(self.folder, 'SVM'))
+
+    def test_load_rejects_tampered_feature_csv(self):
+        """Changing an explained feature value must invalidate the artifact."""
+        write_available_explanation(
+            self.folder, 'SVM', self.params, self.shap_df, self.feature_df,
+            'real_train',
+        )
+        self._write_model_params()
+        tampered_features = self.feature_df.copy()
+        tampered_features.iloc[0, 0] = 9.9
+        tampered_features.to_csv(self.folder / 'SVM_shap_features.csv')
+
         self.assertIsNone(load_verified_explanation(self.folder, 'SVM'))
 
     def test_unavailable_artifact_removes_old_shap_feature_and_coefficient_files(self):
