@@ -7,7 +7,8 @@ import shutil
 import pandas as pd
 from traceback import format_exc
 from PySide6.QtWidgets import *
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Signal, QUrl
+from PySide6.QtGui import QDesktopServices
 
 from BC.DataContainer.DataContainer import DataContainer
 from BC.FeatureAnalysis.IndexDict import Index2Dict
@@ -256,7 +257,7 @@ class ModelPredictionForm(QWidget):
                 DrawBoxPlot(self.prediction, self.label, store_path=os.path.join(store_folder, 'boxplot.jpg'))
                 DrawViolinPlot(self.prediction, self.label, store_path=os.path.join(store_folder, 'violinplot.jpg'))
 
-                os.system("explorer.exe {:s}".format(os.path.normpath(store_folder)))
+                QDesktopServices.openUrl(QUrl.fromLocalFile(os.path.abspath(store_folder)))
 
 
 if __name__ == '__main__':

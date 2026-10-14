@@ -6,7 +6,8 @@ from copy import deepcopy
 import pandas as pd
 
 from PySide6.QtWidgets import *
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Signal, QUrl
+from PySide6.QtGui import QDesktopServices
 from BC.GUI.Prepare import Ui_Prepare
 from Utility.EcLog import eclog
 from BC.DataContainer.DataContainer import DataContainer
@@ -279,7 +280,7 @@ class PrepareConnection(QWidget, Ui_Prepare):
                                                     'The testing data does not mismatch, please check the testing data '
                                                     'really exists in current data')
                             return None
-                    os.system("explorer.exe {:s}".format(os.path.normpath(folder_name)))
+                    QDesktopServices.openUrl(QUrl.fromLocalFile(os.path.abspath(folder_name)))
                 except Exception as e:
                     content = 'PrepareConnection, splitting failed: '
                     eclog(self._filename).GetLogger().error('Split Error:  ' + e.__str__())
