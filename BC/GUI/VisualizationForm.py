@@ -3,7 +3,8 @@ import traceback
 from traceback import format_exc
 
 from PySide6.QtWidgets import *
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt, Signal, QUrl
+from PySide6.QtGui import QDesktopServices
 
 from BC.GUI.Visualization import Ui_Visualization
 from BC.FeatureAnalysis.Classifier import *
@@ -762,7 +763,7 @@ class VisualizationConnection(QWidget, Ui_Visualization):
                                                        str(self.spinBoxFeatureNumber.value()),
                                                        self.comboClassifier.currentText())
                 report.Run(pipeline_name, self._root_folder, store_folder)
-                os.system("explorer.exe {:s}".format(os.path.normpath(store_folder)))
+                QDesktopServices.openUrl(QUrl.fromLocalFile(os.path.abspath(store_folder)))
             except Exception as ex:
                 QMessageBox.about(self, 'Description Generate Error: ', ex.__str__())
                 print(format_exc())
